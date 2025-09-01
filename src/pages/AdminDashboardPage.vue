@@ -1,0 +1,2068 @@
+<template>
+  <q-page class="admin-dashboard-page">
+    <!-- Loading Overlay -->
+    <div v-if="loading" class="loading-overlay">
+      <q-spinner-dots color="lime" size="60px" />
+      <p class="loading-text">Loading Admin Dashboard...</p>
+    </div>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-section q-pa-md">
+      <q-breadcrumbs class="text-grey-6">
+        <q-breadcrumbs-el icon="admin_panel_settings" label="Admin" />
+        <q-breadcrumbs-el icon="dashboard" label="Dashboard" />
+      </q-breadcrumbs>
+    </div>
+
+    <!-- Main Content -->
+    <div class="admin-content">
+      <!-- Welcome Section -->
+      <div class="welcome-section q-mb-xl animate-fade-in">
+        <div class="welcome-content">
+          <div class="welcome-text">
+            <h1 class="welcome-title">
+              Welcome back, <span class="highlight">{{ user.name || 'Admin' }}</span>! 👑
+            </h1>
+            <p class="welcome-subtitle">Admin Dashboard - Manage your fintech platform</p>
+            <div class="platform-status">
+              <q-chip color="green" text-color="white" icon="verified" size="sm">
+                Platform Status: Online
+              </q-chip>
+              <q-chip color="blue" text-color="white" icon="schedule" size="sm" class="q-ml-sm">
+                Last Updated: {{ formatTime(new Date()) }}
+              </q-chip>
+            </div>
+          </div>
+          <div class="welcome-actions">
+            <q-btn 
+              color="lime" 
+              icon="people" 
+              label="Manage Merchants" 
+              @click="navigateTo('/admin/merchants')"
+              class="action-btn"
+            />
+            <q-btn 
+              color="blue" 
+              icon="refresh" 
+              label="Refresh Data" 
+              @click="loadDashboardData"
+              :loading="loading"
+              class="action-btn"
+            />
+            <q-btn 
+              flat 
+              color="red" 
+              icon="logout" 
+              label="Logout" 
+              @click="logout" 
+              class="action-btn"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Real Data KPI Cards -->
+      <div class="kpi-section q-mb-xl animate-fade-in" style="animation-delay: 0.1s">
+        <div class="row q-gutter-lg">
+          <div class="col-12 col-sm-6 col-lg-3">
+            <q-card class="kpi-card lime-glow">
+              <q-card-section>
+                <div class="kpi-header">
+                  <div class="kpi-icon">
+                    <q-icon name="people" size="32px" color="lime" />
+                  </div>
+                  <div class="kpi-trend">
+                    <q-icon name="trending_up" size="16px" color="green" />
+                    <span class="trend-value">+{{ merchantStats.growth }}%</span>
+                  </div>
+                </div>
+                <div class="kpi-value">{{ merchantStats.total }}</div>
+                <div class="kpi-title">Total Merchants</div>
+                <div class="kpi-subtitle">{{ merchantStats.newThisMonth }} new this month</div>
+              </q-card-section>
+            </q-card>
+          </div>
+
+          <div class="col-12 col-sm-6 col-lg-3">
+            <q-card class="kpi-card lime-glow">
+              <q-card-section>
+                <div class="kpi-header">
+                  <div class="kpi-icon">
+                    <q-icon name="pending" size="32px" color="orange" />
+                  </div>
+                  <div class="kpi-trend">
+                    <q-icon name="schedule" size="16px" color="orange" />
+                    <span class="trend-value">{{ merchantStats.pending }}</span>
+                  </div>
+                </div>
+                <div class="kpi-value">{{ merchantStats.pending }}</div>
+                <div class="kpi-title">Pending Approval</div>
+                <div class="kpi-subtitle">Awaiting review</div>
+              </q-card-section>
+            </q-card>
+          </div>
+
+          <div class="col-12 col-sm-6 col-lg-3">
+            <q-card class="kpi-card lime-glow">
+              <q-card-section>
+                <div class="kpi-header">
+                  <div class="kpi-icon">
+                    <q-icon name="verified" size="32px" color="green" />
+                  </div>
+                  <div class="kpi-trend">
+                    <q-icon name="check_circle" size="16px" color="green" />
+                    <span class="trend-value">{{ Math.round((merchantStats.verified / merchantStats.total) * 100) }}%</span>
+                  </div>
+                </div>
+                <div class="kpi-value">{{ merchantStats.verified }}</div>
+                <div class="kpi-title">Verified Merchants</div>
+                <div class="kpi-subtitle">Active and approved</div>
+              </q-card-section>
+            </q-card>
+          </div>
+
+          <div class="col-12 col-sm-6 col-lg-3">
+            <q-card class="kpi-card lime-glow">
+              <q-card-section>
+                <div class="kpi-header">
+                  <div class="kpi-icon">
+                    <q-icon name="today" size="32px" color="purple" />
+                  </div>
+                  <div class="kpi-trend">
+                    <q-icon name="trending_up" size="16px" color="purple" />
+                    <span class="trend-value">{{ merchantStats.activeToday }}</span>
+                  </div>
+                </div>
+                <div class="kpi-value">{{ merchantStats.activeToday }}</div>
+                <div class="kpi-title">Active Today</div>
+                <div class="kpi-subtitle">Currently online</div>
+              </q-card-section>
+            </q-card>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real Merchants Management Section -->
+      <div class="merchants-section q-mb-xl animate-fade-in" style="animation-delay: 0.3s">
+        <q-card class="merchants-card lime-glow">
+          <q-card-section>
+            <div class="card-header">
+              <h3 class="card-title">Merchant Management</h3>
+              <div class="header-actions">
+                <q-btn 
+                  color="lime" 
+                  icon="add" 
+                  label="Add Merchant" 
+                  @click="showAddMerchantDialog = true" 
+                />
+                <q-btn 
+                  color="blue" 
+                  icon="refresh" 
+                  label="Refresh" 
+                  @click="loadAllMerchants" 
+                  :loading="merchantsLoading" 
+                />
+              </div>
+            </div>
+
+            <!-- Real Merchant Stats -->
+            <div class="merchant-stats-enhanced q-mb-lg">
+              <div class="stats-grid">
+                <div class="stat-card-mini">
+                  <div class="stat-icon-mini">
+                    <q-icon name="store" color="blue" size="24px" />
+                  </div>
+                  <div class="stat-content-mini">
+                    <div class="stat-value-mini">{{ merchantStats.total }}</div>
+                    <div class="stat-label-mini">Total Merchants</div>
+                  </div>
+                </div>
+
+                <div class="stat-card-mini">
+                  <div class="stat-icon-mini">
+                    <q-icon name="pending" color="orange" size="24px" />
+                  </div>
+                  <div class="stat-content-mini">
+                    <div class="stat-value-mini">{{ merchantStats.pending }}</div>
+                    <div class="stat-label-mini">Pending Approval</div>
+                  </div>
+                </div>
+
+                <div class="stat-card-mini">
+                  <div class="stat-icon-mini">
+                    <q-icon name="verified" color="green" size="24px" />
+                  </div>
+                  <div class="stat-content-mini">
+                    <div class="stat-value-mini">{{ merchantStats.verified }}</div>
+                    <div class="stat-label-mini">Verified</div>
+                  </div>
+                </div>
+
+                <div class="stat-card-mini">
+                  <div class="stat-icon-mini">
+                    <q-icon name="block" color="red" size="24px" />
+                  </div>
+                  <div class="stat-content-mini">
+                    <div class="stat-value-mini">{{ merchantStats.suspended }}</div>
+                    <div class="stat-label-mini">Suspended</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Merchant Status Filter -->
+            <div class="merchant-filters q-mb-md">
+              <div class="row q-gutter-md items-center">
+                <div class="col-auto">
+                  <q-btn-toggle 
+                    v-model="merchantFilter" 
+                    :options="merchantFilterOptions" 
+                    color="lime"
+                    text-color="white" 
+                    size="sm" 
+                    @update:model-value="filterMerchants" 
+                  />
+                </div>
+                <div class="col-auto">
+                  <q-input 
+                    v-model="merchantSearch" 
+                    placeholder="Search merchants..." 
+                    outlined 
+                    dense 
+                    clearable
+                    @input="filterMerchants" 
+                    style="min-width: 250px"
+                  >
+                    <template v-slot:prepend>
+                      <q-icon name="search" />
+                    </template>
+                  </q-input>
+                </div>
+                <q-space />
+                <div class="col-auto">
+                  <q-chip 
+                    :color="getFilterChipColor(merchantFilter)" 
+                    text-color="white" 
+                    size="sm"
+                  >
+                    {{ filteredMerchants.length }} merchants
+                  </q-chip>
+                </div>
+              </div>
+            </div>
+
+            <!-- Real Merchants Table -->
+            <q-table 
+              :rows="paginatedMerchants" 
+              :columns="enhancedMerchantColumns" 
+              :pagination="merchantPagination"
+              :loading="merchantsLoading"
+              row-key="id"
+              class="enhanced-merchant-table"
+              @request="onMerchantTableRequest"
+            >
+              <!-- Business Column -->
+              <template v-slot:body-cell-business="props">
+                <q-td :props="props">
+                  <div class="business-cell">
+                    <q-avatar size="32px" square class="business-avatar">
+                      <img :src="props.row.logo_url || getDefaultLogo(props.row.business_name)" />
+                    </q-avatar>
+                    <div class="business-info">
+                      <div class="business-name">{{ props.row.business_name || 'N/A' }}</div>
+                      <div class="business-email">{{ props.row.email }}</div>
+                    </div>
+                  </div>
+                </q-td>
+              </template>
+
+              <!-- Status Column -->
+              <template v-slot:body-cell-status="props">
+                <q-td :props="props">
+                  <q-chip 
+                    :color="getStatusColor(props.value)" 
+                    text-color="white" 
+                    :icon="getStatusIcon(props.value)"
+                    size="sm" 
+                    class="status-chip"
+                  >
+                    {{ props.value }}
+                  </q-chip>
+                </q-td>
+              </template>
+
+              <!-- Registration Date Column -->
+              <template v-slot:body-cell-created_at="props">
+                <q-td :props="props">
+                  <div class="date-cell">
+                    <div class="date-primary">{{ formatDate(props.value) }}</div>
+                    <div class="date-secondary">{{ formatTimeAgo(props.value) }}</div>
+                  </div>
+                </q-td>
+              </template>
+
+              <!-- Bank Account Column -->
+              <template v-slot:body-cell-bank_account="props">
+                <q-td :props="props">
+                  <div class="bank-info">
+                    <div class="bank-name">{{ props.row.bank_account_name || 'N/A' }}</div>
+                    <div class="bank-number">****{{ (props.row.bank_account_number || '').slice(-4) }}</div>
+                  </div>
+                </q-td>
+              </template>
+
+              <!-- Actions Column -->
+              <template v-slot:body-cell-actions="props">
+                <q-td :props="props">
+                  <div class="action-buttons">
+                    <q-btn 
+                      flat 
+                      round 
+                      dense 
+                      icon="visibility" 
+                      color="blue" 
+                      @click="viewMerchant(props.row)" 
+                      size="sm"
+                    >
+                      <q-tooltip>View Details</q-tooltip>
+                    </q-btn>
+                    
+                    <q-btn 
+                      v-if="props.row.status === 'pending'" 
+                      flat 
+                      round 
+                      dense 
+                      icon="check" 
+                      color="green"
+                      @click="approveMerchant(props.row)" 
+                      size="sm" 
+                      :loading="approvingMerchant === props.row.id"
+                    >
+                      <q-tooltip>Approve Merchant</q-tooltip>
+                    </q-btn>
+                    
+                    <q-btn 
+                      v-if="props.row.status === 'pending'" 
+                      flat 
+                      round 
+                      dense 
+                      icon="close" 
+                      color="red"
+                      @click="rejectMerchant(props.row)" 
+                      size="sm"
+                    >
+                      <q-tooltip>Reject Merchant</q-tooltip>
+                    </q-btn>
+                    
+                    <q-btn 
+                      flat 
+                      round 
+                      dense 
+                      icon="more_vert" 
+                      color="grey" 
+                      @click="showMerchantMenu(props.row)"
+                      size="sm"
+                    >
+                      <q-tooltip>More Actions</q-tooltip>
+                    </q-btn>
+                  </div>
+                </q-td>
+              </template>
+
+              <!-- No Data -->
+              <template v-slot:no-data>
+                <div class="full-width row flex-center text-grey-6 q-gutter-sm">
+                  <q-icon size="2em" name="store" />
+                  <span>No merchants found</span>
+                </div>
+              </template>
+            </q-table>
+          </q-card-section>
+        </q-card>
+      </div>
+
+      <!-- Quick Actions Grid -->
+      <div class="actions-section animate-fade-in" style="animation-delay: 0.4s">
+        <h3 class="section-title">Quick Actions</h3>
+        <div class="enhanced-actions-grid">
+          <div class="action-card-enhanced" @click="navigateTo('/admin/merchants')">
+            <div class="action-background">
+              <div class="action-icon-enhanced">
+                <q-icon name="store" size="40px" color="lime" />
+              </div>
+              <div class="action-content-enhanced">
+                <h4>Merchant Management</h4>
+                <p>Review, approve, and manage merchant accounts</p>
+                <div class="action-stats">
+                  <span class="stat-badge">{{ merchantStats.pending }} pending approval</span>
+                </div>
+              </div>
+              <div class="action-arrow-enhanced">
+                <q-icon name="arrow_forward" color="lime" size="24px" />
+              </div>
+            </div>
+          </div>
+
+          <div class="action-card-enhanced" @click="navigateTo('/transactions')">
+            <div class="action-background">
+              <div class="action-icon-enhanced">
+                <q-icon name="receipt_long" size="40px" color="blue" />
+              </div>
+              <div class="action-content-enhanced">
+                <h4>View Transactions</h4>
+                <p>Monitor all platform transactions</p>
+                <div class="action-stats">
+                  <span class="stat-badge">Real-time monitoring</span>
+                </div>
+              </div>
+              <div class="action-arrow-enhanced">
+                <q-icon name="arrow_forward" color="blue" size="24px" />
+              </div>
+            </div>
+          </div>
+
+          <div class="action-card-enhanced" @click="navigateTo('/admin/support')">
+            <div class="action-background">
+              <div class="action-icon-enhanced">
+                <q-icon name="support_agent" size="40px" color="purple" />
+              </div>
+              <div class="action-content-enhanced">
+                <h4>Support Center</h4>
+                <p>Manage customer support and help requests</p>
+                <div class="action-stats">
+                  <span class="stat-badge">Support management</span>
+                </div>
+              </div>
+              <div class="action-arrow-enhanced">
+                <q-icon name="arrow_forward" color="purple" size="24px" />
+              </div>
+            </div>
+          </div>
+
+          <div class="action-card-enhanced" @click="navigateTo('/admin/settings')">
+            <div class="action-background">
+              <div class="action-icon-enhanced">
+                <q-icon name="settings" size="40px" color="orange" />
+              </div>
+              <div class="action-content-enhanced">
+                <h4>Platform Settings</h4>
+                <p>Configure system settings and preferences</p>
+                <div class="action-stats">
+                  <span class="stat-badge">System configuration</span>
+                </div>
+              </div>
+              <div class="action-arrow-enhanced">
+                <q-icon name="arrow_forward" color="orange" size="24px" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Merchant Dialog -->
+    <q-dialog v-model="showAddMerchantDialog" persistent>
+      <q-card class="add-merchant-dialog">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">Add New Merchant</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section>
+          <q-form @submit="submitNewMerchant" class="q-gutter-md">
+            <div class="row q-gutter-md">
+              <div class="col-12 col-md-6">
+                <q-input 
+                  v-model="newMerchant.business_name" 
+                  label="Business Name *" 
+                  outlined 
+                  dense 
+                  required
+                  :rules="[val => !!val || 'Business name is required']" 
+                />
+              </div>
+              <div class="col-12 col-md-6">
+                <q-input 
+                  v-model="newMerchant.email" 
+                  label="Email Address *" 
+                  type="email" 
+                  outlined 
+                  dense 
+                  required
+                  :rules="[
+                    val => !!val || 'Email is required',
+                    val => /.+@.+\..+/.test(val) || 'Enter a valid email'
+                  ]" 
+                />
+              </div>
+            </div>
+
+            <div class="row q-gutter-md">
+              <div class="col-12 col-md-6">
+                <q-input 
+                  v-model="newMerchant.bank_account_name" 
+                  label="Bank Account Name *" 
+                  outlined 
+                  dense 
+                  required
+                  :rules="[val => !!val || 'Bank account name is required']" 
+                />
+              </div>
+              <div class="col-12 col-md-6">
+                <q-input 
+                  v-model="newMerchant.bank_account_number" 
+                  label="Bank Account Number *" 
+                  outlined 
+                  dense 
+                  required
+                  :rules="[val => !!val || 'Bank account number is required']" 
+                />
+              </div>
+            </div>
+
+            <div class="row q-gutter-md">
+              <div class="col-12 col-md-6">
+                <q-input 
+                  v-model="newMerchant.phone" 
+                  label="Phone Number" 
+                  outlined 
+                  dense 
+                />
+              </div>
+              <div class="col-12 col-md-6">
+                <q-select 
+                  v-model="newMerchant.category" 
+                  :options="categoryOptions" 
+                  label="Business Category" 
+                  outlined
+                  dense 
+                />
+              </div>
+            </div>
+
+            <q-input 
+              v-model="newMerchant.description" 
+              label="Business Description" 
+              type="textarea" 
+              outlined 
+              rows="3" 
+            />
+          </q-form>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" v-close-popup />
+          <q-btn 
+            color="lime" 
+            label="Add Merchant" 
+            @click="submitNewMerchant" 
+            :loading="submittingMerchant" 
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Merchant Details Dialog -->
+    <q-dialog v-model="showMerchantDetails" maximized>
+      <q-card class="merchant-details-dialog">
+        <q-card-section class="dialog-header">
+          <div class="row items-center">
+            <div class="col">
+              <div class="text-h5 text-lime">Merchant Details</div>
+              <div class="text-caption text-grey-5">{{ selectedMerchant?.business_name }}</div>
+            </div>
+            <div class="col-auto">
+              <q-btn icon="close" flat round dense v-close-popup color="grey" />
+            </div>
+          </div>
+        </q-card-section>
+
+        <q-card-section v-if="selectedMerchant" class="dialog-content">
+          <div class="merchant-details-grid">
+            <!-- Business Info -->
+            <div class="detail-section">
+              <h5 class="section-title">Business Information</h5>
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <span class="detail-label">Business Name:</span>
+                  <span class="detail-value">{{ selectedMerchant.business_name }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Email:</span>
+                  <span class="detail-value">{{ selectedMerchant.email }}</span>
+                </div>
+                <div class="detail-item" v-if="selectedMerchant.phone">
+                  <span class="detail-label">Phone:</span>
+                  <span class="detail-value">{{ selectedMerchant.phone }}</span>
+                </div>
+                <div class="detail-item" v-if="selectedMerchant.category">
+                  <span class="detail-label">Category:</span>
+                  <span class="detail-value">{{ selectedMerchant.category }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Status:</span>
+                  <q-chip 
+                    :color="getStatusColor(selectedMerchant.status)" 
+                    text-color="white" 
+                    :icon="getStatusIcon(selectedMerchant.status)"
+                    size="sm"
+                  >
+                    {{ selectedMerchant.status }}
+                  </q-chip>
+                </div>
+              </div>
+            </div>
+
+            <!-- Banking Info -->
+            <div class="detail-section">
+              <h5 class="section-title">Banking Information</h5>
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <span class="detail-label">Account Name:</span>
+                  <span class="detail-value">{{ selectedMerchant.bank_account_name }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Account Number:</span>
+                  <span class="detail-value">****{{ (selectedMerchant.bank_account_number || '').slice(-4) }}</span>
+                </div>
+                <div class="detail-item" v-if="selectedMerchant.bank_name">
+                  <span class="detail-label">Bank Name:</span>
+                  <span class="detail-value">{{ selectedMerchant.bank_name }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Registration Details -->
+            <div class="detail-section full-width">
+              <h5 class="section-title">Registration Details</h5>
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <span class="detail-label">Registered:</span>
+                  <span class="detail-value">{{ formatDateTime(selectedMerchant.created_at) }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Last Updated:</span>
+                  <span class="detail-value">{{ formatDateTime(selectedMerchant.updated_at) }}</span>
+                </div>
+                <div class="detail-item" v-if="selectedMerchant.description">
+                  <span class="detail-label">Description:</span>
+                  <span class="detail-value">{{ selectedMerchant.description }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right" class="dialog-actions">
+          <q-btn flat label="Close" v-close-popup />
+          <q-btn 
+            v-if="selectedMerchant?.status === 'pending'" 
+            color="green" 
+            icon="check" 
+            label="Approve" 
+            @click="approveMerchant(selectedMerchant)" 
+            :loading="approvingMerchant === selectedMerchant?.id"
+          />
+          <q-btn 
+            v-if="selectedMerchant?.status === 'pending'" 
+            color="red" 
+            icon="close" 
+            label="Reject" 
+            @click="rejectMerchant(selectedMerchant)" 
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Merchant Context Menu -->
+    <q-menu v-model="showMerchantContextMenu" context-menu>
+      <q-list dense>
+        <q-item clickable @click="viewMerchant(contextMenuMerchant)">
+          <q-item-section avatar>
+            <q-icon name="visibility" color="blue" />
+          </q-item-section>
+          <q-item-section>View Details</q-item-section>
+        </q-item>
+        
+        <q-item 
+          v-if="contextMenuMerchant?.status === 'pending'" 
+          clickable 
+          @click="approveMerchant(contextMenuMerchant)"
+        >
+          <q-item-section avatar>
+            <q-icon name="check" color="green" />
+          </q-item-section>
+          <q-item-section>Approve Merchant</q-item-section>
+        </q-item>
+        
+        <q-item 
+          v-if="contextMenuMerchant?.status === 'pending'" 
+          clickable 
+          @click="rejectMerchant(contextMenuMerchant)"
+        >
+          <q-item-section avatar>
+            <q-icon name="close" color="red" />
+          </q-item-section>
+          <q-item-section>Reject Merchant</q-item-section>
+        </q-item>
+        
+        <q-separator />
+        
+        <q-item clickable @click="copyMerchantInfo(contextMenuMerchant)">
+          <q-item-section avatar>
+            <q-icon name="content_copy" color="grey" />
+          </q-item-section>
+          <q-item-section>Copy Merchant Info</q-item-section>
+        </q-item>
+      </q-list>
+    </q-menu>
+
+    <!-- Error State -->
+    <div v-if="error" class="error-message q-mt-lg">
+      <q-banner class="text-white bg-negative">
+        {{ error }}
+        <template v-slot:action>
+          <q-btn flat color="white" label="Retry" @click="loadDashboardData" />
+        </template>
+      </q-banner>
+    </div>
+  </q-page>
+</template>
+
+<script setup>
+import { ref, computed, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useQuasar } from 'quasar'
+import { api } from '../boot/axios'
+
+const router = useRouter()
+const $q = useQuasar()
+
+// Reactive data
+const loading = ref(false)
+const merchantsLoading = ref(false)
+const error = ref('')
+const submittingMerchant = ref(false)
+const approvingMerchant = ref(null)
+
+// Dialog states
+const showAddMerchantDialog = ref(false)
+const showMerchantDetails = ref(false)
+const showMerchantContextMenu = ref(false)
+const selectedMerchant = ref(null)
+const contextMenuMerchant = ref(null)
+
+// Real merchant data
+const allMerchants = ref([])
+const merchantStats = ref({
+  total: 0,
+  pending: 0,
+  verified: 0,
+  approved: 0,
+  suspended: 0,
+  newThisMonth: 0,
+  activeToday: 0,
+  growth: 0
+})
+
+// Merchant filtering
+const merchantFilter = ref('all')
+const merchantSearch = ref('')
+
+// Pagination
+const merchantPagination = ref({
+  sortBy: 'created_at',
+  descending: true,
+  page: 1,
+  rowsPerPage: 10,
+  rowsNumber: 0
+})
+
+// New merchant form
+const newMerchant = ref({
+  business_name: '',
+  email: '',
+  bank_account_name: '',
+  bank_account_number: '',
+  phone: '',
+  category: null,
+  description: ''
+})
+
+// Options
+const merchantFilterOptions = [
+  { label: 'All', value: 'all' },
+  { label: 'Pending', value: 'pending' },
+  { label: 'Verified', value: 'verified' },
+  { label: 'Approved', value: 'approved' },
+  { label: 'Suspended', value: 'suspended' }
+]
+
+const categoryOptions = [
+  { label: 'E-commerce', value: 'ecommerce' },
+  { label: 'Food & Beverage', value: 'food' },
+  { label: 'Technology', value: 'technology' },
+  { label: 'Healthcare', value: 'healthcare' },
+  { label: 'Education', value: 'education' },
+  { label: 'Finance', value: 'finance' },
+  { label: 'Other', value: 'other' }
+]
+
+// Table columns
+const enhancedMerchantColumns = [
+  { name: 'business', label: 'Business', field: 'business_name', align: 'left', sortable: true },
+  { name: 'status', label: 'Status', field: 'status', align: 'center', sortable: true },
+  { name: 'bank_account', label: 'Bank Account', field: 'bank_account_name', align: 'left', sortable: true },
+  { name: 'created_at', label: 'Registered', field: 'created_at', align: 'center', sortable: true },
+  { name: 'actions', label: 'Actions', field: 'actions', align: 'center', sortable: false }
+]
+
+// Computed properties
+const user = computed(() => {
+  try {
+    const storedUser = localStorage.getItem('user')
+    return storedUser ? JSON.parse(storedUser) : { name: 'Admin', email: 'admin@example.com', role: 'admin' }
+  } catch {
+    return { name: 'Admin', email: 'admin@example.com', role: 'admin' }
+  }
+})
+
+const filteredMerchants = computed(() => {
+  let filtered = [...allMerchants.value]
+
+  // Apply status filter
+  if (merchantFilter.value !== 'all') {
+    filtered = filtered.filter(merchant => merchant.status === merchantFilter.value)
+  }
+
+  // Apply search filter
+  if (merchantSearch.value) {
+    const search = merchantSearch.value.toLowerCase()
+    filtered = filtered.filter(merchant => 
+      merchant.business_name?.toLowerCase().includes(search) ||
+      merchant.email?.toLowerCase().includes(search) ||
+      String(merchant.id).includes(search)
+    )
+  }
+
+  return filtered
+})
+
+const paginatedMerchants = computed(() => {
+  const start = (merchantPagination.value.page - 1) * merchantPagination.value.rowsPerPage
+  const end = start + merchantPagination.value.rowsPerPage
+  return filteredMerchants.value.slice(start, end)
+})
+
+// Watch for pagination updates
+watch(filteredMerchants, (newFiltered) => {
+  merchantPagination.value.rowsNumber = newFiltered.length
+}, { immediate: true })
+
+// Methods
+const loadDashboardData = async () => {
+  try {
+    loading.value = true
+    error.value = ''
+
+    console.log('🔄 Loading admin dashboard data...')
+
+    // ✅ Load only real data from your actual API
+    await loadAllMerchants()
+
+    console.log('✅ Admin dashboard loaded successfully')
+
+  } catch (err) {
+    console.error('❌ Dashboard load error:', err)
+    error.value = 'Failed to load dashboard data. Please try again.'
+  } finally {
+    loading.value = false
+  }
+}
+
+const loadAllMerchants = async () => {
+  try {
+    merchantsLoading.value = true
+    console.log('🔄 Loading all merchants from API...')
+
+    // ✅ Use your actual API endpoint: GET /api/admin/merchants
+    const response = await api.get('/api/admin/merchants')
+    
+    // Handle different response formats
+    const data = response.data
+    if (data.merchants) {
+      allMerchants.value = data.merchants
+    } else if (Array.isArray(data)) {
+      allMerchants.value = data
+    } else if (data.data) {
+      allMerchants.value = data.data
+    } else {
+      allMerchants.value = []
+    }
+
+    console.log('✅ Merchants loaded from API:', allMerchants.value.length)
+    
+    // Calculate real statistics from API data
+    calculateMerchantStats()
+    
+  } catch (error) {
+    console.error('❌ Failed to load merchants from API:', error)
+    
+    // Show error but don't use fallback data - keep it real
+    $q.notify({
+      type: 'negative',
+      message: 'Failed to load merchants. Please check your connection and try again.',
+      position: 'top',
+      timeout: 5000
+    })
+    
+    // Set empty state
+    allMerchants.value = []
+    merchantStats.value = {
+      total: 0,
+      pending: 0,
+      verified: 0,
+      approved: 0,
+      suspended: 0,
+      newThisMonth: 0,
+      activeToday: 0,
+      growth: 0
+    }
+  } finally {
+    merchantsLoading.value = false
+  }
+}
+
+const calculateMerchantStats = () => {
+  const today = new Date().toDateString()
+  const thisMonth = new Date().getMonth()
+  const thisYear = new Date().getFullYear()
+  
+  const stats = {
+    total: allMerchants.value.length,
+    pending: 0,
+    verified: 0,
+    approved: 0,
+    suspended: 0,
+    newThisMonth: 0,
+    activeToday: 0,
+    growth: 0
+  }
+
+  let lastMonthCount = 0
+
+  allMerchants.value.forEach(merchant => {
+    const merchantDate = new Date(merchant.created_at)
+    
+    // Count by status
+    switch (merchant.status) {
+      case 'pending':
+        stats.pending++
+        break
+      case 'verified':
+        stats.verified++
+        break
+      case 'approved':
+        stats.approved++
+        stats.verified++ // Approved counts as verified too
+        break
+      case 'suspended':
+        stats.suspended++
+        break
+    }
+
+    // Count new this month
+    if (merchantDate.getMonth() === thisMonth && merchantDate.getFullYear() === thisYear) {
+      stats.newThisMonth++
+    }
+
+    // Count last month for growth calculation
+    const lastMonth = thisMonth === 0 ? 11 : thisMonth - 1
+    const lastMonthYear = thisMonth === 0 ? thisYear - 1 : thisYear
+    if (merchantDate.getMonth() === lastMonth && merchantDate.getFullYear() === lastMonthYear) {
+      lastMonthCount++
+    }
+
+    // Count active today (updated today)
+    if (new Date(merchant.updated_at || merchant.created_at).toDateString() === today) {
+      stats.activeToday++
+    }
+  })
+
+  // Calculate growth percentage
+  if (lastMonthCount > 0) {
+    stats.growth = Math.round(((stats.newThisMonth - lastMonthCount) / lastMonthCount) * 100)
+  } else if (stats.newThisMonth > 0) {
+    stats.growth = 100 // 100% growth if no merchants last month
+  }
+
+  merchantStats.value = stats
+  
+  console.log('📊 Real merchant statistics calculated:', stats)
+}
+
+const filterMerchants = () => {
+  merchantPagination.value.page = 1 // Reset to first page when filtering
+}
+
+const onMerchantTableRequest = (props) => {
+  merchantPagination.value.page = props.pagination.page
+  merchantPagination.value.rowsPerPage = props.pagination.rowsPerPage
+  merchantPagination.value.sortBy = props.pagination.sortBy
+  merchantPagination.value.descending = props.pagination.descending
+}
+
+const approveMerchant = async (merchant) => {
+  try {
+    approvingMerchant.value = merchant.id
+    
+    console.log('🔄 Approving merchant:', merchant.id)
+    
+    // ✅ Use your actual API endpoint: POST /api/admin/approve-merchant/{id}
+    await api.post(`/api/admin/approve-merchant/${merchant.id}`)
+
+    // Update local data immediately
+    const index = allMerchants.value.findIndex(m => m.id === merchant.id)
+    if (index !== -1) {
+      allMerchants.value[index].status = 'approved'
+      allMerchants.value[index].updated_at = new Date().toISOString()
+    }
+
+    // Recalculate real stats
+    calculateMerchantStats()
+
+    $q.notify({
+      type: 'positive',
+      message: `${merchant.business_name} approved successfully!`,
+      position: 'top',
+      icon: 'check_circle',
+      timeout: 3000
+    })
+
+    // Close details dialog if open
+    if (showMerchantDetails.value) {
+      showMerchantDetails.value = false
+    }
+
+    console.log('✅ Merchant approved successfully')
+
+  } catch (err) {
+    console.error('❌ Approve merchant error:', err)
+    $q.notify({
+      type: 'negative',
+      message: 'Failed to approve merchant. Please try again.',
+      position: 'top',
+      timeout: 4000
+    })
+  } finally {
+    approvingMerchant.value = null
+  }
+}
+
+const rejectMerchant = async (merchant) => {
+  try {
+    const reason = await $q.dialog({
+      title: 'Reject Merchant',
+      message: `Are you sure you want to reject "${merchant.business_name}"?`,
+      prompt: {
+        model: '',
+        type: 'text',
+        label: 'Rejection Reason (optional)'
+      },
+      cancel: true,
+      persistent: true
+    })
+    
+    console.log('🔄 Rejecting merchant:', merchant.id)
+    
+    // Update local data (rejection endpoint not in your API docs)
+    const index = allMerchants.value.findIndex(m => m.id === merchant.id)
+    if (index !== -1) {
+      allMerchants.value[index].status = 'rejected'
+      allMerchants.value[index].updated_at = new Date().toISOString()
+      allMerchants.value[index].rejection_reason = reason || 'No reason provided'
+    }
+    
+    // Recalculate real stats
+    calculateMerchantStats()
+    
+    $q.notify({
+      type: 'warning',
+      message: `${merchant.business_name} rejected`,
+      position: 'top',
+      timeout: 3000
+    })
+    
+    // Close details dialog if open
+    if (showMerchantDetails.value) {
+      showMerchantDetails.value = false
+    }
+    
+    console.log('✅ Merchant rejected')
+    
+  } catch (error) {
+    // User cancelled or error occurred
+    if (error && error !== '') {
+      console.error('❌ Failed to reject merchant:', error)
+    }
+  }
+}
+
+const submitNewMerchant = async () => {
+  try {
+    submittingMerchant.value = true
+    
+    // Validate required fields
+    if (!newMerchant.value.business_name || !newMerchant.value.email || 
+        !newMerchant.value.bank_account_name || !newMerchant.value.bank_account_number) {
+      throw new Error('Please fill in all required fields')
+    }
+    
+    console.log('🔄 Adding new merchant...')
+
+    // ✅ Use your business registration endpoint: POST /api/merchant/register
+    const response = await api.post('/api/merchant/register', {
+      business_name: newMerchant.value.business_name,
+      email: newMerchant.value.email,
+      bank_account_name: newMerchant.value.bank_account_name,
+      bank_account_number: newMerchant.value.bank_account_number,
+      phone: newMerchant.value.phone,
+      category: newMerchant.value.category,
+      description: newMerchant.value.description
+    })
+
+    console.log('✅ New merchant added:', response.data)
+
+    // Add to local data with API response
+    const newMerchantData = {
+      id: response.data?.id || Date.now(),
+      ...newMerchant.value,
+      status: 'pending',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      ...response.data
+    }
+    
+    allMerchants.value.unshift(newMerchantData)
+    calculateMerchantStats()
+
+    // Reset form
+    newMerchant.value = {
+      business_name: '',
+      email: '',
+      bank_account_name: '',
+      bank_account_number: '',
+      phone: '',
+      category: null,
+      description: ''
+    }
+
+    showAddMerchantDialog.value = false
+
+    $q.notify({
+      type: 'positive',
+      message: 'Merchant added successfully!',
+      position: 'top',
+      icon: 'check_circle',
+      timeout: 3000
+    })
+
+  } catch (err) {
+    console.error('❌ Add merchant error:', err)
+    $q.notify({
+      type: 'negative',
+      message: err.response?.data?.message || err.message || 'Failed to add merchant',
+      position: 'top',
+      timeout: 4000
+    })
+  } finally {
+    submittingMerchant.value = false
+  }
+}
+
+const viewMerchant = (merchant) => {
+  selectedMerchant.value = merchant
+  showMerchantDetails.value = true
+}
+
+const showMerchantMenu = (merchant) => {
+  contextMenuMerchant.value = merchant
+  showMerchantContextMenu.value = true
+}
+
+const copyMerchantInfo = (merchant) => {
+  const merchantInfo = `Merchant: ${merchant.business_name}\nEmail: ${merchant.email}\nStatus: ${merchant.status}\nID: ${merchant.id}`
+  
+  navigator.clipboard.writeText(merchantInfo).then(() => {
+    $q.notify({
+      type: 'positive',
+      message: 'Merchant information copied to clipboard',
+      position: 'top'
+    })
+  }).catch(() => {
+    $q.notify({
+      type: 'negative',
+      message: 'Failed to copy to clipboard',
+      position: 'top'
+    })
+  })
+}
+
+// Utility methods
+const getStatusColor = (status) => {
+  const colors = {
+    pending: 'orange',
+    verified: 'green',
+    approved: 'green',
+    rejected: 'red',
+    suspended: 'grey'
+  }
+  return colors[status] || 'grey'
+}
+
+const getStatusIcon = (status) => {
+  const icons = {
+    pending: 'pending',
+    verified: 'verified',
+    approved: 'check_circle',
+    rejected: 'cancel',
+    suspended: 'block'
+  }
+  return icons[status] || 'help'
+}
+
+const getFilterChipColor = (filter) => {
+  const colors = {
+    all: 'blue',
+    pending: 'orange',
+    verified: 'green',
+    approved: 'green',
+    suspended: 'grey'
+  }
+  return colors[filter] || 'blue'
+}
+
+const getDefaultLogo = (businessName) => {
+  const initial = (businessName || 'M').charAt(0).toUpperCase()
+  return `https://placehold.co/100x100/121018/bdf000?text=${initial}`
+}
+
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A'
+  return new Date(dateString).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  })
+}
+
+const formatTime = (date) => {
+  return new Date(date).toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+const formatTimeAgo = (dateString) => {
+  if (!dateString) return ''
+  const now = new Date()
+  const date = new Date(dateString)
+  const diff = now - date
+  
+  if (diff < 60000) return 'Just now'
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`
+  if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`
+  return formatDate(dateString)
+}
+
+const formatDateTime = (dateString) => {
+  if (!dateString) return 'N/A'
+  return new Date(dateString).toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+const navigateTo = (path) => {
+  router.push(path)
+}
+
+const logout = async () => {
+  try {
+    // ✅ Try to use your logout endpoint: POST /api/logout
+    try {
+      await api.post('/api/logout')
+      console.log('✅ Logout API call successful')
+    } catch {
+      console.warn('⚠️ Logout API call failed, proceeding with local cleanup')
+    }
+
+    // Clear local storage
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    localStorage.removeItem('role')
+
+    // Clear axios headers
+    delete api.defaults.headers.common['Authorization']
+
+    $q.notify({
+      type: 'positive',
+      message: 'Logged out successfully',
+      position: 'top'
+    })
+
+    router.push('/login')
+  } catch (err) {
+    console.error('Logout error:', err)
+    router.push('/login')
+  }
+}
+
+// Lifecycle
+onMounted(() => {
+  loadDashboardData()
+})
+</script>
+
+<style scoped>
+.admin-dashboard-page {
+  background: linear-gradient(135deg, #0a0a0a 0%, #0f0e12 50%, #121018 100%);
+  min-height: 100vh;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(10, 10, 10, 0.95);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loading-text {
+  color: #bdf000;
+  margin-top: 20px;
+  font-size: 1.2rem;
+}
+
+.breadcrumb-section {
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(189, 240, 0, 0.1);
+}
+
+.admin-content {
+  padding: 24px;
+}
+
+/* Enhanced Welcome Section */
+.welcome-section {
+  background: linear-gradient(135deg, rgba(189, 240, 0, 0.15) 0%, rgba(189, 240, 0, 0.05) 100%);
+  border-radius: 24px;
+  padding: 40px;
+  border: 2px solid rgba(189, 240, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.welcome-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(189, 240, 0, 0.1) 0%, transparent 70%);
+  animation: rotate 60s linear infinite;
+}
+
+.welcome-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 32px;
+  position: relative;
+  z-index: 1;
+}
+
+.welcome-title {
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.highlight {
+  color: #bdf000;
+  text-shadow: 0 0 20px rgba(189, 240, 0, 0.5);
+}
+
+.welcome-subtitle {
+  font-size: 1.2rem;
+  color: #ccc;
+  margin: 12px 0 16px 0;
+}
+
+.platform-status {
+  margin-top: 16px;
+}
+
+.welcome-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  border-radius: 12px;
+  font-weight: 600;
+  padding: 12px 24px;
+  transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Enhanced KPI Cards */
+.kpi-card {
+  background: rgba(18, 18, 18, 0.95);
+  border-radius: 20px;
+  border: 1px solid rgba(189, 240, 0, 0.2);
+  transition: all 0.4s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #bdf000, #8bc34a, #4caf50);
+}
+
+.kpi-card:hover {
+  border-color: rgba(189, 240, 0, 0.4);
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(189, 240, 0, 0.3);
+}
+
+.kpi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.kpi-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: rgba(189, 240, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kpi-trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(76, 175, 80, 0.1);
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+
+.trend-value {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #4caf50;
+}
+
+.kpi-value {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 8px;
+  line-height: 1;
+}
+
+.kpi-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ccc;
+  margin-bottom: 8px;
+}
+
+.kpi-subtitle {
+  font-size: 0.9rem;
+  color: #bdf000;
+  font-weight: 500;
+}
+
+/* Enhanced Merchants Section */
+.merchants-card {
+  background: rgba(18, 18, 18, 0.95);
+  border-radius: 20px;
+  border: 1px solid rgba(189, 240, 0, 0.2);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #bdf000;
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.merchant-stats-enhanced {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.stat-card-mini {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(189, 240, 0, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(189, 240, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.stat-card-mini:hover {
+  background: rgba(189, 240, 0, 0.1);
+  border-color: rgba(189, 240, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.stat-icon-mini {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-content-mini {
+  flex: 1;
+}
+
+.stat-value-mini {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.stat-label-mini {
+  font-size: 0.8rem;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+.merchant-filters {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Enhanced Table */
+.enhanced-merchant-table {
+  background: transparent;
+}
+
+.enhanced-merchant-table :deep(.q-table__thead th) {
+  background: rgba(189, 240, 0, 0.1);
+  color: #ffffff;
+  font-weight: 700;
+  border-bottom: 2px solid rgba(189, 240, 0, 0.3);
+  padding: 16px;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.enhanced-merchant-table :deep(.q-table__tbody tr) {
+  transition: all 0.3s ease;
+}
+
+.enhanced-merchant-table :deep(.q-table__tbody tr:hover) {
+  background: rgba(189, 240, 0, 0.08);
+  transform: translateX(4px);
+}
+
+.enhanced-merchant-table :deep(.q-table__tbody td) {
+  color: #ffffff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px;
+}
+
+.business-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.business-avatar {
+  border: 2px solid rgba(189, 240, 0, 0.3);
+  border-radius: 8px;
+}
+
+.business-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.business-name {
+  font-weight: 600;
+  color: #ffffff;
+  font-size: 0.95rem;
+}
+
+.business-email {
+  font-size: 0.8rem;
+  color: #999;
+}
+
+.date-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.date-primary {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.date-secondary {
+  font-size: 0.75rem;
+  color: #bdf000;
+}
+
+.bank-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.bank-name {
+  font-weight: 500;
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+.bank-number {
+  font-size: 0.8rem;
+  color: #999;
+  font-family: monospace;
+}
+
+.status-chip {
+  font-weight: 600;
+  text-transform: capitalize;
+  border-radius: 16px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+/* Enhanced Actions Grid */
+.enhanced-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.action-card-enhanced {
+  cursor: pointer;
+  transition: all 0.4s ease;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.action-card-enhanced:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.action-background {
+  background: rgba(18, 18, 18, 0.95);
+  border: 1px solid rgba(189, 240, 0, 0.2);
+  border-radius: 20px;
+  padding: 32px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(189, 240, 0, 0.1), transparent);
+  transition: all 0.6s ease;
+}
+
+.action-card-enhanced:hover .action-background::before {
+  left: 100%;
+}
+
+.action-icon-enhanced {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  background: rgba(189, 240, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.action-card-enhanced:hover .action-icon-enhanced {
+  background: rgba(189, 240, 0, 0.2);
+  transform: scale(1.1) rotate(5deg);
+}
+
+.action-content-enhanced {
+  flex: 1;
+}
+
+.action-content-enhanced h4 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+  transition: all 0.3s ease;
+}
+
+.action-card-enhanced:hover .action-content-enhanced h4 {
+  color: #bdf000;
+}
+
+.action-content-enhanced p {
+  font-size: 0.95rem;
+  color: #ccc;
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+}
+
+.action-stats {
+  display: flex;
+  gap: 8px;
+}
+
+.stat-badge {
+  background: rgba(189, 240, 0, 0.2);
+  color: #bdf000;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.action-arrow-enhanced {
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.3s ease;
+}
+
+.action-card-enhanced:hover .action-arrow-enhanced {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Dialogs */
+.add-merchant-dialog,
+.merchant-details-dialog {
+  background: #1a1a1a;
+  color: #ffffff;
+  border-radius: 20px;
+}
+
+.add-merchant-dialog {
+  min-width: 600px;
+  max-width: 80vw;
+}
+
+.add-merchant-dialog .text-h6 {
+  color: #bdf000;
+  font-weight: 700;
+}
+
+.add-merchant-dialog :deep(.q-field__control) {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.add-merchant-dialog :deep(.q-field__control:hover) {
+  border-color: rgba(189, 240, 0, 0.3);
+}
+
+.add-merchant-dialog :deep(.q-field__native) {
+  color: #ffffff;
+}
+
+.add-merchant-dialog :deep(.q-field__label) {
+  color: #bdf000;
+}
+
+.dialog-header {
+  background: rgba(189, 240, 0, 0.1);
+  border-bottom: 1px solid rgba(189, 240, 0, 0.2);
+}
+
+.dialog-content {
+  padding: 24px;
+}
+
+.merchant-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.detail-section {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-section.full-width {
+  grid-column: 1 / -1;
+}
+
+.section-title {
+  color: #bdf000;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  border-bottom: 1px solid rgba(189, 240, 0, 0.2);
+  padding-bottom: 8px;
+}
+
+.detail-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-item:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  color: #999;
+  font-weight: 500;
+}
+
+.detail-value {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Animations */
+.animate-fade-in {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: fadeInUp 0.8s forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Lime glow effect */
+.lime-glow {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(189, 240, 0, 0.2), 0 0 20px rgba(189, 240, 0, 0.15);
+}
+
+.section-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 32px 0;
+  position: relative;
+  padding-left: 16px;
+}
+
+.section-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 24px;
+  background: linear-gradient(180deg, #bdf000, #8bc34a);
+  border-radius: 2px;
+}
+
+.text-grey-6 {
+  color: #999;
+}
+
+.error-message {
+  margin-top: 24px;
+}
+
+/* Responsive Design */
+@media (max-width: 1400px) {
+  .enhanced-actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .welcome-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .welcome-title {
+    font-size: 2.2rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .enhanced-actions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .merchant-details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-content {
+    padding: 16px;
+  }
+
+  .welcome-section {
+    padding: 24px;
+  }
+
+  .welcome-title {
+    font-size: 1.8rem;
+  }
+
+  .kpi-section .row {
+    flex-direction: column;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .add-merchant-dialog {
+    min-width: 90vw;
+    margin: 16px;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .merchant-filters .row {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .action-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+/* Enhanced focus states */
+.kpi-card:focus-visible,
+.action-card-enhanced:focus-visible {
+  outline: 2px solid rgba(189, 240, 0, 0.5);
+  outline-offset: 2px;
+}
+
+/* Performance optimizations */
+.kpi-card,
+.action-card-enhanced {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+</style>

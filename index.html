@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Quasar App</title>
+    <meta name="description" content="A Quasar Project" />
+
+    <!-- Accessibility & usability -->
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+
+    <!-- ✅ Proper viewport -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0<% if (ctx.mode.cordova || ctx.mode.capacitor) { %>, viewport-fit=cover<% } %>"
+    />
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="128x128" href="icons/favicon-128x128.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="icons/favicon-96x96.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  </head>
+
+  <body>
+    <!-- Quasar mount point -->
+    <div id="app"></div>
+
+    <!-- 🔑 Quasar requires this placeholder -->
+    <!-- quasar:entry-point -->
+  </body>
+</html>
