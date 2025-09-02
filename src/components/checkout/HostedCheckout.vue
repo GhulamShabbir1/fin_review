@@ -2,8 +2,8 @@
   <div class="hosted-checkout">
     <!-- Loading State -->
     <div v-if="loading" class="loading-container">
-      <div class="loading-content">
-        <q-spinner-dots size="50px" color="lime" />
+      <div class="loading-content floating-animation">
+        <q-spinner-dots size="50px" color="lime" class="pulse-animation" />
         <div class="loading-text">Loading secure checkout...</div>
         <div class="loading-subtext">Preparing your payment environment</div>
       </div>
@@ -12,9 +12,9 @@
     <!-- Checkout Form -->
     <div v-else-if="!paymentComplete" class="checkout-form-container">
       <!-- Merchant Header -->
-      <div class="merchant-header">
+      <div class="merchant-header glow-animation">
         <div class="merchant-info">
-          <q-avatar size="48px" square class="merchant-logo">
+          <q-avatar size="48px" square class="merchant-logo floating-animation">
             <img :src="merchantData.logo_url || placeholderLogo" :alt="merchantData.business_name" />
           </q-avatar>
           <div class="merchant-details">
@@ -22,14 +22,14 @@
             <p class="merchant-description">{{ merchantData.description || 'Secure Payment Portal' }}</p>
           </div>
         </div>
-        <div class="security-badge">
+        <div class="security-badge pulse-animation">
           <q-icon name="security" color="green" />
           <span>SSL Secured</span>
         </div>
       </div>
 
       <!-- Payment Summary -->
-      <div class="payment-summary">
+      <div class="payment-summary floating-animation" style="animation-delay: 0.1s">
         <div class="summary-header">
           <h3>Payment Summary</h3>
         </div>
@@ -50,7 +50,7 @@
       </div>
 
       <!-- Payment Form -->
-      <div class="payment-form">
+      <div class="payment-form floating-animation" style="animation-delay: 0.2s">
         <h3>Payment Details</h3>
         
         <!-- Payment Method Selection -->
@@ -63,6 +63,7 @@
               @click="selectedMethod = method.id"
               flat
               no-caps
+              class="pulse-on-hover"
             >
               <q-icon :name="method.icon" class="q-mr-sm" />
               {{ method.label }}
@@ -73,7 +74,7 @@
           <div v-if="selectedMethod === 'card'" class="method-form">
             <q-form @submit.prevent="processPayment" class="card-form">
               <div class="form-row">
-                <div class="form-group full-width">
+                <div class="form-group full-width floating-animation" style="animation-delay: 0.3s">
                   <label>Card Number</label>
                   <q-input
                     v-model="cardForm.number"
@@ -84,6 +85,7 @@
                     :error="!!errors.number"
                     :error-message="errors.number"
                     @input="validateCardNumber"
+                    class="modern-input"
                   >
                     <template v-slot:append>
                       <q-icon :name="cardBrandIcon" :color="cardBrandColor" size="sm" />
@@ -93,7 +95,7 @@
               </div>
 
               <div class="form-row">
-                <div class="form-group">
+                <div class="form-group floating-animation" style="animation-delay: 0.4s">
                   <label>Cardholder Name</label>
                   <q-input
                     v-model="cardForm.name"
@@ -103,9 +105,10 @@
                     :error="!!errors.name"
                     :error-message="errors.name"
                     @input="validateCardName"
+                    class="modern-input"
                   />
                 </div>
-                <div class="form-group">
+                <div class="form-group floating-animation" style="animation-delay: 0.5s">
                   <label>Expiry Date</label>
                   <q-input
                     v-model="cardForm.expiry"
@@ -116,9 +119,10 @@
                     :error="!!errors.expiry"
                     :error-message="errors.expiry"
                     @input="validateExpiry"
+                    class="modern-input"
                   />
                 </div>
-                <div class="form-group">
+                <div class="form-group floating-animation" style="animation-delay: 0.6s">
                   <label>CVC</label>
                   <q-input
                     v-model="cardForm.cvc"
@@ -129,12 +133,13 @@
                     :error="!!errors.cvc"
                     :error-message="errors.cvc"
                     @input="validateCvc"
+                    class="modern-input"
                   />
                 </div>
               </div>
 
               <div class="form-row">
-                <div class="form-group full-width">
+                <div class="form-group full-width floating-animation" style="animation-delay: 0.7s">
                   <label>Billing Address</label>
                   <q-input
                     v-model="cardForm.address"
@@ -143,14 +148,15 @@
                     dense
                     :error="!!errors.address"
                     :error-message="errors.address"
+                    class="modern-input"
                   />
                 </div>
               </div>
 
-              <div class="form-actions">
+              <div class="form-actions floating-animation" style="animation-delay: 0.8s">
                 <q-btn
                   type="submit"
-                  class="pay-button"
+                  class="pay-button pulse-on-hover"
                   :loading="processing"
                   :disable="!isFormValid"
                   label="Pay Now"
@@ -163,15 +169,15 @@
 
           <!-- Bank Transfer Form -->
           <div v-else-if="selectedMethod === 'bank'" class="method-form">
-            <div class="bank-transfer-info">
-              <q-icon name="account_balance" size="64px" color="lime" />
+            <div class="bank-transfer-info floating-animation">
+              <q-icon name="account_balance" size="64px" color="lime" class="pulse-animation" />
               <h4>Bank Transfer</h4>
               <p>Complete your payment using bank transfer</p>
               <q-btn
                 color="lime"
                 label="Get Bank Details"
                 @click="getBankDetails"
-                class="q-mt-md"
+                class="q-mt-md pulse-on-hover"
               />
             </div>
           </div>
@@ -182,7 +188,8 @@
               <div 
                 v-for="wallet in walletOptions" 
                 :key="wallet.id"
-                class="wallet-option"
+                class="wallet-option floating-animation pulse-on-hover"
+                :style="`animation-delay: ${0.3 + walletOptions.indexOf(wallet) * 0.1}s`"
                 @click="selectWallet(wallet.id)"
               >
                 <q-icon :name="wallet.icon" size="32px" :color="wallet.color" />
@@ -194,9 +201,9 @@
       </div>
 
       <!-- Security Notice -->
-      <div class="security-notice">
+      <div class="security-notice floating-animation" style="animation-delay: 0.9s">
         <div class="security-content">
-          <q-icon name="security" color="green" />
+          <q-icon name="security" color="green" class="pulse-animation" />
           <span>Your payment information is encrypted and secure</span>
         </div>
       </div>
@@ -204,8 +211,8 @@
 
     <!-- Payment Processing -->
     <div v-else-if="processing" class="processing-container">
-      <div class="processing-content">
-        <q-spinner-dots size="50px" color="lime" />
+      <div class="processing-content floating-animation">
+        <q-spinner-dots size="50px" color="lime" class="pulse-animation" />
         <div class="processing-text">Processing your payment...</div>
         <div class="processing-subtext">Please wait while we secure your transaction</div>
         <div class="processing-progress">
@@ -213,7 +220,7 @@
             :value="processingProgress" 
             color="lime" 
             size="md"
-            class="q-mt-md"
+            class="q-mt-md floating-animation"
           />
         </div>
       </div>
@@ -221,11 +228,11 @@
 
     <!-- Payment Complete -->
     <div v-else class="payment-complete">
-      <div class="complete-content">
-        <q-icon name="check_circle" size="64px" color="green" />
-        <h2>Payment Successful!</h2>
-        <p>Your transaction has been processed successfully</p>
-        <div class="transaction-details">
+      <div class="complete-content floating-animation">
+        <q-icon name="check_circle" size="64px" color="green" class="pulse-animation" />
+        <h2 class="floating-animation" style="animation-delay: 0.1s">Payment Successful!</h2>
+        <p class="floating-animation" style="animation-delay: 0.2s">Your transaction has been processed successfully</p>
+        <div class="transaction-details floating-animation" style="animation-delay: 0.3s">
           <div class="detail-row">
             <span class="label">Transaction ID:</span>
             <span class="value">{{ transactionId }}</span>
@@ -243,22 +250,24 @@
           color="lime"
           label="Return to Merchant"
           @click="returnToMerchant"
-          class="q-mt-lg"
+          class="q-mt-lg pulse-on-hover floating-animation"
+          style="animation-delay: 0.4s"
         />
       </div>
     </div>
 
     <!-- Error State -->
     <div v-if="error" class="error-container">
-      <div class="error-content">
-        <q-icon name="error" size="64px" color="red" />
-        <h2>Payment Failed</h2>
-        <p>{{ error }}</p>
+      <div class="error-content floating-animation">
+        <q-icon name="error" size="64px" color="red" class="pulse-animation" />
+        <h2 class="floating-animation" style="animation-delay: 0.1s">Payment Failed</h2>
+        <p class="floating-animation" style="animation-delay: 0.2s">{{ error }}</p>
         <q-btn
           color="lime"
           label="Try Again"
           @click="retryPayment"
-          class="q-mt-lg"
+          class="q-mt-lg pulse-on-hover floating-animation"
+          style="animation-delay: 0.3s"
         />
       </div>
     </div>
@@ -513,448 +522,641 @@ const returnToMerchant = () => {
   if (merchantData.value.return_url) {
     window.location.href = merchantData.value.return_url
   } else {
-        window.close()
-      }
-    }
+    window.close()
+  }
+}
 
-    const formatCurrency = (amount) => {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD'
-      }).format(amount / 100)
-    }
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD'
+  }).format(amount / 100)
+}
 
-    const formatDate = (date) => {
-      return date.toLocaleDateString()
-    }
+const formatDate = (date) => {
+  return date.toLocaleDateString()
+}
 
-    // Lifecycle
-    onMounted(() => {
-      loadMerchantData()
-    })
+// Lifecycle
+onMounted(() => {
+  loadMerchantData()
+})
 
-    // Watch for route changes
-    watch(() => route.query, (newQuery) => {
-      if (newQuery.amount) {
-        amount.value = parseInt(newQuery.amount)
-      }
-      if (newQuery.description) {
-        description.value = newQuery.description
-      }
-    })
-  </script>
+// Watch for route changes
+watch(() => route.query, (newQuery) => {
+  if (newQuery.amount) {
+    amount.value = parseInt(newQuery.amount)
+  }
+  if (newQuery.description) {
+    description.value = newQuery.description
+  }
+})
+</script>
 
-  <style scoped>
+<style scoped>
+.hosted-checkout {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0a0a 0%, #0f0e12 50%, #121018 100%);
+  color: #ffffff;
+  padding: 24px;
+}
+
+/* Loading Container */
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+}
+
+.loading-content {
+  text-align: center;
+}
+
+.loading-text {
+  font-size: 1.5rem;
+  margin: 24px 0 8px 0;
+  color: #ffffff;
+}
+
+.loading-subtext {
+  color: #cfcfcf;
+  font-size: 1rem;
+}
+
+/* Checkout Form Container */
+.checkout-form-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Merchant Header */
+.merchant-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.merchant-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(189, 240, 0, 0.1), transparent);
+  transition: left 0.7s ease;
+}
+
+.merchant-header:hover::before {
+  left: 100%;
+}
+
+.merchant-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.merchant-logo {
+  border: 2px solid rgba(189, 240, 0.3);
+}
+
+.merchant-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  color: #bdf000;
+}
+
+.merchant-description {
+  color: #cfcfcf;
+  margin: 0;
+}
+
+.security-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #4caf50;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Payment Summary */
+.payment-summary {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.summary-header h3 {
+  margin: 0 0 16px 0;
+  color: #bdf000;
+}
+
+.summary-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label {
+  color: #cfcfcf;
+}
+
+.value {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* Payment Form */
+.payment-form {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.payment-form h3 {
+  margin: 0 0 20px 0;
+  color: #bdf000;
+}
+
+/* Payment Methods */
+.method-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.method-tab {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.method-tab:hover {
+  background: rgba(189, 240, 0.1);
+}
+
+.method-tab.active {
+  background: rgba(189, 240, 0.2);
+  border-color: #bdf000;
+  color: #bdf000;
+}
+
+/* Method Forms */
+.method-form {
+  padding: 24px 0;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  flex: 1;
+}
+
+.form-group.full-width {
+  flex: 1 1 100%;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.form-group :deep(.q-field__control) {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-radius: 8px;
+}
+
+.form-group :deep(.q-field__native) {
+  color: #ffffff !important;
+}
+
+.form-group :deep(.q-field__label) {
+  color: #cfcfcf !important;
+}
+
+/* Modern Input Styling */
+.modern-input :deep(.q-field__control) {
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.modern-input :deep(.q-field__control:hover) {
+  border-color: rgba(189, 240, 0, 0.3);
+}
+
+.modern-input :deep(.q-field__control:focus-within) {
+  border-color: #bdf000;
+  box-shadow: 0 0 0 2px rgba(189, 240, 0, 0.2);
+}
+
+/* Form Actions */
+.form-actions {
+  margin-top: 32px;
+  text-align: center;
+}
+
+.pay-button {
+  background: linear-gradient(135deg, #bdf000, #a0d000);
+  color: #09050d;
+  font-weight: 700;
+  border-radius: 12px;
+  padding: 16px 32px;
+  font-size: 1.1rem;
+  min-width: 200px;
+  position: relative;
+  overflow: hidden;
+}
+
+.pay-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.7s ease;
+}
+
+.pay-button:hover::before {
+  left: 100%;
+}
+
+.pay-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(189, 240, 0.3);
+}
+
+.pay-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Bank Transfer */
+.bank-transfer-info {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.bank-transfer-info h4 {
+  margin: 16px 0 8px 0;
+  color: #bdf000;
+}
+
+.bank-transfer-info p {
+  color: #cfcfcf;
+  margin-bottom: 24px;
+}
+
+/* Wallet Options */
+.wallet-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 0;
+}
+
+.wallet-option {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.wallet-option:hover {
+  background: rgba(189, 240, 0.1);
+  border-color: rgba(189, 240, 0.3);
+  transform: translateY(-2px);
+}
+
+.wallet-option span {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+/* Security Notice */
+.security-notice {
+  background: rgba(0, 255, 0, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  border: 1px solid rgba(0, 255, 0, 0.2);
+}
+
+.security-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #4caf50;
+  font-size: 0.875rem;
+}
+
+/* Processing Container */
+.processing-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+}
+
+.processing-content {
+  text-align: center;
+}
+
+.processing-text {
+  font-size: 1.5rem;
+  margin: 24px 0 8px 0;
+  color: #ffffff;
+}
+
+.processing-subtext {
+  color: #cfcfcf;
+  font-size: 1rem;
+  margin-bottom: 24px;
+}
+
+/* Payment Complete */
+.payment-complete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+}
+
+.complete-content {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 48px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 500px;
+  position: relative;
+  overflow: hidden;
+}
+
+.complete-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(76, 175, 80, 0.1), transparent);
+  transition: left 0.7s ease;
+}
+
+.complete-content:hover::before {
+  left: 100%;
+}
+
+.complete-content h2 {
+  color: #4caf50;
+  margin: 16px 0 8px 0;
+}
+
+.complete-content p {
+  color: #cfcfcf;
+  margin-bottom: 24px;
+}
+
+.transaction-details {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.detail-row:last-child {
+  margin-bottom: 0;
+}
+
+.detail-row .label {
+  color: #cfcfcf;
+}
+
+.detail-row .value {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+/* Error Container */
+.error-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+}
+
+.error-content {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 48px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 500px;
+  position: relative;
+  overflow: hidden;
+}
+
+.error-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(244, 67, 54, 0.1), transparent);
+  transition: left 0.7s ease;
+}
+
+.error-content:hover::before {
+  left: 100%;
+}
+
+.error-content h2 {
+  color: #f44336;
+  margin: 16px 0 8px 0;
+}
+
+.error-content p {
+  color: #cfcfcf;
+  margin-bottom: 24px;
+}
+
+/* Animation Classes */
+/* Floating animation */
+.floating-animation {
+  animation: floating 3s ease-in-out infinite;
+}
+
+@keyframes floating {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* Pulse animation */
+.pulse-animation {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+/* Glow animation */
+.glow-animation {
+  animation: glow 4s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 5px rgba(189, 240, 0, 0.2), 0 0 10px rgba(189, 240, 0, 0.1);
+  }
+  to {
+    box-shadow: 0 0 15px rgba(189, 240, 0, 0.3), 0 0 20px rgba(189, 240, 0, 0.2);
+  }
+}
+
+/* Pulse on hover */
+.pulse-on-hover:hover {
+  animation: pulse 0.6s ease;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
   .hosted-checkout {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #0a0a0a 0%, #0f0e12 50%, #121018 100%);
-    color: #ffffff;
-    padding: 24px;
+    padding: 16px;
   }
 
-  /* Loading Container */
-  .loading-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 80vh;
-  }
-
-  .loading-content {
+  .merchant-header {
+    flex-direction: column;
+    gap: 16px;
     text-align: center;
   }
 
-  .loading-text {
-    font-size: 1.5rem;
-    margin: 24px 0 8px 0;
-    color: #ffffff;
-  }
-
-  .loading-subtext {
-    color: #cfcfcf;
-    font-size: 1rem;
-  }
-
-  /* Checkout Form Container */
-  .checkout-form-container {
-    max-width: 800px;
-    margin: 0 auto;
-  }
-
-  /* Merchant Header */
-  .merchant-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 16px;
-    padding: 24px;
-    margin-bottom: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .merchant-info {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .merchant-logo {
-    border: 2px solid rgba(189, 240, 0.3);
-  }
-
-  .merchant-name {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 0 0 4px 0;
-    color: #bdf000;
-  }
-
-  .merchant-description {
-    color: #cfcfcf;
-    margin: 0;
-  }
-
-  .security-badge {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #4caf50;
-    font-size: 0.875rem;
-    font-weight: 500;
-  }
-
-  /* Payment Summary */
-  .payment-summary {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 16px;
-    padding: 24px;
-    margin-bottom: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .summary-header h3 {
-    margin: 0 0 16px 0;
-    color: #bdf000;
-  }
-
-  .summary-content {
-    display: flex;
+  .form-row {
     flex-direction: column;
     gap: 12px;
   }
 
-  .summary-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .label {
-    color: #cfcfcf;
-  }
-
-  .value {
-    font-weight: 600;
-    color: #ffffff;
-  }
-
-  /* Payment Form */
-  .payment-form {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 16px;
-    padding: 24px;
-    margin-bottom: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .payment-form h3 {
-    margin: 0 0 20px 0;
-    color: #bdf000;
-  }
-
-  /* Payment Methods */
   .method-tabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-  }
-
-  .method-tab {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    padding: 12px 16px;
-    transition: all 0.2s ease;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .method-tab:hover {
-    background: rgba(189, 240, 0.1);
-  }
-
-  .method-tab.active {
-    background: rgba(189, 240, 0.2);
-    border-color: #bdf000;
-    color: #bdf000;
-  }
-
-  /* Method Forms */
-  .method-form {
-    padding: 24px 0;
-  }
-
-  .form-row {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 20px;
-  }
-
-  .form-group {
-    flex: 1;
-  }
-
-  .form-group.full-width {
-    flex: 1 1 100%;
-  }
-
-  .form-group label {
-    display: block;
-    margin-bottom: 8px;
-    color: #ffffff;
-    font-weight: 500;
-  }
-
-  .form-group :deep(.q-field__control) {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border-radius: 8px;
-  }
-
-  .form-group :deep(.q-field__native) {
-    color: #ffffff !important;
-  }
-
-  .form-group :deep(.q-field__label) {
-    color: #cfcfcf !important;
-  }
-
-  /* Form Actions */
-  .form-actions {
-    margin-top: 32px;
-    text-align: center;
+    justify-content: center;
   }
 
   .pay-button {
-    background: linear-gradient(135deg, #bdf000, #a0d000);
-    color: #09050d;
-    font-weight: 700;
-    border-radius: 12px;
-    padding: 16px 32px;
-    font-size: 1.1rem;
-    min-width: 200px;
+    min-width: 100%;
   }
+}
 
-  .pay-button:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(189, 240, 0.3);
-  }
+/* Custom scrollbar */
+.hosted-checkout::-webkit-scrollbar {
+  width: 8px;
+}
 
-  .pay-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
+.hosted-checkout::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
 
-  /* Bank Transfer */
-  .bank-transfer-info {
-    text-align: center;
-    padding: 48px 24px;
-  }
+.hosted-checkout::-webkit-scrollbar-thumb {
+  background: rgba(189, 240, 0, 0.3);
+  border-radius: 4px;
+}
 
-  .bank-transfer-info h4 {
-    margin: 16px 0 8px 0;
-    color: #bdf000;
-  }
+.hosted-checkout::-webkit-scrollbar-thumb:hover {
+  background: rgba(189, 240, 0, 0.5);
+}
 
-  .bank-transfer-info p {
-    color: #cfcfcf;
-    margin-bottom: 24px;
-  }
+/* Enhanced focus states */
+.pay-button:focus {
+  outline: 2px solid rgba(189, 240, 0, 0.5);
+  outline-offset: 2px;
+  animation: pulse 0.6s ease;
+}
 
-  /* Wallet Options */
-  .wallet-options {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 24px 0;
-  }
+/* Loading animation enhancements */
+:deep(.q-spinner) {
+  animation: spin 1s linear infinite;
+}
 
-  .wallet-option {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 
-  .wallet-option:hover {
-    background: rgba(189, 240, 0.1);
-    border-color: rgba(189, 240, 0.3);
-  }
+/* Glow effect for cards */
+.method-tab {
+  position: relative;
+}
 
-  .wallet-option span {
-    color: #ffffff;
-    font-weight: 500;
-  }
+.method-tab::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(189, 240, 0, 0.5), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
 
-  /* Security Notice */
-  .security-notice {
-    background: rgba(0, 255, 0, 0.1);
-    border-radius: 12px;
-    padding: 16px;
-    text-align: center;
-    border: 1px solid rgba(0, 255, 0, 0.2);
-  }
-
-  .security-content {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    color: #4caf50;
-    font-size: 0.875rem;
-  }
-
-  /* Processing Container */
-  .processing-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 80vh;
-  }
-
-  .processing-content {
-    text-align: center;
-  }
-
-  .processing-text {
-    font-size: 1.5rem;
-    margin: 24px 0 8px 0;
-    color: #ffffff;
-  }
-
-  .processing-subtext {
-    color: #cfcfcf;
-    font-size: 1rem;
-    margin-bottom: 24px;
-  }
-
-  /* Payment Complete */
-  .payment-complete {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 80vh;
-  }
-
-  .complete-content {
-    text-align: center;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 16px;
-    padding: 48px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    max-width: 500px;
-  }
-
-  .complete-content h2 {
-    color: #4caf50;
-    margin: 16px 0 8px 0;
-  }
-
-  .complete-content p {
-    color: #cfcfcf;
-    margin-bottom: 24px;
-  }
-
-  .transaction-details {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 24px;
-  }
-
-  .detail-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-  }
-
-  .detail-row:last-child {
-    margin-bottom: 0;
-  }
-
-  .detail-row .label {
-    color: #cfcfcf;
-  }
-
-  .detail-row .value {
-    color: #ffffff;
-    font-weight: 500;
-  }
-
-  /* Error Container */
-  .error-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 80vh;
-  }
-
-  .error-content {
-    text-align: center;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 16px;
-    padding: 48px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    max-width: 500px;
-  }
-
-  .error-content h2 {
-    color: #f44336;
-    margin: 16px 0 8px 0;
-  }
-
-  .error-content p {
-    color: #cfcfcf;
-    margin-bottom: 24px;
-  }
-
-  /* Responsive */
-  @media (max-width: 768px) {
-    .hosted-checkout {
-      padding: 16px;
-    }
-
-    .merchant-header {
-      flex-direction: column;
-      gap: 16px;
-      text-align: center;
-    }
-
-    .form-row {
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .method-tabs {
-      justify-content: center;
-    }
-
-    .pay-button {
-      min-width: 100%;
-    }
-  }
-  </style>
+.method-tab:hover::before {
+  opacity: 1;
+}
+</style>

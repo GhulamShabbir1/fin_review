@@ -108,20 +108,57 @@ export const useMerchantsStore = defineStore('merchant', () => {
       loading.value = true
       error.value = null
 
-      // ✅ This endpoint doesn't exist in your API - using fallback
-      console.warn('⚠️ Business profile endpoint not available, using fallback data')
+      // ✅ Use the actual API endpoint to fetch fresh business info
+      console.log('🔄 Fetching fresh business info from backend...')
+      const { data } = await api.get('/api/merchant/profile')
 
-      // ✅ Create fallback business info
+      console.log('✅ Fresh business data received:', data)
+
+      // ✅ Update businessInfo with fresh data
+      businessInfo.value = data
+
+      // ✅ Update localStorage with fresh data
       const auth = useAuthStore()
-      businessInfo.value = {
-        business_name: 'Sample Business',
-        email: auth.user?.email || 'business@example.com',
-        bank_account_name: 'Sample Account',
-        status: 'pending'
+      const userId = auth.user?.id || auth.user?.email || 'default'
+      const storageKey = `businessData_${userId}`
+
+      // Get existing businesses from localStorage
+      const existingData = localStorage.getItem(storageKey)
+      let businesses = []
+      if (existingData) {
+        businesses = JSON.parse(existingData)
       }
+
+      // Update the first business with fresh data (assuming single business for now)
+      if (businesses.length > 0) {
+        businesses[0] = { ...businesses[0], ...data }
+      } else {
+        // If no businesses in localStorage, add this one
+        businesses.push(data)
+      }
+
+      localStorage.setItem(storageKey, JSON.stringify(businesses))
 
       return { success: true, business: businessInfo.value }
     } catch (error) {
+      console.error('❌ Error fetching business info:', error)
+
+      // ✅ Fallback to localStorage data if API fails
+      const auth = useAuthStore()
+      const userId = auth.user?.id || auth.user?.email || 'default'
+      const storageKey = `businessData_${userId}`
+      const storedData = localStorage.getItem(storageKey)
+
+      if (storedData) {
+        const businesses = JSON.parse(storedData)
+        if (businesses.length > 0) {
+          businessInfo.value = businesses[0]
+          console.log('📝 Using cached business data as fallback')
+          return { success: true, business: businessInfo.value }
+        }
+      }
+
+      // ✅ Final fallback
       const errorMessage = error.response?.data?.message || 'Failed to fetch business info'
       error.value = errorMessage
       return { success: false, message: errorMessage }

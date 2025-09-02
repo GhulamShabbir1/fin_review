@@ -131,8 +131,8 @@
             v-if="status === 'pending' || status === 'under_review'" 
             color="lime" 
             icon="refresh" 
-            label="Check Status" 
-            @click="checkStatus"
+            label="Refresh Status" 
+            @click="refreshStatus"
             :loading="checkingStatus"
             class="action-btn primary-action"
           />
@@ -156,11 +156,11 @@
           />
           
           <q-btn 
-            v-if="status === 'approved'" 
+            v-if="status === 'approved' || status === 'verified'" 
             color="blue" 
             icon="dashboard" 
-            label="Go to Dashboard" 
-            @click="goToDashboard"
+            label="Start Payments" 
+            @click="goToPayments"
             class="action-btn primary-action"
           />
           
@@ -246,16 +246,6 @@
                 <li v-for="req in selectedStep.requirements" :key="req">{{ req }}</li>
               </ul>
             </div>
-            
-            <div class="step-timeline" v-if="selectedStep.timeline">
-              <h6>Timeline:</h6>
-              <div class="mini-timeline">
-                <div v-for="event in selectedStep.timeline" :key="event.id" class="mini-timeline-item">
-                  <q-icon :name="event.icon" :color="event.color" size="14px" />
-                  <span>{{ event.title }} - {{ formatDate(event.timestamp) }}</span>
-                </div>
-              </div>
-            </div>
           </div>
         </q-card-section>
         
@@ -274,10 +264,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
-import { api } from '../../boot/axios'
+
 
 const router = useRouter()
 const $q = useQuasar()
@@ -426,8 +416,11 @@ const enhancedStatusTimeline = computed(() => {
       color: 'green',
       type: 'success',
       user: 'System'
-    },
-    {
+    }
+  ]
+  
+  if (props.progress >= 40) {
+    timeline.push({
       title: 'Business Information Submitted',
       description: 'Business details and banking information provided',
       timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
@@ -435,8 +428,8 @@ const enhancedStatusTimeline = computed(() => {
       color: 'blue',
       type: 'info',
       user: props.merchantId ? `Merchant ${props.merchantId}` : 'You'
-    }
-  ]
+    })
+  }
   
   if (props.status === 'under_review') {
     timeline.push({
@@ -450,7 +443,7 @@ const enhancedStatusTimeline = computed(() => {
     })
   }
   
-  if (props.status === 'approved') {
+  if (props.status === 'approved' || props.status === 'verified') {
     timeline.push({
       title: 'Account Approved',
       description: 'Your merchant account has been approved and activated',
@@ -477,55 +470,61 @@ const enhancedStatusTimeline = computed(() => {
   return timeline.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
 })
 
-// Methods
-const checkStatus = async () => {
-  try {
-    checkingStatus.value = true
-    console.log('🔄 Checking merchant status...')
+// ✅ Watch for status changes from parent component
+watch(() => props.status, (newStatus, oldStatus) => {
+  if (newStatus !== oldStatus) {
+    console.log('📬 Status prop changed in MerchantStatusCard:', oldStatus, '→', newStatus)
+    lastUpdated.value = new Date()
     
-    // ✅ Try to check status via API (endpoint not in your docs)
-    try {
-      const response = await api.get('/api/merchant/status')
-      
-      const newStatus = response.data?.status || props.status
-      const newProgress = response.data?.progress || props.progress
-      
-      if (newStatus !== props.status || newProgress !== props.progress) {
-        emit('status-updated', {
-          status: newStatus,
-          progress: newProgress,
-          lastUpdated: new Date()
-        })
-        
-        $q.notify({
-          type: 'positive',
-          message: 'Status updated successfully',
-          position: 'top'
-        })
-      } else {
-        $q.notify({
-          type: 'info',
-          message: 'No status changes at this time',
-          position: 'top'
-        })
-      }
-      
-      lastUpdated.value = new Date()
-      
-    } catch {
-      console.warn('⚠️ Status check API not available')
+    // Show notification for status changes
+    if (newStatus === 'approved' || newStatus === 'verified') {
       $q.notify({
-        type: 'info',
-        message: 'Status check completed - no changes detected',
-        position: 'top'
+        type: 'positive',
+        message: '🎉 Your merchant account has been approved!',
+        position: 'top',
+        icon: 'check_circle',
+        timeout: 8000
+      })
+    } else if (newStatus === 'rejected') {
+      $q.notify({
+        type: 'negative',
+        message: '❌ Your application was rejected. Please update your information.',
+        position: 'top',
+        icon: 'cancel',
+        timeout: 8000
       })
     }
+  }
+})
+
+// Methods - ✅ REMOVED ALL NON-EXISTENT API CALLS
+const refreshStatus = async () => {
+  try {
+    checkingStatus.value = true
+    console.log('🔄 Refreshing status from MerchantStatusCard...')
+    
+    // ✅ Simply emit to parent to trigger status refresh
+    // Parent component will handle the actual API calls
+    emit('check-status', {
+      merchantId: props.merchantId,
+      currentStatus: props.status,
+      timestamp: new Date()
+    })
+    
+    $q.notify({
+      type: 'info',
+      message: 'Status refresh requested. Please wait for updates...',
+      position: 'top',
+      timeout: 3000
+    })
+    
+    lastUpdated.value = new Date()
     
   } catch (error) {
-    console.error('❌ Status check error:', error)
+    console.error('❌ Status refresh error:', error)
     $q.notify({
       type: 'negative',
-      message: 'Failed to check status',
+      message: 'Failed to refresh status. Please try again.',
       position: 'top'
     })
   } finally {
@@ -543,8 +542,8 @@ const contactSupport = () => {
   router.push('/support')
 }
 
-const goToDashboard = () => {
-  router.push('/dashboard')
+const goToPayments = () => {
+  router.push('/checkout')
 }
 
 const toggleTimeline = () => {
@@ -603,6 +602,7 @@ const handleRequirement = (requirement) => {
 const getStatusMainIcon = (status) => {
   const icons = {
     approved: 'verified',
+    verified: 'verified',
     pending: 'pending',
     rejected: 'cancel',
     suspended: 'block',
@@ -614,6 +614,7 @@ const getStatusMainIcon = (status) => {
 const getStatusColor = (status) => {
   const colors = {
     approved: 'green',
+    verified: 'green',
     pending: 'orange',
     rejected: 'red',
     suspended: 'red',
@@ -625,6 +626,7 @@ const getStatusColor = (status) => {
 const getStatusIcon = (status) => {
   const icons = {
     approved: 'check_circle',
+    verified: 'verified',
     pending: 'pending',
     rejected: 'cancel',
     suspended: 'block',
@@ -636,6 +638,7 @@ const getStatusIcon = (status) => {
 const getStatusLabel = (status) => {
   const labels = {
     approved: 'Approved',
+    verified: 'Verified',
     pending: 'Pending Review',
     rejected: 'Rejected',
     suspended: 'Suspended',
@@ -647,6 +650,7 @@ const getStatusLabel = (status) => {
 const getStatusDescription = (status) => {
   const descriptions = {
     approved: 'Congratulations! Your merchant account has been approved and you can start accepting payments.',
+    verified: 'Your account is fully verified and active. You can accept payments and access all features.',
     pending: 'Your application is being reviewed by our team. This process typically takes 24-48 hours.',
     rejected: 'Your application was not approved. Please review the feedback and update your information.',
     suspended: 'Your account has been temporarily suspended. Please contact our support team for assistance.',
@@ -717,21 +721,14 @@ const formatDateTime = (date) => {
   })
 }
 
-const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric'
-  })
-}
+
 
 // Lifecycle
 onMounted(() => {
-  // Auto-refresh status every 5 minutes
-  setInterval(() => {
-    if (props.status === 'pending' || props.status === 'under_review') {
-      checkStatus()
-    }
-  }, 5 * 60 * 1000)
+  console.log('✅ MerchantStatusCard mounted with status:', props.status)
+  
+  // ✅ REMOVED: No more auto API calls that don't exist
+  // Status updates will come from parent component via props
 })
 </script>
 
@@ -1205,8 +1202,7 @@ onMounted(() => {
   font-size: 0.9rem;
 }
 
-.step-requirements h6,
-.step-timeline h6 {
+.step-requirements h6 {
   color: #bdf000;
   margin: 16px 0 8px 0;
 }
@@ -1214,20 +1210,6 @@ onMounted(() => {
 .step-requirements ul {
   color: #cfcfcf;
   padding-left: 20px;
-}
-
-.mini-timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.mini-timeline-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #cfcfcf;
-  font-size: 0.85rem;
 }
 
 /* Lime glow effect */

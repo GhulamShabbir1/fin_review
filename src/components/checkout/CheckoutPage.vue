@@ -19,14 +19,14 @@
           icon="arrow_back"
           color="lime"
           @click="goBack"
-          class="back-btn animate-fade-in"
+          class="back-btn animate-fade-in floating-animation"
         />
         <div class="header-text animate-fade-in" style="animation-delay: 0.1s">
           <h1 class="page-title">Secure Checkout</h1>
           <p class="page-subtitle">Complete your payment securely</p>
         </div>
         <div class="header-security animate-fade-in" style="animation-delay: 0.2s">
-          <q-icon name="lock" color="lime" size="20px" />
+          <q-icon name="lock" color="lime" size="20px" class="pulse-animation" />
           <span>Secure Connection</span>
         </div>
       </div>
@@ -40,7 +40,7 @@
             :amount="paymentDetails.amount"
             :order-details="orderDetails"
             @branding-loaded="onBrandingLoaded"
-            class="animate-fade-in"
+            class="animate-fade-in floating-animation"
             style="animation-delay: 0.3s"
           />
           
@@ -49,14 +49,14 @@
             v-model="selectedPaymentMethod"
             :methods="availablePaymentMethods"
             @method-selected="onPaymentMethodSelected"
-            class="animate-fade-in"
+            class="animate-fade-in floating-animation"
             style="animation-delay: 0.4s"
           />
         </div>
         
         <div class="checkout-right">
           <!-- Payment form based on selected method -->
-          <div v-if="selectedPaymentMethod === 'card'" class="payment-section card-payment animate-fade-in" style="animation-delay: 0.5s">
+          <div v-if="selectedPaymentMethod === 'card'" class="payment-section card-payment animate-fade-in floating-animation" style="animation-delay: 0.5s">
             <PaymentMethodCard
               v-model="cardForm"
               :processing="processing"
@@ -65,11 +65,11 @@
             />
           </div>
           
-          <div v-else-if="selectedPaymentMethod === 'wallet'" class="payment-section wallet-payment animate-fade-in" style="animation-delay: 0.5s">
+          <div v-else-if="selectedPaymentMethod === 'wallet'" class="payment-section wallet-payment animate-fade-in floating-animation" style="animation-delay: 0.5s">
             <div class="wallet-payment">
-              <q-card class="wallet-card modern-card">
+              <q-card class="wallet-card modern-card glow-animation">
                 <q-card-section class="card-header">
-                  <div class="card-icon">
+                  <div class="card-icon pulse-animation">
                     <q-icon name="account_balance_wallet" size="28px" />
                   </div>
                   <div class="card-title">
@@ -85,16 +85,17 @@
                       :key="wallet.id"
                       :label="wallet.name"
                       :icon="wallet.icon"
-                      class="wallet-btn modern-btn"
+                      class="wallet-btn modern-btn floating-animation"
                       :class="{ 'wallet-selected': selectedWallet === wallet.id }"
                       @click="selectWallet(wallet.id)"
+                      :style="`animation-delay: ${0.2 + walletOptions.indexOf(wallet) * 0.1}s`"
                     />
                   </div>
                   
                   <q-btn
                     v-if="selectedWallet"
                     label="Continue with Wallet"
-                    class="btn-primary full-width q-mt-lg"
+                    class="btn-primary full-width q-mt-lg pulse-on-hover"
                     :loading="processing"
                     @click="processWalletPayment"
                   />
@@ -103,11 +104,11 @@
             </div>
           </div>
           
-          <div v-else-if="selectedPaymentMethod === 'upi'" class="payment-section upi-payment animate-fade-in" style="animation-delay: 0.5s">
+          <div v-else-if="selectedPaymentMethod === 'upi'" class="payment-section upi-payment animate-fade-in floating-animation" style="animation-delay: 0.5s">
             <div class="upi-payment">
-              <q-card class="upi-card modern-card">
+              <q-card class="upi-card modern-card glow-animation">
                 <q-card-section class="card-header">
-                  <div class="card-icon">
+                  <div class="card-icon pulse-animation">
                     <q-icon name="qr_code" size="28px" />
                   </div>
                   <div class="card-title">
@@ -123,12 +124,13 @@
                     placeholder="example@upi"
                     outlined
                     dense
-                    class="q-mb-md"
+                    class="q-mb-md modern-input floating-animation"
+                    style="animation-delay: 0.6s"
                   />
                   
                   <q-btn
                     label="Pay with UPI"
-                    class="btn-primary full-width"
+                    class="btn-primary full-width pulse-on-hover"
                     :loading="processing"
                     @click="processUpiPayment"
                   />
@@ -139,10 +141,46 @@
         </div>
       </div>
       
+      <!-- Trust indicators -->
+      <div class="trust-indicators animate-fade-in" style="animation-delay: 0.7s">
+        <div class="trust-item floating-animation" style="animation-delay: 0.8s">
+          <div class="trust-icon">
+            <q-icon name="security" size="24px" />
+          </div>
+          <span>256-bit SSL Encryption</span>
+        </div>
+        <div class="trust-item floating-animation" style="animation-delay: 0.9s">
+          <div class="trust-icon">
+            <q-icon name="verified_user" size="24px" />
+          </div>
+          <span>PCI DSS Compliant</span>
+        </div>
+        <div class="trust-item floating-animation" style="animation-delay: 1.0s">
+          <div class="trust-icon">
+            <q-icon name="privacy_tip" size="24px" />
+          </div>
+          <span>Your data is safe with us</span>
+        </div>
+        <div class="trust-item floating-animation" style="animation-delay: 1.1s">
+          <div class="trust-icon">
+            <q-icon name="support_agent" size="24px" />
+          </div>
+          <span>24/7 Support</span>
+        </div>
+      </div>
+      
       <!-- Error display -->
-      <div v-if="error" class="error-message q-mt-md">
-        <q-banner class="text-white bg-negative">
+      <div v-if="error" class="error-message q-mt-md animate-fade-in" style="animation-delay: 1.2s">
+        <q-banner class="text-white bg-negative floating-animation">
           {{ error }}
+          <q-btn 
+            flat 
+            round 
+            icon="close" 
+            class="q-ml-sm" 
+            @click="error = ''" 
+            size="sm"
+          />
         </q-banner>
       </div>
     </div>
@@ -378,12 +416,30 @@ onMounted(() => {
   border-radius: 16px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(189, 240, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.checkout-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(189, 240, 0, 0.1), transparent);
+  transition: left 0.7s ease;
+}
+
+.checkout-header:hover::before {
+  left: 100%;
 }
 
 .back-btn {
   background: rgba(189, 240, 0, 0.1);
   border: 1px solid rgba(189, 240, 0, 0.3);
   transition: all 0.3s ease;
+  z-index: 1;
 }
 
 .back-btn:hover {
@@ -394,6 +450,7 @@ onMounted(() => {
 
 .header-text {
   flex: 1;
+  z-index: 1;
 }
 
 .page-title {
@@ -421,6 +478,7 @@ onMounted(() => {
   color: #bdf000;
   font-size: 0.9rem;
   font-weight: 500;
+  z-index: 1;
 }
 
 .checkout-main {
@@ -552,6 +610,23 @@ onMounted(() => {
   border-radius: 12px;
   padding: 12px 24px;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.7s ease;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
 }
 
 .btn-primary:hover {
@@ -607,6 +682,10 @@ onMounted(() => {
   font-size: 20px;
 }
 
+.error-message {
+  z-index: 10;
+}
+
 /* Animation Classes */
 .animate-fade-in {
   opacity: 0;
@@ -619,6 +698,55 @@ onMounted(() => {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Floating animation */
+.floating-animation {
+  animation: floating 3s ease-in-out infinite;
+}
+
+@keyframes floating {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* Pulse animation */
+.pulse-animation {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+/* Glow animation */
+.glow-animation {
+  animation: glow 4s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 5px rgba(189, 240, 0, 0.2), 0 0 10px rgba(189, 240, 0, 0.1);
+  }
+  to {
+    box-shadow: 0 0 15px rgba(189, 240, 0, 0.3), 0 0 20px rgba(189, 240, 0, 0.2);
+  }
+}
+
+/* Pulse on hover */
+.pulse-on-hover:hover {
+  animation: pulse 0.6s ease;
 }
 
 /* Responsive design */
@@ -717,17 +845,6 @@ onMounted(() => {
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
-}
-
-/* Pulse animation for interactive elements */
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
-.btn-primary:focus {
-  animation: pulse 0.6s ease;
 }
 
 /* Glow effect for cards */

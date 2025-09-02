@@ -482,54 +482,38 @@ const processRefund = async () => {
     
     console.log('🔄 Processing refund for transaction:', props.transaction.id, payload)
     
-    // ✅ Try to use actual refund API endpoint (not in your API docs)
-    try {
-      const response = await api.post(`/api/transactions/${props.transaction.id}/refund`, payload)
-      
-      if (response.data.success || response.data.refund_id) {
-        refundResult.value = {
-          refund_id: response.data.refund_id || `REF_${Date.now()}`,
-          amount: payload.amount,
-          status: 'processing',
-          estimated_arrival: getEstimatedArrival(),
-          ...response.data
-        }
-        
-        showRefundModal.value = false
-        showSuccessModal.value = true
-        
-        $q.notify({
-          type: 'positive',
-          message: 'Refund processed successfully',
-          position: 'top',
-          timeout: 4000
-        })
-      } else {
-        throw new Error(response.data.message || 'Refund processing failed')
-      }
-    } catch {
-      console.warn('⚠️ Refund API not available, using simulation')
-      
-      // Simulate successful refund
+    // ✅ Use the actual refund API endpoint
+    const response = await api.post(`/api/merchant/transactions/${props.transaction.id}/refund`, payload)
+    
+    if (response.data.success || response.data.refund_id) {
       refundResult.value = {
-        refund_id: generateRefundId(),
+        refund_id: response.data.refund_id || `REF_${Date.now()}`,
         amount: payload.amount,
         status: 'processing',
         estimated_arrival: getEstimatedArrival(),
-        transaction_id: props.transaction.id,
-        reason: payload.reason,
-        notes: payload.notes
+        ...response.data
       }
       
       showRefundModal.value = false
       showSuccessModal.value = true
       
       $q.notify({
-        type: 'info',
-        message: 'Refund simulation completed - API endpoint not available',
+        type: 'positive',
+        message: 'Refund processed successfully',
         position: 'top',
         timeout: 4000
       })
+      
+      // Emit success event
+      emit('refund-processed', {
+        transactionId: props.transaction.id,
+        refundId: refundResult.value.refund_id,
+        refundAmount: refundAmount.value,
+        reason: refundReason.value,
+        refundData: refundResult.value
+      })
+    } else {
+      throw new Error(response.data.message || 'Refund processing failed')
     }
     
   } catch (error) {
@@ -553,21 +537,12 @@ const processRefund = async () => {
 
 const onRefundSuccess = () => {
   showSuccessModal.value = false
-  
-  emit('refund-processed', {
-    transactionId: props.transaction.id,
-    refundId: refundResult.value?.refund_id,
-    refundAmount: refundAmount.value,
-    reason: refundReason.value,
-    refundData: refundResult.value
-  })
-  
   resetForm()
 }
 
 const sendConfirmation = async () => {
   try {
-    // ✅ Send confirmation email (not in your API docs)
+    // ✅ Send confirmation email
     $q.notify({
       type: 'info',
       message: 'Confirmation email functionality coming soon',
@@ -579,7 +554,7 @@ const sendConfirmation = async () => {
 }
 
 const downloadRefundReceipt = () => {
-  // ✅ Download refund receipt (not in your API docs)
+  // ✅ Download refund receipt
   $q.notify({
     type: 'info',
     message: 'Refund receipt download coming soon',

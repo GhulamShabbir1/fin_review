@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'https://71118e932cba.ngrok-free.app', // ✅ Your AWS deployment
+  baseURL: 'http://192.168.12.80:8000', // ✅ Your AWS deployment
  headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'

@@ -1,5 +1,10 @@
 <template>
   <div class="merchant-management">
+    <!-- Animated background elements -->
+    <div class="animated-bg">
+      <div v-for="i in 15" :key="i" class="floating-particle" :style="particleStyle(i)"></div>
+    </div>
+
     <!-- Header with actions -->
     <div class="row items-center q-mb-lg">
       <div class="col">
@@ -12,15 +17,18 @@
           icon="add" 
           label="Add Merchant" 
           @click="showAddDialog = true" 
-          class="btn-animate"
-        />
+          class="btn-animate enhanced-btn"
+        >
+          <div class="btn-hover-effect"></div>
+        </q-btn>
       </div>
     </div>
 
     <!-- Quick Stats -->
     <div class="row q-col-gutter-md q-mb-lg">
       <div class="col-12 col-sm-6 col-md-3">
-        <q-card class="stat-card lime-glow animate-fade-in" style="animation-delay: 0.2s">
+        <q-card class="stat-card lime-glow animate-fade-in continuous-pulse" style="animation-delay: 0.2s">
+          <div class="stat-glow"></div>
           <q-card-section class="text-center">
             <div class="text-h4 text-lime count-up-animation">{{ stats.total }}</div>
             <div class="text-caption">Total Merchants</div>
@@ -28,7 +36,8 @@
         </q-card>
       </div>
       <div class="col-12 col-sm-6 col-md-3">
-        <q-card class="stat-card lime-glow animate-fade-in" style="animation-delay: 0.3s">
+        <q-card class="stat-card orange-glow animate-fade-in continuous-pulse" style="animation-delay: 0.3s">
+          <div class="stat-glow orange"></div>
           <q-card-section class="text-center">
             <div class="text-h4 text-orange count-up-animation">{{ stats.pending }}</div>
             <div class="text-caption">Pending Approval</div>
@@ -36,7 +45,8 @@
         </q-card>
       </div>
       <div class="col-12 col-sm-6 col-md-3">
-        <q-card class="stat-card lime-glow animate-fade-in" style="animation-delay: 0.4s">
+        <q-card class="stat-card green-glow animate-fade-in continuous-pulse" style="animation-delay: 0.4s">
+          <div class="stat-glow green"></div>
           <q-card-section class="text-center">
             <div class="text-h4 text-green count-up-animation">{{ stats.verified }}</div>
             <div class="text-caption">Verified</div>
@@ -44,7 +54,8 @@
         </q-card>
       </div>
       <div class="col-12 col-sm-6 col-md-3">
-        <q-card class="stat-card lime-glow animate-fade-in" style="animation-delay: 0.5s">
+        <q-card class="stat-card red-glow animate-fade-in continuous-pulse" style="animation-delay: 0.5s">
+          <div class="stat-glow red"></div>
           <q-card-section class="text-center">
             <div class="text-h4 text-red count-up-animation">{{ stats.rejected }}</div>
             <div class="text-caption">Rejected</div>
@@ -54,7 +65,7 @@
     </div>
 
     <!-- Filters and Search -->
-    <q-card class="q-mb-md lime-glow animate-fade-in" style="animation-delay: 0.6s">
+    <q-card class="q-mb-md lime-glow animate-fade-in continuous-glow" style="animation-delay: 0.6s">
       <q-card-section>
         <div class="row q-col-gutter-md items-center">
           <div class="col-12 col-md-4">
@@ -104,16 +115,18 @@
               label="Refresh"
               @click="loadMerchants"
               :loading="loading"
-              class="btn-animate"
+              class="btn-animate enhanced-btn"
               style="animation-delay: 0.3s"
-            />
+            >
+              <div class="btn-hover-effect"></div>
+            </q-btn>
           </div>
         </div>
       </q-card-section>
     </q-card>
 
     <!-- Merchants Table -->
-    <q-card class="lime-glow animate-fade-in" style="animation-delay: 0.7s">
+    <q-card class="lime-glow animate-fade-in continuous-glow" style="animation-delay: 0.7s">
       <q-card-section>
         <q-table
           :rows="merchants"
@@ -139,7 +152,7 @@
                 :color="getStatusColor(props.value)"
                 :label="props.value"
                 size="sm"
-                class="status-chip chip-animate"
+                class="status-chip chip-animate continuous-bounce"
               />
             </q-td>
           </template>
@@ -153,8 +166,10 @@
                 dense
                 icon="more_vert"
                 @click="openMenu($event, props.row)"
-                class="action-btn btn-animate"
-              />
+                class="action-btn btn-animate enhanced-btn"
+              >
+                <div class="btn-hover-effect"></div>
+              </q-btn>
             </q-td>
           </template>
 
@@ -179,7 +194,7 @@
                   :color="getStatusColor(props.row.status)"
                   :label="props.row.status"
                   size="sm"
-                  class="status-chip"
+                  class="status-chip continuous-bounce"
                 />
               </q-td>
               <q-td key="created_at" :props="props">
@@ -192,8 +207,10 @@
                   dense
                   icon="more_vert"
                   @click.stop="openMenu($event, props.row)"
-                  class="action-btn"
-                />
+                  class="action-btn enhanced-btn"
+                >
+                  <div class="btn-hover-effect"></div>
+                </q-btn>
               </q-td>
             </q-tr>
           </template>
@@ -203,7 +220,7 @@
 
     <!-- Add Merchant Dialog -->
     <q-dialog v-model="showAddDialog" persistent transition-show="scale" transition-hide="scale">
-      <q-card style="min-width: 400px" class="dialog-animate">
+      <q-card style="min-width: 400px" class="dialog-animate lime-glow">
         <q-card-section class="row items-center">
           <div class="text-h6">Add New Merchant</div>
           <q-space />
@@ -256,15 +273,15 @@
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="Cancel" v-close-popup class="btn-animate" />
-          <q-btn color="lime" label="Add Merchant" @click="addMerchant" class="btn-animate" style="animation-delay: 0.1s" />
+          <q-btn flat label="Cancel" v-close-popup class="btn-animate enhanced-btn" />
+          <q-btn color="lime" label="Add Merchant" @click="addMerchant" class="btn-animate enhanced-btn" style="animation-delay: 0.1s" />
         </q-card-actions>
       </q-card>
     </q-dialog>
 
     <!-- Merchant Detail Dialog -->
     <q-dialog v-model="showDetailDialog" maximized transition-show="slide-up" transition-hide="slide-down">
-      <q-card class="merchant-detail-dialog dialog-animate">
+      <q-card class="merchant-detail-dialog dialog-animate lime-glow">
         <q-card-section class="row items-center q-pb-none">
           <div class="text-h6">Merchant Details</div>
           <q-space />
@@ -275,7 +292,7 @@
           <div class="row q-col-gutter-lg">
             <!-- Basic Info -->
             <div class="col-12 col-md-6">
-              <q-card flat bordered class="card-animate">
+              <q-card flat bordered class="card-animate lime-glow">
                 <q-card-section>
                   <div class="text-subtitle1 q-mb-md">Basic Information</div>
                   <div class="row q-col-gutter-sm">
@@ -297,7 +314,7 @@
                         :color="getStatusColor(selectedMerchant?.status)"
                         :label="selectedMerchant?.status"
                         size="sm"
-                        class="chip-animate"
+                        class="chip-animate continuous-bounce"
                       />
                     </div>
                     <div class="col-12" v-if="selectedMerchant?.address">
@@ -311,25 +328,25 @@
 
             <!-- Documents -->
             <div class="col-12 col-md-6">
-              <q-card flat bordered class="card-animate" style="animation-delay: 0.1s">
+              <q-card flat bordered class="card-animate lime-glow" style="animation-delay: 0.1s">
                 <q-card-section>
                   <div class="text-subtitle1 q-mb-md">Documents</div>
                   <div class="row q-col-gutter-md">
                     <div class="col-12 col-md-4" v-if="selectedMerchant?.business_license">
-                      <q-card flat bordered class="document-card doc-animate">
+                      <q-card flat bordered class="document-card doc-animate lime-glow">
                         <q-card-section class="text-center">
-                          <q-icon name="description" size="48px" color="lime" class="icon-animate" />
+                          <q-icon name="description" size="48px" color="lime" class="icon-animate continuous-float" />
                           <div class="text-subtitle2 q-mt-sm">Business License</div>
-                          <q-btn flat color="lime" label="View" @click="viewDocument(selectedMerchant.business_license)" class="btn-animate" />
+                          <q-btn flat color="lime" label="View" @click="viewDocument(selectedMerchant.business_license)" class="btn-animate enhanced-btn" />
                         </q-card-section>
                       </q-card>
                     </div>
                     <div class="col-12 col-md-4" v-if="selectedMerchant?.id_proof">
-                      <q-card flat bordered class="document-card doc-animate" style="animation-delay: 0.1s">
+                      <q-card flat bordered class="document-card doc-animate lime-glow" style="animation-delay: 0.1s">
                         <q-card-section class="text-center">
-                          <q-icon name="badge" size="48px" color="lime" class="icon-animate" />
+                          <q-icon name="badge" size="48px" color="lime" class="icon-animate continuous-float" />
                           <div class="text-subtitle2 q-mt-sm">ID Proof</div>
-                          <q-btn flat color="lime" label="View" @click="viewDocument(selectedMerchant.id_proof)" class="btn-animate" />
+                          <q-btn flat color="lime" label="View" @click="viewDocument(selectedMerchant.id_proof)" class="btn-animate enhanced-btn" />
                         </q-card-section>
                       </q-card>
                     </div>
@@ -344,13 +361,13 @@
         </q-card-section>
 
         <q-card-actions align="right" class="q-px-lg q-pb-lg">
-          <q-btn flat label="Close" v-close-popup class="btn-animate" />
+          <q-btn flat label="Close" v-close-popup class="btn-animate enhanced-btn" />
           <q-btn
             v-if="selectedMerchant?.status === 'Pending'"
             color="green"
             label="Approve"
             @click="approveMerchant(selectedMerchant)"
-            class="btn-animate"
+            class="btn-animate enhanced-btn"
             style="animation-delay: 0.1s"
           />
           <q-btn
@@ -358,7 +375,7 @@
             color="red"
             label="Reject"
             @click="rejectMerchant(selectedMerchant)"
-            class="btn-animate"
+            class="btn-animate enhanced-btn"
             style="animation-delay: 0.2s"
           />
         </q-card-actions>
@@ -367,7 +384,7 @@
 
     <!-- Merchant Menu -->
     <q-menu ref="merchantMenu" transition-show="jump-down" transition-hide="jump-up">
-      <q-list style="min-width: 150px" class="menu-animate">
+      <q-list style="min-width: 150px" class="menu-animate lime-glow">
         <q-item clickable v-close-popup @click="viewMerchant(menuMerchant)">
           <q-item-section avatar>
             <q-icon name="visibility" />
@@ -760,6 +777,19 @@ const formatDate = (date) => {
   })
 }
 
+const particleStyle = (index) => {
+  const size = Math.random() * 6 + 2;
+  return {
+    width: `${size}px`,
+    height: `${size}px`,
+    left: `${Math.random() * 100}%`,
+    top: `${Math.random() * 100}%`,
+    animationDelay: `${index * 0.7}s`,
+    animationDuration: `${15 + Math.random() * 20}s`,
+    opacity: Math.random() * 0.4 + 0.1
+  };
+}
+
 // Enable smooth scrolling for the entire page
 const enableSmoothScrolling = () => {
   document.documentElement.style.scrollBehavior = 'smooth'
@@ -775,25 +805,177 @@ onMounted(() => {
 <style scoped>
 .merchant-management {
   padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.animated-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.floating-particle {
+  position: absolute;
+  background: rgba(189, 240, 0, 0.15);
+  border-radius: 50%;
+  animation: float-particle 25s infinite ease-in-out;
+  z-index: 0;
+}
+
+@keyframes float-particle {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(20px, -40px) rotate(10deg);
+  }
+  50% {
+    transform: translate(-30px, -70px) rotate(-10deg);
+  }
+  75% {
+    transform: translate(10px, -20px) rotate(5deg);
+  }
 }
 
 .stat-card {
-  background: #121212;
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  border: 1px solid rgba(189, 240, 0, 0.2);
+  background: linear-gradient(145deg, #121212, #0a0a0a);
+  border-radius: 16px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
 }
 
 .stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 40px rgba(189, 240, 0, 0.25) !important;
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(189, 240, 0, 0.3), 0 0 30px rgba(189, 240, 0, 0.25) !important;
+}
+
+.stat-glow {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center, rgba(189, 240, 0, 0.1) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.stat-card:hover .stat-glow {
+  opacity: 1;
+}
+
+.stat-glow.orange {
+  background: radial-gradient(circle at center, rgba(255, 152, 0, 0.1) 0%, transparent 60%);
+}
+
+.stat-glow.green {
+  background: radial-gradient(circle at center, rgba(76, 175, 80, 0.1) 0%, transparent 60%);
+}
+
+.stat-glow.red {
+  background: radial-gradient(circle at center, rgba(244, 67, 54, 0.1) 0%, transparent 60%);
 }
 
 .lime-glow {
-  background: rgba(189, 240, 0, 0.02);
-  border: 1px solid rgba(189, 240, 0, 0.1);
-  box-shadow: 0 2px 10px rgba(189, 240, 0, 0.05);
-  transition: all 0.3s ease;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(189, 240, 0, 0.2), 0 0 20px rgba(189, 240, 0, 0.15);
+  transition: all 0.4s ease;
+  background: linear-gradient(145deg, #121212, #0a0a0a);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.orange-glow {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 152, 0, 0.2), 0 0 20px rgba(255, 152, 0, 0.15);
+}
+
+.green-glow {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(76, 175, 80, 0.2), 0 0 20px rgba(76, 175, 80, 0.15);
+}
+
+.red-glow {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(244, 67, 54, 0.2), 0 0 20px rgba(244, 67, 54, 0.15);
+}
+
+.lime-glow:hover, .orange-glow:hover, .green-glow:hover, .red-glow:hover {
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(189, 240, 0, 0.3), 0 0 30px rgba(189, 240, 0, 0.25);
+  transform: translateY(-5px);
+}
+
+.orange-glow:hover {
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 152, 0, 0.3), 0 0 30px rgba(255, 152, 0, 0.25);
+}
+
+.green-glow:hover {
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(76, 175, 80, 0.3), 0 0 30px rgba(76, 175, 80, 0.25);
+}
+
+.red-glow:hover {
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(244, 67, 54, 0.3), 0 0 30px rgba(244, 67, 54, 0.25);
+}
+
+.continuous-pulse {
+  animation: pulse-glow 3s infinite ease-in-out;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(189, 240, 0, 0.2), 0 0 20px rgba(189, 240, 0, 0.15);
+  }
+  50% {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(189, 240, 0, 0.3), 0 0 30px rgba(189, 240, 0, 0.25);
+  }
+}
+
+.continuous-glow {
+  animation: subtle-glow 4s infinite alternate;
+}
+
+@keyframes subtle-glow {
+  0% {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(189, 240, 0, 0.2), 0 0 20px rgba(189, 240, 0, 0.15);
+  }
+  100% {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(189, 240, 0, 0.25), 0 0 25px rgba(189, 240, 0, 0.2);
+  }
+}
+
+.continuous-float {
+  animation: floating 3s infinite ease-in-out;
+}
+
+@keyframes floating {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.continuous-bounce {
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
 }
 
 .merchant-table {
@@ -847,12 +1029,31 @@ onMounted(() => {
   transition: all 0.5s ease-out;
 }
 
-.btn-animate {
-  transition: transform 0.2s ease, background-color 0.3s ease;
+.enhanced-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-radius: 10px;
+  font-weight: 600;
 }
 
-.btn-animate:hover {
-  transform: translateY(-2px);
+.enhanced-btn:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.btn-hover-effect {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.7s ease;
+}
+
+.enhanced-btn:hover .btn-hover-effect {
+  left: 100%;
 }
 
 .input-animate {
@@ -953,5 +1154,26 @@ onMounted(() => {
 
 .smooth-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(189, 240, 0, 0.8);
+}
+
+.text-lime {
+  color: #bdf000;
+  text-shadow: 0 0 10px rgba(189, 240, 0, 0.3);
+}
+
+.text-green {
+  color: #4CAF50;
+}
+
+.text-orange {
+  color: #FF9800;
+}
+
+.text-red {
+  color: #F44336;
+}
+
+.text-grey {
+  color: #999;
 }
 </style>

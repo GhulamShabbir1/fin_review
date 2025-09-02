@@ -476,13 +476,13 @@ const merchantColumns = [
 // Computed properties
 const filteredMerchants = computed(() => {
   const merchantsList = Array.isArray(merchants.value) ? merchants.value : []
-  
+
   let filtered = [...merchantsList]
 
   // Apply search filter
   if (filters.value.search) {
     const search = filters.value.search.toLowerCase()
-    filtered = filtered.filter(merchant => 
+    filtered = filtered.filter(merchant =>
       merchant.business_name?.toLowerCase().includes(search) ||
       merchant.email?.toLowerCase().includes(search) ||
       String(merchant.id || '').includes(search)
@@ -515,10 +515,10 @@ const filteredMerchants = computed(() => {
 })
 
 const hasActiveFilters = computed(() => {
-  return filters.value.search || 
-         filters.value.status || 
-         filters.value.category || 
-         filters.value.dateFrom
+  return filters.value.search ||
+    filters.value.status ||
+    filters.value.category ||
+    filters.value.dateFrom
 })
 
 // ✅ Watcher for pagination
@@ -534,12 +534,12 @@ const loadMerchants = async () => {
 
     // ✅ Use your actual API endpoint: GET /api/admin/merchants
     const response = await api.get('/api/admin/merchants')
-    
+
     console.log('📋 Raw API response:', response.data)
-    
+
     // ✅ Enhanced data handling - check what we actually get from API
     let merchantData = []
-    
+
     if (response && response.data) {
       // Log the structure to understand what we're getting
       console.log('📋 API Response structure:', {
@@ -547,7 +547,7 @@ const loadMerchants = async () => {
         hasKeys: Object.keys(response.data || {}),
         type: typeof response.data
       })
-      
+
       if (Array.isArray(response.data)) {
         merchantData = response.data
       } else if (response.data.merchants && Array.isArray(response.data.merchants)) {
@@ -564,17 +564,17 @@ const loadMerchants = async () => {
         }
       }
     }
-    
+
     // ✅ Enhanced merchant data processing with guaranteed IDs
     merchants.value = merchantData.map((merchant, index) => {
       // Create a unique ID if none exists
       let merchantId = merchant.id || merchant.merchant_id || merchant.user_id
-      
+
       if (!merchantId) {
         merchantId = `merchant_${Date.now()}_${index}`
         console.warn('⚠️ Merchant missing ID, generated:', merchantId, 'for:', merchant.business_name || merchant.email)
       }
-      
+
       return {
         id: merchantId,
         business_name: merchant.business_name || merchant.name || 'Unknown Business',
@@ -593,7 +593,7 @@ const loadMerchants = async () => {
         _original: merchant
       }
     })
-    
+
     console.log('✅ Merchants processed:', merchants.value.length)
     console.log('📋 Sample processed merchant:', merchants.value[0])
 
@@ -602,7 +602,7 @@ const loadMerchants = async () => {
 
   } catch (error) {
     console.error('❌ Failed to load merchants:', error)
-    
+
     // Set empty state
     merchants.value = []
     merchantStats.value = {
@@ -615,10 +615,10 @@ const loadMerchants = async () => {
       activeToday: 0,
       newThisMonth: 0
     }
-    
+
     // Enhanced error handling
     let errorMessage = 'Failed to load merchants'
-    
+
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
       errorMessage = 'Backend server is not reachable. Please check if your Laravel server is running on http://192.168.12.35:8000'
     } else if (error.response?.status === 401) {
@@ -630,16 +630,16 @@ const loadMerchants = async () => {
     } else if (error.response?.data?.message) {
       errorMessage = error.response.data.message
     }
-    
+
     $q.notify({
       type: 'negative',
       message: errorMessage,
       position: 'top',
       timeout: 6000,
       actions: [
-        { 
-          label: 'Retry', 
-          color: 'white', 
+        {
+          label: 'Retry',
+          color: 'white',
           handler: () => loadMerchants()
         }
       ]
@@ -652,7 +652,7 @@ const loadMerchants = async () => {
 const calculateStats = () => {
   try {
     const merchantsList = Array.isArray(merchants.value) ? merchants.value : []
-    
+
     const stats = {
       total: merchantsList.length,
       pending: 0,
@@ -699,9 +699,9 @@ const calculateStats = () => {
         if (merchant.created_at) {
           try {
             const merchantDate = new Date(merchant.created_at)
-            if (!isNaN(merchantDate.getTime()) && 
-                merchantDate.getMonth() === thisMonth && 
-                merchantDate.getFullYear() === thisYear) {
+            if (!isNaN(merchantDate.getTime()) &&
+              merchantDate.getMonth() === thisMonth &&
+              merchantDate.getFullYear() === thisYear) {
               stats.newThisMonth++
             }
           } catch {
@@ -727,7 +727,7 @@ const calculateStats = () => {
 
     merchantStats.value = stats
     console.log('📊 Statistics calculated:', stats)
-    
+
   } catch (error) {
     console.error('❌ Error calculating stats:', error)
     merchantStats.value = {
@@ -771,118 +771,134 @@ const viewMerchant = (merchant) => {
 
 const approveMerchant = async (merchant) => {
   try {
-    // ✅ Enhanced validation with detailed logging
-    console.log('🔍 Merchant object received:', merchant)
-    
+    // ✅ Log full merchant object for debugging
+    console.log("🧩 Merchant object before approval:", JSON.stringify(merchant, null, 2))
+
     if (!merchant) {
-      console.error('❌ Merchant object is null/undefined')
+      console.error("❌ Merchant object is null/undefined")
       $q.notify({
-        type: 'negative',
-        message: 'Invalid merchant data - merchant object is missing',
-        position: 'top'
+        type: "negative",
+        message: "Invalid merchant data - merchant object is missing",
+        position: "top",
       })
       return
     }
-    
-    // Check for ID in multiple possible fields
-    const merchantId = merchant.id || merchant.merchant_id || merchant.user_id || merchant.pk
-    
-    console.log('🔍 Merchant ID check:', {
+
+    // ✅ Extract ID from possible fields
+    const merchantId =
+      merchant.id ||
+      merchant._id ||
+      merchant.merchant_id ||
+      merchant.user_id ||
+      merchant.pk
+
+    console.log("🔍 Merchant ID check:", {
       id: merchant.id,
+      _id: merchant._id,
       merchant_id: merchant.merchant_id,
       user_id: merchant.user_id,
       pk: merchant.pk,
-      finalId: merchantId
+      finalId: merchantId,
     })
-    
+
     if (!merchantId) {
-      console.error('❌ No valid ID found for merchant:', merchant)
+      console.error("❌ No valid ID found for merchant:", merchant)
       $q.notify({
-        type: 'negative',
+        type: "negative",
         message: `Cannot approve "${merchant.business_name}" - merchant ID is missing from backend data`,
-        position: 'top',
-        timeout: 5000
+        position: "top",
+        timeout: 5000,
       })
       return
     }
-    
+
     processingAction.value = true
     approvingMerchant.value = merchantId
-    
-    console.log('🔄 Approving merchant:', {
+
+    console.log("🔄 Approving merchant:", {
       id: merchantId,
       business_name: merchant.business_name,
-      email: merchant.email
+      email: merchant.email,
     })
-    
-    // ✅ Use your actual API endpoint with proper ID
-    await api.post(`/api/admin/approve-merchant/${merchantId}`)
-    
-    // ✅ Update local data
-    const index = merchants.value.findIndex(m => 
-      (m.id && m.id === merchantId) || 
-      (m.merchant_id && m.merchant_id === merchantId) ||
-      (m.email && m.email === merchant.email)
-    )
-    
-    if (index !== -1) {
-      merchants.value[index] = { 
-        ...merchants.value[index], 
-        status: 'approved',
-        updated_at: new Date().toISOString()
-      }
-      console.log('✅ Local merchant data updated')
+
+    // ⚡ Decide based on backend route
+    const usePathParam = true // ⬅️ change to false if backend expects JSON body
+
+    if (usePathParam) {
+      await api.post(`/api/admin/approve-merchant/${merchantId}`)
     } else {
-      console.warn('⚠️ Could not find merchant in local data to update')
+      await api.post("/api/admin/approve-merchant", { merchantId })
     }
-    
+
+    // ✅ Update local merchants array
+    const index = merchants.value.findIndex(
+      (m) =>
+        (m.id && m.id === merchantId) ||
+        (m._id && m._id === merchantId) ||
+        (m.merchant_id && m.merchant_id === merchantId) ||
+        (m.email && m.email === merchant.email)
+    )
+
+    if (index !== -1) {
+      merchants.value[index] = {
+        ...merchants.value[index],
+        status: "approved",
+        updated_at: new Date().toISOString(),
+      }
+      console.log("✅ Local merchant data updated")
+    } else {
+      console.warn("⚠️ Could not find merchant in local data to update")
+    }
+
     // Recalculate stats
     calculateStats()
-    
+
     $q.notify({
-      type: 'positive',
+      type: "positive",
       message: `${merchant.business_name} approved successfully!`,
-      position: 'top',
-      icon: 'check_circle',
-      timeout: 3000
+      position: "top",
+      icon: "check_circle",
+      timeout: 3000,
     })
-    
+
     // Close details dialog if open
     if (showMerchantDetails.value) {
       showMerchantDetails.value = false
     }
-    
-    console.log('✅ Merchant approval completed')
-    
+
+    console.log("✅ Merchant approval completed")
   } catch (error) {
-    console.error('❌ Failed to approve merchant:', error)
-    
-    let errorMessage = 'Failed to approve merchant'
-    
-    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-      errorMessage = 'Cannot connect to backend server. Please ensure your Laravel server is running on http://192.168.12.35:8000'
+    console.error("❌ Failed to approve merchant:", error)
+
+    let errorMessage = "Failed to approve merchant"
+
+    if (error.code === "ERR_NETWORK" || error.message === "Network Error") {
+      errorMessage =
+        "Cannot connect to backend server. Please ensure your Laravel server is running on http://192.168.12.35:8000"
     } else if (error.response?.status === 401) {
-      errorMessage = 'Authentication failed. Please login again as admin.'
+      errorMessage = "Authentication failed. Please login again as admin."
     } else if (error.response?.status === 403) {
-      errorMessage = 'Access denied. Admin privileges required.'
+      errorMessage = "Access denied. Admin privileges required."
     } else if (error.response?.status === 404) {
-      errorMessage = 'Approval endpoint not found. Please check your backend API routes.'
+      errorMessage =
+        "Approval endpoint not found. Please check your backend API routes."
     } else if (error.response?.data?.message) {
       errorMessage = error.response.data.message
     }
-    
+
     $q.notify({
-      type: 'negative',
+      type: "negative",
       message: errorMessage,
-      position: 'top',
+      position: "top",
       timeout: 5000,
       actions: [
-        { 
-          label: 'Debug Info', 
-          color: 'white', 
-          handler: () => console.log('🔍 Debug - Merchant data:', merchant)
-        }
-      ]
+        {
+          label: "Debug Info",
+          color: "white",
+          handler: () =>
+            console.log("🔍 Debug - Merchant data:", merchant),
+        },
+      ],
     })
   } finally {
     processingAction.value = false
@@ -890,11 +906,12 @@ const approveMerchant = async (merchant) => {
   }
 }
 
+
 const rejectMerchant = async (merchant) => {
   try {
     // ✅ Validate merchant data
     const merchantId = merchant.id || merchant.merchant_id || merchant.user_id
-    
+
     if (!merchantId) {
       $q.notify({
         type: 'negative',
@@ -903,7 +920,7 @@ const rejectMerchant = async (merchant) => {
       })
       return
     }
-    
+
     const reason = await $q.dialog({
       title: 'Reject Merchant',
       message: `Are you sure you want to reject "${merchant.business_name}"?`,
@@ -915,46 +932,46 @@ const rejectMerchant = async (merchant) => {
       cancel: true,
       persistent: true
     })
-    
+
     processingAction.value = true
-    
+
     console.log('🔄 Rejecting merchant:', {
       id: merchantId,
       business_name: merchant.business_name,
       reason: reason
     })
-    
+
     // ✅ Update local data (rejection endpoint not in your API docs)
-    const index = merchants.value.findIndex(m => 
-      (m.id && m.id === merchantId) || 
+    const index = merchants.value.findIndex(m =>
+      (m.id && m.id === merchantId) ||
       (m.merchant_id && m.merchant_id === merchantId) ||
       (m.email && m.email === merchant.email)
     )
-    
+
     if (index !== -1) {
-      merchants.value[index] = { 
-        ...merchants.value[index], 
+      merchants.value[index] = {
+        ...merchants.value[index],
         status: 'rejected',
         updated_at: new Date().toISOString(),
         rejection_reason: reason || 'No reason provided'
       }
     }
-    
+
     calculateStats()
-    
+
     $q.notify({
       type: 'warning',
       message: `${merchant.business_name} has been rejected`,
       position: 'top',
       timeout: 3000
     })
-    
+
     if (showMerchantDetails.value) {
       showMerchantDetails.value = false
     }
-    
+
     console.log('✅ Merchant rejected')
-    
+
   } catch (error) {
     if (error && typeof error === 'object' && error.message) {
       console.error('❌ Failed to reject merchant:', error)
@@ -980,15 +997,15 @@ const editMerchant = () => {
 const addMerchant = async () => {
   try {
     addingMerchant.value = true
-    
+
     // Validate required fields
-    if (!newMerchant.value.business_name || !newMerchant.value.email || 
-        !newMerchant.value.bank_account_name || !newMerchant.value.bank_account_number) {
+    if (!newMerchant.value.business_name || !newMerchant.value.email ||
+      !newMerchant.value.bank_account_name || !newMerchant.value.bank_account_number) {
       throw new Error('Please fill in all required fields')
     }
-    
+
     console.log('🔄 Adding new merchant...')
-    
+
     // ✅ Use your business registration endpoint: POST /api/merchant/register
     const response = await api.post('/api/merchant/register', {
       business_name: newMerchant.value.business_name,
@@ -999,9 +1016,9 @@ const addMerchant = async () => {
       category: newMerchant.value.category || 'other',
       description: newMerchant.value.description || ''
     })
-    
+
     console.log('✅ New merchant registered:', response.data)
-    
+
     // ✅ Create merchant with guaranteed ID
     const newMerchantData = {
       id: response.data?.id || response.data?.merchant_id || `new_${Date.now()}`,
@@ -1017,11 +1034,11 @@ const addMerchant = async () => {
       updated_at: new Date().toISOString(),
       ...response.data
     }
-    
+
     if (!Array.isArray(merchants.value)) {
       merchants.value = []
     }
-    
+
     merchants.value.unshift(newMerchantData)
     calculateStats()
 
@@ -1035,9 +1052,9 @@ const addMerchant = async () => {
       category: null,
       description: ''
     }
-    
+
     showAddMerchantDialog.value = false
-    
+
     $q.notify({
       type: 'positive',
       message: 'Merchant added successfully and is pending approval',
@@ -1045,12 +1062,12 @@ const addMerchant = async () => {
       icon: 'check_circle',
       timeout: 3000
     })
-    
+
   } catch (error) {
     console.error('❌ Failed to add merchant:', error)
-    
+
     let errorMessage = 'Failed to add merchant'
-    
+
     if (error.code === 'ERR_NETWORK') {
       errorMessage = 'Cannot connect to backend server.'
     } else if (error.response?.data?.message) {
@@ -1061,7 +1078,7 @@ const addMerchant = async () => {
     } else if (error.message) {
       errorMessage = error.message
     }
-    
+
     $q.notify({
       type: 'negative',
       message: errorMessage,
@@ -1077,10 +1094,10 @@ const addMerchant = async () => {
 const debugMerchantStructure = () => {
   if (merchants.value.length > 0) {
     console.log('🔍 First merchant structure:', merchants.value[0])
-    console.log('🔍 All merchant IDs:', merchants.value.map(m => ({ 
-      business_name: m.business_name, 
-      id: m.id, 
-      hasId: !!m.id 
+    console.log('🔍 All merchant IDs:', merchants.value.map(m => ({
+      business_name: m.business_name,
+      id: m.id,
+      hasId: !!m.id
     })))
   }
 }
@@ -1113,7 +1130,7 @@ const formatDate = (dateString) => {
   try {
     const date = new Date(dateString)
     if (isNaN(date.getTime())) return 'Invalid Date'
-    
+
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -1129,7 +1146,7 @@ const formatDateTime = (dateString) => {
   try {
     const date = new Date(dateString)
     if (isNaN(date.getTime())) return 'Invalid Date'
-    
+
     return date.toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -1145,7 +1162,7 @@ const formatDateTime = (dateString) => {
 // Lifecycle
 onMounted(async () => {
   await loadMerchants()
-  
+
   // Debug in development
   if (process.env.NODE_ENV === 'development') {
     setTimeout(debugMerchantStructure, 1000)

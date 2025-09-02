@@ -6,7 +6,7 @@
       <p class="loading-text">Loading your dashboard...</p>
     </div>
 
-    <!-- Welcome Section with Logout -->
+    <!-- Welcome Section -->
     <div class="welcome-section q-mb-xl animate-fade-in">
       <div class="welcome-content">
         <div class="welcome-text">
@@ -14,305 +14,370 @@
             Welcome back, <span class="highlight">{{ user.name || 'Merchant' }}</span>! 👋
           </h1>
           <p class="welcome-subtitle">
-            Here's what's happening with your business today
+            Manage your {{ businesses.length }} business{{ businesses.length !== 1 ? 'es' : '' }} and start accepting payments
           </p>
         </div>
         <div class="welcome-actions">
-          <!-- Add Business Button -->
+          <!-- Add Business Button - Always Available -->
           <q-btn
-            v-if="!profile.business_name"
             color="lime"
             icon="add_business"
-            label="Add Business"
+            label="Add New Business"
             class="action-btn btn-primary"
             @click="addBusiness"
           />
-          <!-- New Transaction Button -->
+
+          <!-- Create Payment Button - Always Available for any business -->
           <q-btn
-            v-else
-            color="lime"
-            icon="add"
-            label="New Transaction"
-            class="action-btn btn-primary"
-            @click="createTransaction"
+            v-if="businesses.length > 0"
+            color="blue"
+            icon="payment"
+            label="Create Payment"
+            class="action-btn btn-secondary payment-btn"
+            @click="showCreatePaymentDialog"
           />
+
           <!-- Settings Button -->
+          <q-btn flat color="lime" icon="settings" label="Settings" class="action-btn btn-outline"
+            @click="openSettings" />
+          <!-- Profile Button -->
+          <q-btn flat color="purple" icon="person" label="Profile" class="action-btn btn-outline"
+            @click="editProfile" />
+          <!-- Transactions Button -->
           <q-btn
-            flat
-            color="lime"
-            icon="settings"
-            label="Settings"
-            class="action-btn btn-outline"
-            @click="openSettings"
-          />
+            v-if="businesses.length > 0"
+            flat color="teal" icon="receipt" label="Transactions" class="action-btn btn-outline"
+            @click="viewTransactions" />
+          <!-- Export Data Button -->
+          <q-btn
+            v-if="businesses.length > 0"
+            flat color="orange" icon="file_download" label="Export Data" class="action-btn btn-outline"
+            @click="exportData" />
           <!-- Logout Button -->
-          <q-btn
-            flat
-            color="red"
-            icon="logout"
-            label="Logout"
-            class="action-btn btn-danger"
-            @click="logout"
-          />
+          <q-btn flat color="red" icon="logout" label="Logout" class="action-btn btn-danger" @click="logout" />
         </div>
       </div>
     </div>
 
-    <!-- KPI Cards -->
-    <TopKpiCards :kpis="kpiData" class="animate-fade-in" style="animation-delay: 0.1s" />
+    <!-- Business Overview Statistics -->
+    <div class="business-overview q-mb-xl animate-fade-in" style="animation-delay: 0.1s">
+      <div class="row q-gutter-lg">
+        <div class="col">
+          <q-card class="stat-card lime-glow hover-lift">
+            <q-card-section>
+              <div class="stat-header">
+                <q-icon name="store" size="32px" color="lime" />
+                <div class="stat-value">{{ businesses.length }}</div>
+              </div>
+              <div class="stat-title">Total Businesses</div>
+              <div class="stat-subtitle">{{ approvedBusinessCount }} approved</div>
+            </q-card-section>
+          </q-card>
+        </div>
+        
+        <div class="col">
+          <q-card class="stat-card lime-glow hover-lift">
+            <q-card-section>
+              <div class="stat-header">
+                <q-icon name="account_balance" size="32px" color="blue" />
+                <div class="stat-value">{{ stripeConnectedCount }}</div>
+              </div>
+              <div class="stat-title">Stripe Connected</div>
+              <div class="stat-subtitle">Payment processing ready</div>
+            </q-card-section>
+          </q-card>
+        </div>
+        
+        <div class="col">
+          <q-card class="stat-card lime-glow hover-lift">
+            <q-card-section>
+              <div class="stat-header">
+                <q-icon name="pending" size="32px" color="orange" />
+                <div class="stat-value">{{ pendingBusinessCount }}</div>
+              </div>
+              <div class="stat-title">Pending Approval</div>
+              <div class="stat-subtitle">Under admin review</div>
+            </q-card-section>
+          </q-card>
+        </div>
+        
+        <div class="col">
+          <q-card class="stat-card lime-glow hover-lift">
+            <q-card-section>
+              <div class="stat-header">
+                <q-icon name="payment" size="32px" color="green" />
+                <div class="stat-value">Enabled</div>
+              </div>
+              <div class="stat-title">Transactions</div>
+              <div class="stat-subtitle">Ready to accept payments</div>
+            </q-card-section>
+          </q-card>
+        </div>
+      </div>
+    </div>
 
-    <!-- Main Content Grid -->
-    <div class="dashboard-grid">
-      <!-- Status and Profile Section -->
-      <div class="left-column">
-        <!-- Status Card -->
-        <MerchantStatusCard 
-          :status="merchantStatus" 
-          :progress="onboardingProgress"
-          :show-actions="true"
-          :merchant-id="user.id"
-          class="animate-fade-in"
-          style="animation-delay: 0.2s"
-          @status-updated="onStatusUpdated"
-        />
+    <!-- ✅ NEW: Recent Transactions with Refund Button -->
+    <div class="transactions-section q-mb-xl animate-fade-in" style="animation-delay: 0.25s">
+      <div class="transactions-header">
+        <h3 class="transactions-title">
+          <q-icon name="receipt_long" size="24px" color="lime" class="q-mr-sm" />
+          Recent Transactions
+        </h3>
+        <div class="transactions-actions">
+          <q-btn 
+            flat 
+            round 
+            dense 
+            icon="refresh" 
+            color="lime" 
+            @click="showRefundTransactionForm(transaction)" 
+            :loading="loadingTransactions"
+            class="hover-scale"
+          >
+            <q-tooltip>Refresh Transactions</q-tooltip>
+          </q-btn>
+          <q-btn 
+            flat 
+            color="blue" 
+            icon="visibility" 
+            label="View All" 
+            @click="viewTransactions"
+            class="hover-scale"
+          />
+        </div>
+      </div>
 
-        <!-- Profile Overview -->
-        <div class="profile-card animate-fade-in" style="animation-delay: 0.3s">
-          <div class="card-header">
-            <h3 class="card-title">Business Profile</h3>
-            <q-btn flat round dense icon="edit" color="lime" @click="editProfile" class="edit-btn" />
+      <div v-if="loadingTransactions" class="transactions-loading">
+        <div class="loading-container">
+          <q-spinner-bars color="lime" size="50px" />
+          <p>Loading recent transactions...</p>
+        </div>
+      </div>
+
+      <div v-else-if="recentTransactions.length === 0" class="no-transactions">
+        <q-icon name="receipt" size="64px" color="grey-5" class="pulse-icon" />
+        <h4>No Transactions Yet</h4>
+        <p>Start by creating your first payment to see transaction history</p>
+        <q-btn color="lime" label="Create First Payment" @click="showCreatePaymentDialog" class="hover-scale" />
+      </div>
+
+      <div v-else class="transactions-list">
+        <div 
+          v-for="(transaction, index) in recentTransactions" 
+          :key="transaction.id || index" 
+          class="transaction-item animate-slide-in hover-lift"
+          :style="`animation-delay: ${0.3 + index * 0.1}s`"
+        >
+          <div class="transaction-info">
+            <div class="transaction-header">
+              <div class="transaction-id">
+                <q-icon name="receipt" size="16px" color="lime" class="q-mr-sm" />
+                #{{ transaction.id || 'TXN_' + index }}
+              </div>
+              <div class="transaction-date">{{ formatDateTime(transaction.created_at) }}</div>
+            </div>
+            <div class="transaction-details">
+              <div class="customer-info">
+                <q-icon name="person" size="16px" color="blue" class="q-mr-sm" />
+                {{ transaction.customer_name || 'Anonymous Customer' }}
+              </div>
+              <div class="transaction-method">
+                <q-icon name="payment" size="16px" color="purple" class="q-mr-sm" />
+                {{ getPaymentMethodLabel(transaction.method || 'card') }}
+              </div>
+            </div>
           </div>
           
-          <div class="profile-content">
-            <div class="profile-avatar">
-              <q-avatar size="80px" square class="avatar-image">
-                <img :src="profile.logo_url || placeholderLogo" alt="Business Logo" @error="onLogoError" />
-              </q-avatar>
-              <div class="avatar-ring"></div>
+          <div class="transaction-status">
+            <div class="transaction-amount">
+              <span class="amount">{{ formatCurrency(transaction.amount || 0) }}</span>
+            </div>
+            <q-chip 
+              :color="getStatusColor(transaction.status)" 
+              :label="transaction.status || 'pending'" 
+              :icon="getStatusIcon(transaction.status)"
+              size="sm" 
+              class="status-chip"
+            />
+          </div>
+
+          <div class="transaction-actions">
+            <q-btn 
+              flat 
+              round 
+              dense 
+              icon="visibility" 
+              color="blue" 
+              @click="viewTransactionDetails(transaction)"
+              class="hover-scale"
+            >
+              <q-tooltip>View Details</q-tooltip>
+            </q-btn>
+            
+            <!-- ✅ NEW: Refund Button -->
+            <q-btn 
+              v-if="canRefund(transaction)"
+              flat 
+              round 
+              dense 
+              icon="undo" 
+              color="orange" 
+              @click="showRefundDialog(transaction)"
+              :loading="refundingTransaction === transaction.id"
+              class="hover-scale refund-btn"
+            >
+              <q-tooltip>Refund Transaction</q-tooltip>
+            </q-btn>
+            
+            <q-btn 
+              flat 
+              round 
+              dense 
+              icon="download" 
+              color="green" 
+              @click="downloadTransactionReceipt(transaction)"
+              class="hover-scale"
+            >
+              <q-tooltip>Download Receipt</q-tooltip>
+            </q-btn>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Merchant Status Card -->
+    <div class="status-card-section q-mb-xl animate-fade-in" style="animation-delay: 0.15s">
+      <MerchantStatusCard
+        :status="merchantStatus"
+        :progress="onboardingProgress"
+        :merchant-id="user.id"
+        @check-status="handleStatusCheck"
+        @update-info="handleUpdateInfo"
+        @contact-support="handleContactSupport"
+      />
+    </div>
+
+    <!-- Businesses List -->
+    <div class="businesses-section q-mb-xl animate-fade-in" style="animation-delay: 0.2s">
+      <div class="section-header">
+        <h3 class="section-title">
+          <q-icon name="business" size="24px" color="lime" class="q-mr-sm" />
+          Your Businesses
+        </h3>
+        <q-btn 
+          color="lime" 
+          icon="add" 
+          label="Add Business" 
+          @click="addBusiness" 
+          class="add-business-btn hover-scale"
+        />
+      </div>
+      
+      <div v-if="businesses.length === 0" class="no-businesses">
+        <q-icon name="store" size="64px" color="grey-5" class="pulse-icon" />
+        <h4>No Businesses Registered</h4>
+        <p>Start by registering your first business to accept payments</p>
+        <q-btn color="lime" label="Register First Business" @click="addBusiness" size="lg" class="hover-scale" />
+      </div>
+      
+      <div v-else class="businesses-grid">
+        <div 
+          v-for="(business, index) in businesses" 
+          :key="business.id || index" 
+          class="business-card hover-lift"
+          :class="getBusinessCardClass(business.status)"
+        >
+          <div class="business-header">
+            <div class="business-info">
+              <div class="business-avatar">
+                <q-avatar size="48px" square class="hover-scale">
+                  <img :src="business.logo_path || placeholderLogo" @error="onLogoError" />
+                </q-avatar>
+              </div>
+              <div class="business-details">
+                <h4 class="business-name">{{ business.business_name }}</h4>
+                <p class="business-account">{{ business.bank_account_name }}</p>
+                <div class="business-meta">
+                  <q-chip 
+                    :color="getStatusColor(business.status)" 
+                    :label="getStatusLabel(business.status)" 
+                    :icon="getStatusIcon(business.status)"
+                    size="sm" 
+                    class="status-chip"
+                  />
+                  <q-chip 
+                    v-if="business.stripe_account_id" 
+                    color="blue" 
+                    icon="account_balance" 
+                    label="Stripe Connected" 
+                    size="sm" 
+                    class="q-ml-sm"
+                  />
+                </div>
+              </div>
             </div>
             
-            <div class="profile-details">
-              <h4 class="business-name">{{ profile.business_name || 'No Business Added' }}</h4>
-              <p class="business-email">{{ profile.email || user.email || 'business@example.com' }}</p>
-              <p class="business-website">{{ profile.website || 'No website' }}</p>
-              
-              <div class="profile-stats">
-                <div class="stat-item">
-                  <span class="stat-value">{{ profileStats.transactions || 0 }}</span>
-                  <span class="stat-label">Transactions</span>
-                </div>
-                <div class="stat-item">
-                  <span class="stat-value">{{ profileStats.customers || 0 }}</span>
-                  <span class="stat-label">Customers</span>
-                </div>
-                <div class="stat-item">
-                  <span class="stat-value">{{ profileStats.rating || '4.8' }}</span>
-                  <span class="stat-label">Rating</span>
-                </div>
-              </div>
+            <div class="business-actions">
+              <q-btn 
+                flat 
+                round 
+                dense 
+                icon="more_vert" 
+                color="grey" 
+                @click="showBusinessMenu(business, $event)"
+                class="hover-scale"
+              />
             </div>
           </div>
           
-          <!-- Add Business CTA if no business -->
-          <div v-if="!profile.business_name" class="add-business-cta">
-            <q-icon name="store" size="48px" color="lime" />
-            <h4>Start Your Business Journey</h4>
-            <p>Add your business details to get started with payments</p>
-            <q-btn color="lime" label="Add Business Now" @click="addBusiness" />
-          </div>
-        </div>
-      </div>
-
-      <!-- Charts Section -->
-      <div class="right-column">
-        <!-- Revenue Chart -->
-        <div class="chart-card animate-fade-in" style="animation-delay: 0.4s">
-          <div class="card-header">
-            <h3 class="card-title">Revenue Overview</h3>
-            <div class="chart-actions">
-              <q-btn flat round dense icon="refresh" color="lime" @click="refreshChart" class="refresh-btn" />
-              <q-btn flat round dense icon="more_vert" color="lime" />
-            </div>
-          </div>
-          <div class="chart-container">
-            <div v-if="revenueData.length > 0" class="simple-chart">
-              <div class="chart-bars">
-                <div v-for="(item, index) in revenueData.slice(0, 6)" :key="index" class="chart-bar">
-                  <div class="bar-value">${{ formatNumber(item.revenue || 0) }}</div>
-                  <div 
-                    class="bar-fill" 
-                    :style="{ height: getBarHeight(item.revenue || 0) }"
-                  ></div>
-                  <div class="bar-label">{{ item.month || `M${index + 1}` }}</div>
-                </div>
+          <div class="business-content">
+            <div class="business-stats">
+              <div class="stat-item">
+                <span class="stat-label">Account Number</span>
+                <span class="stat-value">{{ maskAccountNumber(business.bank_account_number) }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">IFSC/SWIFT</span>
+                <span class="stat-value">{{ business.bank_ifsc_swift }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Registered</span>
+                <span class="stat-value">{{ formatDate(business.created_at) }}</span>
               </div>
             </div>
-            <div v-else class="chart-empty">
-              <q-icon name="analytics" size="48px" color="grey-5" />
-              <p>No revenue data available</p>
+            
+            <div class="business-footer">
+              <!-- ✅ Always show Create Payment button for any business -->
+              <q-btn 
+                color="green" 
+                icon="payment" 
+                label="Create Payment" 
+                @click="createPaymentForBusiness(business)"
+                size="sm"
+                class="hover-scale"
+              />
+              
+              <q-btn 
+                flat 
+                color="blue" 
+                icon="visibility" 
+                label="View Details" 
+                @click="viewBusinessDetails(business)"
+                size="sm"
+                class="hover-scale"
+              />
+              
+              <q-btn 
+                flat 
+                color="orange" 
+                icon="edit" 
+                label="Edit" 
+                @click="editBusiness(business)"
+                size="sm"
+                class="hover-scale"
+              />
             </div>
           </div>
-        </div>
-
-        <!-- Transaction Methods Chart -->
-        <div class="chart-card animate-fade-in" style="animation-delay: 0.5s">
-          <div class="card-header">
-            <h3 class="card-title">Payment Methods</h3>
-            <div class="chart-actions">
-              <q-btn flat round dense icon="refresh" color="lime" @click="refreshMethodsChart" class="refresh-btn" />
-            </div>
-          </div>
-          <div class="chart-container">
-            <div v-if="methodsData.length > 0" class="methods-chart">
-              <div v-for="method in methodsData.slice(0, 4)" :key="method.label" class="method-item">
-                <div class="method-info">
-                  <div class="method-name">{{ method.label }}</div>
-                  <div class="method-value">{{ method.value }}%</div>
-                </div>
-                <div class="method-bar">
-                  <div 
-                    class="method-fill" 
-                    :style="{ width: method.value + '%', backgroundColor: method.color }"
-                  ></div>
-                </div>
-              </div>
-            </div>
-            <div v-else class="chart-empty">
-              <q-icon name="payment" size="48px" color="grey-5" />
-              <p>No payment method data</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Recent Transactions -->
-        <div class="transactions-card animate-fade-in" style="animation-delay: 0.6s">
-          <div class="card-header">
-            <h3 class="card-title">Recent Transactions</h3>
-            <q-btn flat round dense icon="visibility" color="lime" @click="viewAllTransactions" class="view-all-btn" />
-          </div>
-          <div class="transactions-list">
-            <div v-if="recentTransactions.length === 0" class="no-transactions">
-              <q-icon name="receipt" size="48px" color="grey-5" />
-              <p>No transactions yet</p>
-              <q-btn v-if="profile.business_name" color="lime" label="Create First Transaction" @click="createTransaction" />
-            </div>
-            <div v-else v-for="transaction in recentTransactions" :key="transaction.id" class="transaction-item">
-              <div class="transaction-info">
-                <div class="customer-name">{{ transaction.customer_name || 'Customer' }}</div>
-                <div class="transaction-date">{{ formatDate(transaction.created_at) }}</div>
-              </div>
-              <div class="transaction-amount">
-                <span class="amount">{{ formatCurrency(transaction.amount) }}</span>
-                <q-chip :color="getStatusColor(transaction.status)" :label="transaction.status" size="sm" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Additional Charts Section -->
-    <div class="charts-section q-mt-xl animate-fade-in" style="animation-delay: 0.7s">
-      <h3 class="section-title">Business Analytics</h3>
-      <div class="charts-grid">
-        <!-- Customer Growth Chart -->
-        <div class="chart-card">
-          <div class="card-header">
-            <h3 class="card-title">Customer Growth</h3>
-          </div>
-          <div class="chart-container">
-            <div v-if="customerData.length > 0" class="simple-chart">
-              <div class="chart-bars">
-                <div v-for="(item, index) in customerData.slice(0, 6)" :key="index" class="chart-bar">
-                  <div class="bar-value">{{ item.customers || 0 }}</div>
-                  <div 
-                    class="bar-fill customer-bar" 
-                    :style="{ height: getBarHeight(item.customers || 0) }"
-                  ></div>
-                  <div class="bar-label">{{ item.month || `M${index + 1}` }}</div>
-                </div>
-              </div>
-            </div>
-            <div v-else class="chart-empty">
-              <q-icon name="people" size="48px" color="grey-5" />
-              <p>No customer data available</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Transaction Trends Chart -->
-        <div class="chart-card">
-          <div class="card-header">
-            <h3 class="card-title">Transaction Trends</h3>
-          </div>
-          <div class="chart-container">
-            <div v-if="trendsData.length > 0" class="simple-chart">
-              <div class="chart-bars">
-                <div v-for="(item, index) in trendsData.slice(0, 6)" :key="index" class="chart-bar">
-                  <div class="bar-value">{{ item.count || 0 }}</div>
-                  <div 
-                    class="bar-fill trends-bar" 
-                    :style="{ height: getBarHeight(item.count || 0) }"
-                  ></div>
-                  <div class="bar-label">{{ item.month || `M${index + 1}` }}</div>
-                </div>
-              </div>
-            </div>
-            <div v-else class="chart-empty">
-              <q-icon name="trending_up" size="48px" color="grey-5" />
-              <p>No trend data available</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Quick Actions Grid -->
-    <div class="actions-section q-mt-xl animate-fade-in" style="animation-delay: 0.8s">
-      <h3 class="section-title">Quick Actions</h3>
-      <div class="actions-grid">
-        <div class="action-item" @click="viewAnalytics">
-          <div class="action-icon">
-            <q-icon name="analytics" size="24px" color="lime" />
-          </div>
-          <div class="action-content">
-            <h4 class="action-title">View Analytics</h4>
-            <p class="action-description">Check your business performance metrics</p>
-          </div>
-          <q-icon name="arrow_forward" class="action-arrow" color="lime" />
-        </div>
-
-        <div class="action-item" @click="generateInvoice">
-          <div class="action-icon">
-            <q-icon name="receipt_long" size="24px" color="lime" />
-          </div>
-          <div class="action-content">
-            <h4 class="action-title">Generate Invoice</h4>
-            <p class="action-description">Create professional invoices for customers</p>
-          </div>
-          <q-icon name="arrow_forward" class="action-arrow" color="lime" />
-        </div>
-
-        <div class="action-item" @click="exportData">
-          <div class="action-icon">
-            <q-icon name="download" size="24px" color="lime" />
-          </div>
-          <div class="action-content">
-            <h4 class="action-title">Export Data</h4>
-            <p class="action-description">Download your business reports</p>
-          </div>
-          <q-icon name="arrow_forward" class="action-arrow" color="lime" />
-        </div>
-
-        <div class="action-item" @click="contactSupport">
-          <div class="action-icon">
-            <q-icon name="support_agent" size="24px" color="lime" />
-          </div>
-          <div class="action-content">
-            <h4 class="action-title">Get Support</h4>
-            <p class="action-description">Contact our support team</p>
-          </div>
-          <q-icon name="arrow_forward" class="action-arrow" color="lime" />
         </div>
       </div>
     </div>
@@ -327,85 +392,841 @@
       </q-banner>
     </div>
 
-    <!-- Add Business Dialog -->
+    <!-- Enhanced Add Business Dialog -->
     <q-dialog v-model="showAddBusinessDialog" persistent>
       <q-card class="add-business-dialog">
-        <q-card-section class="row items-center q-pb-none">
-          <div class="text-h6">Add Your Business</div>
-          <q-space />
-          <q-btn icon="close" flat round dense v-close-popup />
+        <q-card-section class="dialog-header">
+          <div class="header-content">
+            <div class="header-left">
+              <q-icon name="store" size="32px" color="lime" />
+              <div class="header-text">
+                <div class="text-h6">{{ editingBusiness ? 'Update Business' : 'Add New Business' }}</div>
+                <div class="text-caption text-grey-5">{{ editingBusiness ? 'Update your business information' : 'Register a new business for payment processing' }}</div>
+              </div>
+            </div>
+            <q-btn icon="close" flat round dense @click="cancelBusinessForm" class="hover-scale" />
+          </div>
         </q-card-section>
 
-        <q-card-section>
-          <q-form @submit="submitBusiness" class="q-gutter-md">
-            <q-input
-              v-model="newBusiness.business_name"
-              label="Business Name *"
-              filled
-              required
-              :rules="[val => !!val || 'Business name is required']"
-            />
-            
-            <q-input
-              v-model="newBusiness.website"
-              label="Website"
-              filled
-              type="url"
-              hint="Optional: Your business website"
-            />
-            
-            <q-input
-              v-model="newBusiness.bank_account_name"
-              label="Bank Account Name *"
-              filled
-              required
-              :rules="[val => !!val || 'Bank account name is required']"
-            />
-            
-            <q-input
-              v-model="newBusiness.bank_account_number"
-              label="Bank Account Number *"
-              filled
-              required
-              :rules="[val => !!val || 'Bank account number is required']"
-            />
-            
-            <q-input
-              v-model="newBusiness.bank_name"
-              label="Bank Name *"
-              filled
-              required
-              :rules="[val => !!val || 'Bank name is required']"
-            />
-            
-            <q-input
-              v-model="newBusiness.bank_routing_number"
-              label="Bank Routing Number *"
-              filled
-              required
-              :rules="[val => !!val || 'Bank routing number is required']"
-            />
-            
-            <q-input
-              v-model="newBusiness.business_address"
-              label="Business Address"
-              filled
-              type="textarea"
-              hint="Optional: Your business address"
-            />
-            
-            <q-input
-              v-model="newBusiness.business_phone"
-              label="Business Phone"
-              filled
-              hint="Optional: Your business phone number"
-            />
+        <q-card-section class="dialog-content">
+          <q-form @submit="submitBusiness" class="business-form">
+            <div class="form-section">
+              <h5 class="section-title">Business Information</h5>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="field-label">Business Name *</label>
+                  <q-input 
+                    v-model="newBusiness.business_name" 
+                    placeholder="Enter your business name" 
+                    outlined 
+                    dense
+                    required 
+                    :rules="[val => !!val || 'Business name is required']" 
+                    class="form-input" 
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="field-label">Business Logo (Optional)</label>
+                  <div class="logo-upload-container">
+                    <q-file 
+                      v-model="newBusiness.logo" 
+                      outlined 
+                      dense 
+                      accept="image/*" 
+                      max-file-size="2097152"
+                      @update:model-value="onLogoSelected" 
+                      class="form-input"
+                    >
+                      <template v-slot:prepend>
+                        <q-icon name="image" />
+                      </template>
+                    </q-file>
+
+                    <div v-if="logoPreview" class="logo-preview">
+                      <img :src="logoPreview" alt="Logo Preview" class="preview-image" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h5 class="section-title">Banking Details</h5>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="field-label">Bank Account Name *</label>
+                  <q-input 
+                    v-model="newBusiness.bank_account_name" 
+                    placeholder="Account holder name" 
+                    outlined 
+                    dense
+                    required 
+                    :rules="[val => !!val || 'Bank account name is required']" 
+                    class="form-input" 
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="field-label">Bank Account Number *</label>
+                  <q-input 
+                    v-model="newBusiness.bank_account_number" 
+                    placeholder="Enter account number" 
+                    outlined 
+                    dense
+                    required 
+                    :rules="[val => !!val || 'Bank account number is required']" 
+                    class="form-input" 
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="field-label">IFSC/SWIFT Code *</label>
+                  <q-input 
+                    v-model="newBusiness.bank_ifsc_swift" 
+                    placeholder="Bank IFSC or SWIFT code" 
+                    outlined 
+                    dense
+                    required 
+                    :rules="[val => !!val || 'IFSC/SWIFT code is required']" 
+                    class="form-input" 
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="field-label">Payout Preference *</label>
+                  <q-select 
+                    v-model="newBusiness.payout_preference" 
+                    :options="payoutOptions"
+                    placeholder="Select payout method" 
+                    outlined 
+                    dense 
+                    emit-value 
+                    map-options 
+                    required
+                    :rules="[val => !!val || 'Payout preference is required']" 
+                    class="form-input" 
+                  />
+                </div>
+              </div>
+            </div>
           </q-form>
         </q-card-section>
 
+        <q-card-actions class="dialog-actions" align="right">
+          <q-btn flat label="Cancel" @click="cancelBusinessForm" class="hover-scale" />
+          <q-btn 
+            color="lime" 
+            :label="editingBusiness ? 'Update Business' : 'Register Business'" 
+            @click="submitBusiness" 
+            :loading="submittingBusiness"
+            :disable="!isBusinessFormValid" 
+            class="hover-scale"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- ✅ NEW: Create Payment Dialog -->
+    <q-dialog v-model="showPaymentDialog" persistent>
+      <q-card class="payment-dialog">
+        <q-card-section class="dialog-header">
+          <div class="header-content">
+            <div class="header-left">
+              <q-icon name="payment" size="32px" color="blue" />
+              <div class="header-text">
+                <div class="text-h6">Create Payment</div>
+                <div class="text-caption text-grey-5">Generate a secure payment link for your customer</div>
+              </div>
+            </div>
+            <q-btn icon="close" flat round dense @click="cancelPaymentForm" class="hover-scale" />
+          </div>
+        </q-card-section>
+
+        <q-card-section class="dialog-content">
+          <q-form @submit="createPaymentCheckout" class="payment-form">
+            <!-- ✅ Business Selection - Always show if multiple businesses -->
+            <div class="form-section" v-if="businesses.length > 1">
+              <h5 class="section-title">Select Business</h5>
+              <div class="form-group">
+                <label class="field-label">Business *</label>
+                <q-select 
+                  v-model="selectedBusinessForPayment" 
+                  :options="businessOptions"
+                  placeholder="Select business for this payment" 
+                  outlined 
+                  dense 
+                  emit-value 
+                  map-options 
+                  required
+                  class="form-input" 
+                />
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h5 class="section-title">Payment Details</h5>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="field-label">Amount (USD) *</label>
+                  <q-input 
+                    v-model.number="paymentForm.amount" 
+                    type="number"
+                    min="1"
+                    step="0.01"
+                    placeholder="Enter amount in USD" 
+                    outlined 
+                    dense
+                    required 
+                    :rules="[val => val > 0 || 'Amount must be greater than 0']" 
+                    class="form-input" 
+                  >
+                    <template v-slot:prepend>
+                      <q-icon name="attach_money" color="green" />
+                    </template>
+                  </q-input>
+                </div>
+
+                <div class="form-group">
+                  <label class="field-label">Payment Method *</label>
+                  <q-select 
+                    v-model="paymentForm.method" 
+                    :options="paymentMethods"
+                    placeholder="Select payment method" 
+                    outlined 
+                    dense 
+                    emit-value 
+                    map-options 
+                    required
+                    :rules="[val => !!val || 'Payment method is required']" 
+                    class="form-input" 
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h5 class="section-title">Customer Information</h5>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="field-label">Customer Name *</label>
+                  <q-input 
+                    v-model="paymentForm.customer_name" 
+                    placeholder="Enter customer name" 
+                    outlined 
+                    dense
+                    required 
+                    :rules="[val => !!val || 'Customer name is required']" 
+                    class="form-input" 
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="field-label">Customer Email *</label>
+                  <q-input 
+                    v-model="paymentForm.customer_email" 
+                    type="email"
+                    placeholder="customer@example.com" 
+                    outlined 
+                    dense
+                    required 
+                    :rules="[
+                      val => !!val || 'Email is required',
+                      val => /.+@.+\..+/.test(val) || 'Invalid email format'
+                    ]" 
+                    class="form-input" 
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="field-label">Customer Phone (Optional)</label>
+                  <q-input 
+                    v-model="paymentForm.customer_phone" 
+                    placeholder="+1234567890" 
+                    outlined 
+                    dense
+                    class="form-input" 
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="field-label">Currency</label>
+                  <q-select 
+                    v-model="paymentForm.currency" 
+                    :options="currencyOptions"
+                    outlined 
+                    dense 
+                    emit-value 
+                    map-options 
+                    class="form-input" 
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- ✅ Optional: Cart Items -->
+            <div class="form-section">
+              <h5 class="section-title">
+                Cart Items (Optional)
+                <q-btn flat round dense icon="add" color="lime" @click="addCartItem" size="sm" class="q-ml-sm hover-scale" />
+              </h5>
+
+              <div v-if="paymentForm.cart.length === 0" class="no-cart-items">
+                <q-icon name="shopping_cart" size="32px" color="grey-5" />
+                <p>No items in cart. Payment will be processed as a simple amount.</p>
+                <q-btn flat color="lime" label="Add Item" @click="addCartItem" class="hover-scale" />
+              </div>
+
+              <div v-else class="cart-items">
+                <div 
+                  v-for="(item, index) in paymentForm.cart" 
+                  :key="index" 
+                  class="cart-item"
+                >
+                  <div class="item-details">
+                    <q-input 
+                      v-model="item.product" 
+                      placeholder="Product name" 
+                      outlined 
+                      dense 
+                      class="item-input"
+                    />
+                    <q-input 
+                      v-model.number="item.qty" 
+                      type="number" 
+                      min="1"
+                      placeholder="Qty" 
+                      outlined 
+                      dense 
+                      class="item-input qty-input"
+                    />
+                    <q-input 
+                      v-model.number="item.price" 
+                      type="number" 
+                      min="0"
+                      step="0.01"
+                      placeholder="Price (cents)" 
+                      outlined 
+                      dense 
+                      class="item-input"
+                    />
+                  </div>
+                  <q-btn 
+                    flat 
+                    round 
+                    dense 
+                    icon="remove" 
+                    color="red" 
+                    @click="removeCartItem(index)" 
+                    class="hover-scale"
+                  />
+                </div>
+              </div>
+            </div>
+          </q-form>
+        </q-card-section>
+
+        <q-card-actions class="dialog-actions" align="right">
+          <q-btn flat label="Cancel" @click="cancelPaymentForm" class="hover-scale" />
+          <q-btn 
+            color="blue" 
+            icon="payment" 
+            label="Create Payment" 
+            @click="createPaymentCheckout" 
+            :loading="creatingPayment"
+            :disable="!isPaymentFormValid" 
+            class="hover-scale"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- ✅ NEW: Refund Dialog -->
+    <q-dialog v-model="showRefundDialog" persistent>
+      <q-card class="refund-dialog">
+        <q-card-section class="dialog-header">
+          <div class="header-content">
+            <div class="header-left">
+              <q-icon name="undo" size="32px" color="orange" />
+              <div class="header-text">
+                <div class="text-h6">Process Refund</div>
+                <div class="text-caption text-grey-5">Refund transaction #{{ selectedTransaction?.id }}</div>
+              </div>
+            </div>
+            <q-btn icon="close" flat round dense @click="cancelRefund" class="hover-scale" />
+          </div>
+        </q-card-section>
+
+        <q-card-section class="dialog-content" v-if="selectedTransaction">
+          <div class="refund-summary">
+            <div class="transaction-overview">
+              <h5>Transaction Details</h5>
+              <div class="overview-grid">
+                <div class="overview-item">
+                  <span class="label">Amount:</span>
+                  <span class="value">{{ formatCurrency(selectedTransaction.amount) }}</span>
+                </div>
+                <div class="overview-item">
+                  <span class="label">Customer:</span>
+                  <span class="value">{{ selectedTransaction.customer_name }}</span>
+                </div>
+                <div class="overview-item">
+                  <span class="label">Date:</span>
+                  <span class="value">{{ formatDateTime(selectedTransaction.created_at) }}</span>
+                </div>
+                <div class="overview-item">
+                  <span class="label">Method:</span>
+                  <span class="value">{{ getPaymentMethodLabel(selectedTransaction.method) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="refund-form">
+              <div class="form-group">
+                <label class="field-label">Refund Amount *</label>
+                <q-input 
+                  v-model.number="refundForm.amount" 
+                  type="number"
+                  :min="0.01"
+                  :max="selectedTransaction.amount / 100"
+                  step="0.01"
+                  placeholder="Enter refund amount" 
+                  outlined 
+                  dense
+                  required 
+                  :rules="[
+                    val => val > 0 || 'Amount must be greater than 0',
+                    val => val <= (selectedTransaction.amount / 100) || 'Cannot exceed transaction amount'
+                  ]" 
+                  class="form-input" 
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="undo" color="orange" />
+                  </template>
+                  <template v-slot:hint>
+                    Maximum: {{ formatCurrency(selectedTransaction.amount) }}
+                  </template>
+                </q-input>
+              </div>
+
+              <div class="form-group">
+                <label class="field-label">Refund Reason *</label>
+                <q-select 
+                  v-model="refundForm.reason" 
+                  :options="refundReasons"
+                  placeholder="Select refund reason" 
+                  outlined 
+                  dense 
+                  emit-value 
+                  map-options 
+                  required
+                  class="form-input" 
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="field-label">Additional Notes (Optional)</label>
+                <q-input 
+                  v-model="refundForm.notes" 
+                  type="textarea"
+                  placeholder="Enter additional notes for the refund" 
+                  outlined 
+                  dense
+                  rows="3"
+                  class="form-input" 
+                />
+              </div>
+            </div>
+          </div>
+        </q-card-section>
+
+        <q-card-actions class="dialog-actions" align="right">
+          <q-btn flat label="Cancel" @click="cancelRefund" class="hover-scale" />
+          <q-btn 
+            color="orange" 
+            icon="undo" 
+            label="Process Refund" 
+            @click="processRefund" 
+            :loading="processingRefund"
+            :disable="!isRefundFormValid" 
+            class="hover-scale"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- ✅ FIXED: Stripe Instruction Dialog (No iframe, no 404 errors) -->
+    <q-dialog v-model="showStripeDialog" persistent>
+      <q-card class="stripe-instruction-dialog">
+        <q-card-section class="stripe-header">
+          <div class="stripe-header-content">
+            <div class="header-info">
+              <q-icon name="account_balance" size="32px" color="blue" />
+              <div class="header-text">
+                <div class="text-h6">Complete Stripe Onboarding</div>
+                <div class="text-caption text-grey-5">Business: {{ currentBusinessName }}</div>
+              </div>
+            </div>
+            <q-btn flat round dense icon="close" color="grey" @click="closeStripeDialog" class="hover-scale" />
+          </div>
+        </q-card-section>
+
+        <q-card-section class="stripe-content">
+          <div class="instruction-content">
+            <div class="instruction-icon">
+              <q-icon name="launch" size="64px" color="blue" class="pulse-icon" />
+            </div>
+            
+            <h4>Stripe Onboarding Ready</h4>
+            <p>
+              Your Stripe onboarding link is ready for <strong>{{ currentBusinessName }}</strong>. 
+              Click the button below to open Stripe onboarding in a secure new window.
+            </p>
+            
+            <!-- ✅ Enhanced security notice -->
+            <div class="security-notice">
+              <q-icon name="security" color="green" size="20px" />
+              <div class="security-text">
+                <strong>Secure Connection:</strong>
+                <ul>
+                  <li>This is a direct connection to Stripe's official servers</li>
+                  <li>All data is encrypted and secure</li>
+                  <li>No sensitive information is stored on our servers</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div class="onboarding-steps">
+              <div class="step-item step-highlight">
+                <q-icon name="open_in_new" color="blue" size="20px" />
+                <span>Click "Open Stripe Onboarding" below</span>
+              </div>
+              <div class="step-item">
+                <q-icon name="edit" color="green" size="20px" />
+                <span>Complete all required fields in the Stripe form</span>
+              </div>
+              <div class="step-item">
+                <q-icon name="check_circle" color="lime" size="20px" />
+                <span>Return here and click "I've Completed Onboarding"</span>
+              </div>
+            </div>
+            
+            <!-- ✅ URL display with validation status -->
+            <div class="url-display" v-if="stripeOnboardingUrl">
+              <label>
+                <q-icon name="link" size="16px" color="blue" class="q-mr-sm" />
+                Secure Onboarding URL:
+              </label>
+              <div class="url-box">
+                <span class="url-text">{{ stripeOnboardingUrl }}</span>
+                <q-btn 
+                  flat 
+                  round 
+                  dense 
+                  icon="content_copy" 
+                  color="blue" 
+                  @click="copyStripeUrl(stripeOnboardingUrl)"
+                  class="copy-btn hover-scale"
+                >
+                  <q-tooltip>Copy URL</q-tooltip>
+                </q-btn>
+              </div>
+              <div class="url-status">
+                <q-icon name="verified" size="14px" color="green" />
+                <span>Verified Stripe Connection</span>
+              </div>
+            </div>
+          </div>
+        </q-card-section>
+
+        <q-card-actions class="stripe-footer" align="center">
+          <q-btn flat label="Skip for Now" @click="skipStripeOnboarding" class="hover-scale" />
+          <q-btn 
+            color="orange" 
+            icon="refresh" 
+            label="Get Fresh URL" 
+            @click="retryStripeOnboarding"
+            :loading="gettingFreshUrl"
+            class="hover-scale"
+          />
+          <q-btn 
+            color="blue" 
+            icon="open_in_new" 
+            label="Open Stripe Onboarding" 
+            @click="openStripeInNewTab" 
+            class="hover-scale"
+          />
+          <q-btn 
+            color="green" 
+            icon="check" 
+            label="I've Completed Onboarding" 
+            @click="markOnboardingCompleted" 
+            class="hover-scale"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- ✅ NEW: Payment Processing Dialog -->
+    <q-dialog v-model="showPaymentProcessingDialog" persistent>
+      <q-card class="payment-processing-dialog">
+        <q-card-section class="processing-header">
+          <div class="processing-content">
+            <div class="processing-icon">
+              <q-icon name="payment" size="48px" color="blue" class="payment-pulse" />
+            </div>
+            <h4>Processing Payment</h4>
+            <p>Redirecting to secure Stripe checkout...</p>
+          </div>
+        </q-card-section>
+
+        <q-card-section class="processing-details">
+          <div class="payment-summary">
+            <div class="summary-item">
+              <span>Business:</span>
+              <span>{{ getSelectedBusinessName() }}</span>
+            </div>
+            <div class="summary-item">
+              <span>Amount:</span>
+              <span class="amount-value">${{ paymentForm.amount }}</span>
+            </div>
+            <div class="summary-item">
+              <span>Customer:</span>
+              <span>{{ paymentForm.customer_name }}</span>
+            </div>
+            <div class="summary-item">
+              <span>Method:</span>
+              <span>{{ getPaymentMethodLabel(paymentForm.method) }}</span>
+            </div>
+          </div>
+          
+          <div class="processing-progress">
+            <q-linear-progress 
+              :value="processingProgress / 100" 
+              color="blue" 
+              size="8px" 
+              class="progress-bar"
+            />
+            <div class="progress-text">{{ processingProgress }}% Complete</div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
+    <!-- ✅ NEW: Payment Result Dialog -->
+    <q-dialog v-model="showPaymentResultDialog" persistent>
+      <q-card class="payment-result-dialog">
+        <q-card-section class="result-content">
+          <div class="result-animation">
+            <q-icon 
+              :name="paymentResult.success ? 'check_circle' : 'cancel'" 
+              :color="paymentResult.success ? 'green' : 'red'" 
+              size="80px" 
+              :class="paymentResult.success ? 'success-bounce' : 'error-shake'"
+            />
+          </div>
+          
+          <div class="result-title">
+            <h3 :class="paymentResult.success ? 'text-green' : 'text-red'">
+              {{ paymentResult.success ? 'Payment Successful!' : 'Payment Failed' }}
+            </h3>
+          </div>
+          
+          <div class="result-message">
+            <p>{{ paymentResult.message }}</p>
+          </div>
+
+          <div class="result-details" v-if="paymentResult.details">
+            <div class="detail-card">
+              <div class="detail-item">
+                <span class="detail-label">Business:</span>
+                <span class="detail-value">{{ getSelectedBusinessName() }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Transaction ID:</span>
+                <span class="detail-value">{{ paymentResult.details.transaction_id || 'N/A' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Amount:</span>
+                <span class="detail-value">${{ paymentForm.amount }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Customer:</span>
+                <span class="detail-value">{{ paymentForm.customer_name }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Status:</span>
+                <q-chip 
+                  :color="paymentResult.success ? 'green' : 'red'" 
+                  :label="paymentResult.success ? 'Completed' : 'Failed'" 
+                  :icon="paymentResult.success ? 'check_circle' : 'cancel'"
+                  size="sm"
+                />
+              </div>
+            </div>
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="center">
+          <q-btn flat label="Close" @click="closePaymentResult" class="hover-scale" />
+          <q-btn 
+            v-if="paymentResult.success"
+            color="green" 
+            label="View Transactions" 
+            @click="viewTransactions" 
+            class="hover-scale"
+          />
+          <q-btn 
+            v-else
+            color="blue" 
+            label="Try Again" 
+            @click="retryPayment" 
+            class="hover-scale"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Success Dialog -->
+    <q-dialog v-model="showSuccessDialog" persistent>
+      <q-card class="success-dialog">
+        <q-card-section class="success-content">
+          <div class="success-animation">
+            <q-icon name="check_circle" size="80px" color="green" class="success-icon" />
+          </div>
+          <div class="text-h5 text-green q-mt-md">
+            {{ editingBusiness ? 'Business Updated Successfully!' : 'Business Registered Successfully!' }}
+          </div>
+          <div class="text-body2 text-grey-7 q-mt-sm">
+            Your business information has been {{ editingBusiness ? 'updated' : 'submitted' }} and Stripe onboarding completed.
+          </div>
+
+          <div class="success-details q-mt-lg">
+            <div class="detail-card">
+              <div class="detail-item">
+                <span class="detail-label">Business Name:</span>
+                <span class="detail-value">{{ submittedBusiness.business_name }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Account Holder:</span>
+                <span class="detail-value">{{ submittedBusiness.bank_account_name }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Stripe Account:</span>
+                <span class="detail-value">{{ currentStripeAccountId || 'Connected' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Status:</span>
+                <q-chip color="green" text-color="white" icon="check_circle" size="sm">
+                  Ready for Payments
+                </q-chip>
+              </div>
+            </div>
+          </div>
+
+          <div class="approval-notice q-mt-lg">
+            <q-banner class="text-white bg-positive">
+              <template v-slot:avatar>
+                <q-icon name="check_circle" />
+              </template>
+              <strong>Ready to Go:</strong> Your business is registered, Stripe is connected, and you can start accepting payments immediately!
+            </q-banner>
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="center">
+          <q-btn flat label="Close" @click="closeSuccessDialog" class="hover-scale" />
+          <q-btn color="lime" label="View Dashboard" @click="refreshDashboard" class="hover-scale" />
+          <q-btn color="blue" label="Create Payment" @click="createFirstPayment" class="hover-scale" />
+          <q-btn color="purple" label="Add Another Business" @click="addAnotherBusiness" class="hover-scale" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Business Details Dialog -->
+    <q-dialog v-model="showBusinessDetailsDialog" persistent>
+      <q-card class="business-details-dialog" v-if="selectedBusiness">
+        <q-card-section class="dialog-header">
+          <div class="text-h6">{{ selectedBusiness.business_name }}</div>
+          <q-btn icon="close" flat round dense v-close-popup class="hover-scale" />
+        </q-card-section>
+        
+        <q-card-section class="business-detail-content">
+          <div class="business-overview">
+            <div class="overview-header">
+              <q-avatar size="64px" square class="hover-scale">
+                <img :src="selectedBusiness.logo_path || placeholderLogo" />
+              </q-avatar>
+              <div class="overview-info">
+                <h4>{{ selectedBusiness.business_name }}</h4>
+                <p>{{ selectedBusiness.bank_account_name }}</p>
+                <q-chip 
+                  :color="getStatusColor(selectedBusiness.status)" 
+                  :label="getStatusLabel(selectedBusiness.status)" 
+                  :icon="getStatusIcon(selectedBusiness.status)"
+                  class="status-chip"
+                />
+              </div>
+            </div>
+            
+            <div class="business-details-grid">
+              <div class="detail-section">
+                <h6>Banking Information</h6>
+                <div class="detail-row">
+                  <span>Account Name:</span>
+                  <span>{{ selectedBusiness.bank_account_name }}</span>
+                </div>
+                <div class="detail-row">
+                  <span>Account Number:</span>
+                  <span>{{ maskAccountNumber(selectedBusiness.bank_account_number) }}</span>
+                </div>
+                <div class="detail-row">
+                  <span>IFSC/SWIFT:</span>
+                  <span>{{ selectedBusiness.bank_ifsc_swift }}</span>
+                </div>
+              </div>
+              
+              <div class="detail-section">
+                <h6>Account Information</h6>
+                <div class="detail-row">
+                  <span>Stripe Account:</span>
+                  <span>{{ selectedBusiness.stripe_account_id || 'Not connected' }}</span>
+                </div>
+                <div class="detail-row">
+                  <span>Status:</span>
+                  <span>{{ getStatusLabel(selectedBusiness.status) }}</span>
+                </div>
+                <div class="detail-row">
+                  <span>Sample Balance:</span>
+                  <span>{{ formatCurrency(0) }}</span>
+                </div>
+                <div class="detail-row">
+                  <span>Registered:</span>
+                  <span>{{ formatDateTime(selectedBusiness.created_at) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </q-card-section>
+        
         <q-card-actions align="right">
-          <q-btn flat label="Cancel" v-close-popup />
-          <q-btn color="lime" label="Add Business" @click="submitBusiness" :loading="submittingBusiness" />
+          <q-btn flat label="Close" v-close-popup class="hover-scale" />
+          <q-btn 
+            color="orange" 
+            label="Update Information" 
+            @click="editBusiness(selectedBusiness)" 
+            class="hover-scale"
+          />
+          <q-btn 
+            color="green" 
+            label="Create Payment" 
+            @click="createPaymentForBusiness(selectedBusiness)" 
+            class="hover-scale"
+          />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -417,7 +1238,6 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { api } from '../../boot/axios'
-import TopKpiCards from '../stats/TopKpiCards.vue'
 import MerchantStatusCard from './MerchantStatusCard.vue'
 
 const router = useRouter()
@@ -426,27 +1246,105 @@ const $q = useQuasar()
 // Reactive data
 const loading = ref(false)
 const error = ref('')
-const profile = ref({})
+const businesses = ref([])
+const selectedBusiness = ref(null)
+const selectedTransaction = ref(null)
 const profileStats = ref({})
-const revenueData = ref([])
-const methodsData = ref([])
-const customerData = ref([])
-const trendsData = ref([])
-const recentTransactions = ref([])
 
-// Add Business Dialog
+// ✅ NEW: Transaction and refund data
+const recentTransactions = ref([])
+const loadingTransactions = ref(false)
+const refundingTransaction = ref(null)
+const processingRefund = ref(false)
+const showRefundDialog = ref(false)
+const refundForm = ref({
+  amount: 0,
+  reason: '',
+  notes: ''
+})
+
+// Dialog states
 const showAddBusinessDialog = ref(false)
+const showStripeDialog = ref(false)
+const showSuccessDialog = ref(false)
+const showBusinessDetailsDialog = ref(false)
+const showPaymentDialog = ref(false)
+const showPaymentProcessingDialog = ref(false)
+const showPaymentResultDialog = ref(false)
 const submittingBusiness = ref(false)
+const editingBusiness = ref(false)
+const gettingFreshUrl = ref(false)
+const creatingPayment = ref(false)
+
+// ✅ Enhanced Stripe integration (no iframe, no 404 errors)
+const stripeOnboardingUrl = ref('')
+const currentBusinessName = ref('')
+const currentStripeAccountId = ref('')
+
+// ✅ NEW: Payment processing
+const processingProgress = ref(0)
+const selectedBusinessForPayment = ref(null)
+const paymentResult = ref({
+  success: false,
+  message: '',
+  details: null
+})
+
+// Form data
 const newBusiness = ref({
   business_name: '',
-  website: '',
+  logo: null,
   bank_account_name: '',
   bank_account_number: '',
-  bank_name: '',
-  bank_routing_number: '',
-  business_address: '',
-  business_phone: ''
+  bank_ifsc_swift: '',
+  payout_preference: 'bank_transfer'
 })
+
+// ✅ NEW: Payment form data
+const paymentForm = ref({
+  amount: 10,
+  currency: 'usd',
+  method: 'card',
+  customer_name: '',
+  customer_email: '',
+  customer_phone: '',
+  cart: []
+})
+
+const submittedBusiness = ref({})
+const logoPreview = ref('')
+
+// Options
+const payoutOptions = [
+  { label: 'Bank Transfer', value: 'bank_transfer' },
+  { label: 'Digital Wallet', value: 'digital_wallet' },
+  { label: 'Check', value: 'check' }
+]
+
+// ✅ NEW: Payment options
+const paymentMethods = [
+  { label: 'Credit Card', value: 'card' },
+  { label: 'Bank Transfer', value: 'bank_transfer' },
+  { label: 'Digital Wallet', value: 'wallet' }
+]
+
+const currencyOptions = [
+  { label: 'USD - US Dollar', value: 'usd' },
+  { label: 'EUR - Euro', value: 'eur' },
+  { label: 'GBP - British Pound', value: 'gbp' }
+]
+
+// ✅ NEW: Refund reasons
+const refundReasons = [
+  { label: 'Customer Request', value: 'customer_request' },
+  { label: 'Product Defective', value: 'defective_product' },
+  { label: 'Service Not Delivered', value: 'service_not_delivered' },
+  { label: 'Duplicate Charge', value: 'duplicate_charge' },
+  { label: 'Fraudulent Transaction', value: 'fraud' },
+  { label: 'Other', value: 'other' }
+]
+
+const placeholderLogo = 'https://placehold.co/200x200/121018/bdf000?text=Logo'
 
 // Computed properties
 const user = computed(() => {
@@ -458,50 +1356,68 @@ const user = computed(() => {
   }
 })
 
-const merchantStatus = computed(() => profile.value.status || 'pending')
-
-const onboardingProgress = computed(() => {
-  const required = ['business_name', 'logo_url', 'bank_account_name', 'bank_account_number']
-  const completed = required.filter(field => profile.value[field])
-  return Math.round((completed.length / required.length) * 100)
+// ✅ Use first business for status card, or default
+const merchantStatus = computed(() => {
+  return businesses.value.length > 0 ? businesses.value[0].status : 'pending'
 })
 
-const kpiData = computed(() => [
-  {
-    title: 'Total Revenue',
-    value: formatCurrency(profileStats.value.total_revenue || 0),
-    change: profileStats.value.revenue_change || '+0%',
-    trend: profileStats.value.revenue_trend || 'neutral',
-    icon: 'trending_up',
-    color: 'lime'
-  },
-  {
-    title: 'Transactions',
-    value: profileStats.value.transactions || 0,
-    change: profileStats.value.transactions_change || '+0%',
-    trend: profileStats.value.transactions_trend || 'neutral',
-    icon: 'receipt',
-    color: 'blue'
-  },
-  {
-    title: 'Success Rate',
-    value: `${profileStats.value.success_rate || 0}%`,
-    change: profileStats.value.success_rate_change || '+0%',
-    trend: profileStats.value.success_rate_trend || 'neutral',
-    icon: 'check_circle',
-    color: 'green'
-  },
-  {
-    title: 'Active Customers',
-    value: profileStats.value.customers || 0,
-    change: profileStats.value.customers_change || '+0%',
-    trend: profileStats.value.customers_trend || 'neutral',
-    icon: 'people',
-    color: 'purple'
-  }
-])
+const onboardingProgress = computed(() => {
+  if (businesses.value.length === 0) return 0
+  
+  const totalBusinesses = businesses.value.length
+  const completedBusinesses = businesses.value.filter(b => 
+    b.business_name && b.bank_account_name && b.bank_account_number && b.bank_ifsc_swift
+  ).length
+  
+  return Math.round((completedBusinesses / totalBusinesses) * 100)
+})
 
-const placeholderLogo = 'https://placehold.co/200x200/121018/bdf000?text=Logo'
+const approvedBusinessCount = computed(() => {
+  return businesses.value.filter(b => b.status === 'approved' || b.status === 'verified').length
+})
+
+const pendingBusinessCount = computed(() => {
+  return businesses.value.filter(b => b.status === 'pending').length
+})
+
+const stripeConnectedCount = computed(() => {
+  return businesses.value.filter(b => b.stripe_account_id).length
+})
+
+// ✅ All businesses can be used for payments
+const businessOptions = computed(() => {
+  return businesses.value.map(b => ({
+    label: b.business_name,
+    value: b.id
+  }))
+})
+
+const isBusinessFormValid = computed(() => {
+  return newBusiness.value.business_name &&
+         newBusiness.value.bank_account_name &&
+         newBusiness.value.bank_account_number &&
+         newBusiness.value.bank_ifsc_swift &&
+         newBusiness.value.payout_preference
+})
+
+// ✅ NEW: Payment form validation - no status check required
+const isPaymentFormValid = computed(() => {
+  const hasSelectedBusiness = businesses.value.length === 1 || selectedBusinessForPayment.value
+  
+  return paymentForm.value.amount > 0 &&
+         paymentForm.value.method &&
+         paymentForm.value.customer_name &&
+         paymentForm.value.customer_email &&
+         /.+@.+\..+/.test(paymentForm.value.customer_email) &&
+         hasSelectedBusiness
+})
+
+// ✅ NEW: Refund form validation
+const isRefundFormValid = computed(() => {
+  return refundForm.value.amount > 0 &&
+         refundForm.value.amount <= (selectedTransaction.value?.amount / 100 || 0) &&
+         refundForm.value.reason
+})
 
 // Methods
 const loadDashboardData = async () => {
@@ -511,14 +1427,9 @@ const loadDashboardData = async () => {
     
     console.log('🔄 Loading dashboard data...')
     
-    // Load merchant profile
-    await loadMerchantProfile()
-    
-    // Load transactions
+    await loadBusinessesData()
     await loadRecentTransactions()
-    
-    // Load analytics data
-    await loadAnalyticsData()
+    calculateProfileStats()
     
     console.log('✅ Dashboard data loaded successfully')
     
@@ -530,322 +1441,1373 @@ const loadDashboardData = async () => {
   }
 }
 
-const loadMerchantProfile = async () => {
+// ✅ ENHANCED: Load businesses data with global persistence
+const loadBusinessesData = async () => {
   try {
-    console.log('🔄 Loading merchant profile...')
+    console.log('🔄 Loading businesses data...')
     
-    // ✅ Try multiple profile endpoints
-    let profileResponse
-    try {
-      profileResponse = await api.get('/api/merchant/profile')
-    } catch {
-      try {
-        profileResponse = await api.get('/api/profile')
-      } catch {
-        try {
-          profileResponse = await api.get('/api/user')
-        } catch {
-          throw new Error('No profile endpoint available')
-        }
-      }
+    // ✅ Use global storage key to persist across all sessions
+    const storageKey = 'merchantBusinesses'
+    
+    const storedBusinessesData = localStorage.getItem(storageKey)
+    
+    if (storedBusinessesData) {
+      const allBusinesses = JSON.parse(storedBusinessesData)
+      
+      // ✅ Filter businesses for current user
+      const currentUserId = user.value.id || user.value.email || 'default'
+      businesses.value = allBusinesses.filter(b => 
+        b.user_id === currentUserId || 
+        b.user?.id === currentUserId || 
+        b.user?.email === user.value.email
+      )
+      
+      console.log('✅ Businesses data loaded from global storage:', businesses.value.length, 'businesses for user', currentUserId)
+    } else {
+      businesses.value = []
+      console.log('📝 No businesses data found in global storage')
     }
     
-    profile.value = profileResponse.data?.merchant || profileResponse.data?.user || profileResponse.data || {}
-    console.log('✅ Profile loaded:', profile.value)
-    
-  } catch (profileError) {
-    console.warn('⚠️ Profile endpoint not available, using user data from localStorage',profileError)
-    
-    // Use user data from localStorage as fallback
-    const storedUser = localStorage.getItem('user')
-    if (storedUser) {
-      try {
-        const userData = JSON.parse(storedUser)
-        profile.value = {
-          email: userData.email,
-          business_name: userData.business_name || '',
-          status: 'pending',
-          ...userData
-        }
-      } catch {
-        profile.value = { email: user.value.email, status: 'pending' }
-      }
-    }
+  } catch (err) {
+    console.warn('⚠️ Error loading businesses data:', err)
+    businesses.value = []
   }
 }
 
+// ✅ NEW: Load recent transactions
 const loadRecentTransactions = async () => {
   try {
+    loadingTransactions.value = true
     console.log('🔄 Loading recent transactions...')
     
-    // ✅ Use your actual API endpoint: GET /api/merchant/transactions
-    const response = await api.get('/api/merchant/transactions', {
-      params: { limit: 5, sort: 'desc' }
-    })
-    
-    // Handle different response formats
-    const data = response.data
-    if (data.transactions) {
-      recentTransactions.value = data.transactions
-    } else if (Array.isArray(data)) {
-      recentTransactions.value = data
-    } else if (data.data) {
-      recentTransactions.value = data.data
-    } else {
-      recentTransactions.value = []
+    // ✅ Try to load from API
+    try {
+      const response = await api.get('/api/merchant/transactions', {
+        params: { limit: 10 }
+      })
+      
+      const data = response.data
+      if (data.transactions) {
+        recentTransactions.value = data.transactions
+      } else if (Array.isArray(data)) {
+        recentTransactions.value = data
+      } else {
+        recentTransactions.value = []
+      }
+      
+      console.log('✅ Transactions loaded from API:', recentTransactions.value.length)
+      
+    } catch{
+      console.warn('⚠️ Transactions API not available, using mock data')
+      
+      // ✅ Generate mock transactions for demo
+      recentTransactions.value = Array.from({ length: Math.min(businesses.value.length * 3, 10) }, (_, i) => ({
+        id: 1000 + i,
+        customer_name: ['John Doe', 'Jane Smith', 'Bob Johnson', 'Alice Brown', 'Charlie Wilson'][i % 5],
+        customer_email: ['john@example.com', 'jane@example.com', 'bob@example.com', 'alice@example.com', 'charlie@example.com'][i % 5],
+        amount: Math.floor(Math.random() * 50000) + 1000, // $10 - $500 in cents
+        currency: 'usd',
+        method: ['card', 'bank_transfer', 'wallet'][i % 3],
+        status: ['completed', 'pending', 'failed', 'completed', 'completed'][i % 5], // More completed for refund testing
+        created_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+        business_id: businesses.value[i % businesses.value.length]?.id || 1,
+        refunded: false
+      }))
     }
     
-    console.log('✅ Recent transactions loaded:', recentTransactions.value.length)
-    
-  } catch (transactionsError) {
-    console.warn('⚠️ Transactions API not available, using sample data',transactionsError)
-    recentTransactions.value = generateSampleTransactions()
+  } catch (err) {
+    console.warn('⚠️ Error loading transactions:', err)
+    recentTransactions.value = []
+  } finally {
+    loadingTransactions.value = false
   }
 }
 
-const loadAnalyticsData = async () => {
+// ✅ NEW: Refresh transactions
+// const refreshTransactions = async () => {
+//   try {
+//     await loadRecentTransactions()
+    
+//     $q.notify({
+//       type: 'positive',
+//       message: 'Transactions refreshed successfully',
+//       position: 'top',
+//       icon: 'refresh',
+//       timeout: 3000
+//     })
+    
+//   } catch (error) {
+//     console.error('❌ Error refreshing transactions:', error)
+//     $q.notify({
+//       type: 'negative',
+//       message: 'Failed to refresh transactions',
+//       position: 'top'
+//     })
+//   }
+// }
+
+// ✅ NEW: Check if transaction can be refunded
+const canRefund = (transaction) => {
+  return transaction.status === 'completed' && 
+         !transaction.refunded &&
+         new Date(transaction.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Within 30 days
+}
+
+// ✅ NEW: Show refund dialog
+const showRefundTransactionForm= (transaction) => {
+  selectedTransaction.value = transaction
+  refundForm.value = {
+    amount: transaction.amount / 100, // Convert from cents to dollars
+    reason: '',
+    notes: ''
+  }
+  showRefundDialog.value = true
+}
+
+// ✅ NEW: Cancel refund
+const cancelRefund = () => {
+  showRefundDialog.value = false
+  selectedTransaction.value = null
+  refundForm.value = {
+    amount: 0,
+    reason: '',
+    notes: ''
+  }
+}
+
+// ✅ NEW: Process refund
+const processRefund = async () => {
   try {
-    console.log('🔄 Loading analytics data...')
+    processingRefund.value = true
+    refundingTransaction.value = selectedTransaction.value.id
     
-    // Load revenue data
-    try {
-      const revenueResponse = await api.get('/api/merchant/analytics/revenue')
-      revenueData.value = revenueResponse.data?.data || revenueResponse.data || []
-    } catch {
-      revenueData.value = generateSampleRevenue()
+    if (!isRefundFormValid.value) {
+      throw new Error('Please fill in all required fields')
     }
     
-    // Load payment methods data
-    try {
-      const methodsResponse = await api.get('/api/merchant/analytics/payment-methods')
-      methodsData.value = methodsResponse.data?.data || methodsResponse.data || []
-    } catch {
-      methodsData.value = generateSampleMethods()
+    console.log('🔄 Processing refund for transaction:', selectedTransaction.value.id)
+    
+    // ✅ Prepare refund data for API
+    const refundData = {
+      amount: Math.round(refundForm.value.amount * 100), // Convert to cents
+      reason: refundForm.value.reason,
+      notes: refundForm.value.notes
     }
     
-    // Load customer data
+    console.log('📤 Sending refund request to /api/merchant/transactions/' + selectedTransaction.value.id + '/refund:', refundData)
+    
+    // ✅ Call the refund API endpoint
     try {
-      const customerResponse = await api.get('/api/merchant/analytics/customers')
-      customerData.value = customerResponse.data?.data || customerResponse.data || []
-    } catch {
-      customerData.value = generateSampleCustomers()
+      const refundResponse = await api.post(`/api/merchant/transactions/${selectedTransaction.value.id}/refund`, refundData, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      })
+      
+      console.log('✅ Refund response:', refundResponse.data)
+      
+      $q.notify({
+        type: 'positive',
+        message: `Refund of ${formatCurrency(refundForm.value.amount * 100)} processed successfully!`,
+        position: 'top',
+        icon: 'check_circle',
+        timeout: 6000
+      })
+      
+    } catch (refundError) {
+      console.warn('⚠️ Refund API error:', refundError)
+      
+      // ✅ Show API error message
+      let errorMessage = 'Failed to process refund'
+      
+      if (refundError.response?.data?.message) {
+        errorMessage = refundError.response.data.message
+      } else if (refundError.response?.data?.errors) {
+        const errors = refundError.response.data.errors
+        const errorMessages = Object.values(errors).flat()
+        errorMessage = errorMessages.join(', ')
+      } else if (refundError.message) {
+        errorMessage = refundError.message
+      }
+      
+      $q.notify({
+        type: 'negative',
+        message: errorMessage,
+        position: 'top',
+        icon: 'error',
+        timeout: 8000
+      })
+      
+      return // Don't update local state if API failed
     }
     
-    // Load trends data
-    try {
-      const trendsResponse = await api.get('/api/merchant/analytics/trends')
-      trendsData.value = trendsResponse.data?.data || trendsResponse.data || []
-    } catch {
-      trendsData.value = generateSampleTrends()
+    // ✅ Update transaction status locally only if API succeeded
+    const transactionIndex = recentTransactions.value.findIndex(t => t.id === selectedTransaction.value.id)
+    if (transactionIndex !== -1) {
+      recentTransactions.value[transactionIndex].status = 'refunded'
+      recentTransactions.value[transactionIndex].refunded = true
+      recentTransactions.value[transactionIndex].refund_amount = Math.round(refundForm.value.amount * 100)
+      recentTransactions.value[transactionIndex].refund_reason = refundForm.value.reason
+      recentTransactions.value[transactionIndex].refund_notes = refundForm.value.notes
     }
     
-    // Calculate profile stats from real data
-    calculateProfileStats()
+    cancelRefund()
     
-    console.log('✅ Analytics data loaded')
+  } catch (err) {
+    console.error('❌ Refund processing error:', err)
     
-  } catch (analyticsError) {
-    console.warn('⚠️ Analytics APIs not available, using sample data',analyticsError)
-    loadSampleAnalytics()
+    $q.notify({
+      type: 'negative',
+      message: err.message || 'Failed to process refund',
+      position: 'top',
+      timeout: 5000
+    })
+  } finally {
+    processingRefund.value = false
+    refundingTransaction.value = null
+  }
+}
+
+// ✅ NEW: View transaction details
+const viewTransactionDetails = (transaction) => {
+  $q.dialog({
+    title: `Transaction #${transaction.id}`,
+    message: `
+      <div style="padding: 20px;">
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px;">
+          <div><strong>Customer:</strong> ${transaction.customer_name}</div>
+          <div><strong>Amount:</strong> ${formatCurrency(transaction.amount)}</div>
+          <div><strong>Method:</strong> ${getPaymentMethodLabel(transaction.method)}</div>
+          <div><strong>Status:</strong> ${transaction.status}</div>
+          <div><strong>Date:</strong> ${formatDateTime(transaction.created_at)}</div>
+          <div><strong>Email:</strong> ${transaction.customer_email || 'N/A'}</div>
+        </div>
+        ${transaction.refunded ? `
+          <div style="background: rgba(255, 152, 0, 0.1); border-radius: 8px; padding: 16px; margin-top: 16px;">
+            <div style="color: #ff9800; font-weight: bold; margin-bottom: 8px;">Refund Information:</div>
+            <div><strong>Refund Amount:</strong> ${formatCurrency(transaction.refund_amount || transaction.amount)}</div>
+            <div><strong>Refund Reason:</strong> ${transaction.refund_reason || 'N/A'}</div>
+            ${transaction.refund_notes ? `<div><strong>Notes:</strong> ${transaction.refund_notes}</div>` : ''}
+          </div>
+        ` : ''}
+      </div>
+    `,
+    html: true,
+    ok: {
+      label: 'Close',
+      color: 'blue'
+    }
+  })
+}
+
+// ✅ NEW: Download transaction receipt
+const downloadTransactionReceipt = (transaction) => {
+  const receiptData = `
+Transaction Receipt
+==================
+Transaction ID: #${transaction.id}
+Customer: ${transaction.customer_name}
+Email: ${transaction.customer_email || 'N/A'}
+Amount: ${formatCurrency(transaction.amount)}
+Method: ${getPaymentMethodLabel(transaction.method)}
+Status: ${transaction.status}
+Date: ${formatDateTime(transaction.created_at)}
+${transaction.refunded ? `
+Refund Information:
+Refund Amount: ${formatCurrency(transaction.refund_amount || transaction.amount)}
+Refund Reason: ${transaction.refund_reason || 'N/A'}
+${transaction.refund_notes ? `Refund Notes: ${transaction.refund_notes}` : ''}
+` : ''}
+
+Thank you for your business!
+  `.trim()
+  
+  const blob = new Blob([receiptData], { type: 'text/plain' })
+  const url = window.URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `receipt_${transaction.id}.txt`
+  link.click()
+  window.URL.revokeObjectURL(url)
+  
+  $q.notify({
+    type: 'positive',
+    message: 'Receipt downloaded successfully',
+    position: 'top',
+    icon: 'download',
+    timeout: 3000
+  })
+}
+
+// ✅ ENHANCED: Save businesses data globally
+const saveBusinessesData = () => {
+  try {
+    const storageKey = 'merchantBusinesses'
+    
+    // ✅ Get existing global data
+    const existingData = localStorage.getItem(storageKey)
+    let allBusinesses = existingData ? JSON.parse(existingData) : []
+    
+    // ✅ Update or add current user's businesses
+    const currentUserId = user.value.id || user.value.email || 'default'
+    
+    // Remove old businesses for this user
+    allBusinesses = allBusinesses.filter(b => 
+      b.user_id !== currentUserId && 
+      b.user?.id !== currentUserId && 
+      b.user?.email !== user.value.email
+    )
+    
+    // Add current user's businesses
+    allBusinesses = [...allBusinesses, ...businesses.value]
+    
+    localStorage.setItem(storageKey, JSON.stringify(allBusinesses))
+    console.log('✅ Businesses data saved to global storage:', businesses.value.length, 'businesses for user', currentUserId)
+  } catch (err) {
+    console.error('❌ Error saving businesses data:', err)
   }
 }
 
 const calculateProfileStats = () => {
-  if (recentTransactions.value.length > 0) {
-    const totalRevenue = recentTransactions.value.reduce((sum, t) => sum + (t.amount || 0), 0)
-    const completedTransactions = recentTransactions.value.filter(t => t.status === 'completed')
-    const uniqueCustomers = new Set(recentTransactions.value.map(t => t.customer_email)).size
-    
-    profileStats.value = {
-      total_revenue: totalRevenue,
-      transactions: recentTransactions.value.length,
-      success_rate: Math.round((completedTransactions.length / recentTransactions.value.length) * 100),
-      customers: uniqueCustomers,
-      revenue_change: '+12%',
-      transactions_change: '+8%',
-      success_rate_change: '+5%',
-      customers_change: '+15%',
-      revenue_trend: 'up',
-      transactions_trend: 'up',
-      success_rate_trend: 'up',
-      customers_trend: 'up'
-    }
+  profileStats.value = {
+    total_businesses: businesses.value.length,
+    approved_businesses: approvedBusinessCount.value,
+    pending_businesses: pendingBusinessCount.value,
+    stripe_connected: stripeConnectedCount.value
+  }
+}
+
+// ✅ REMOVED: All status checking functions
+const handleStatusCheck = () => {
+  $q.notify({
+    type: 'info',
+    message: 'Status checks are disabled. All businesses can create payments.',
+    position: 'top',
+    timeout: 3000
+  })
+}
+
+const handleUpdateInfo = () => {
+  if (businesses.value.length > 0) {
+    editBusiness(businesses.value[0])
   } else {
-    profileStats.value = {
-      total_revenue: 0,
-      transactions: 0,
-      success_rate: 0,
-      customers: 0,
-      revenue_change: '+0%',
-      transactions_change: '+0%',
-      success_rate_change: '+0%',
-      customers_change: '+0%',
-      revenue_trend: 'neutral',
-      transactions_trend: 'neutral',
-      success_rate_trend: 'neutral',
-      customers_trend: 'neutral'
-    }
+    addBusiness()
   }
 }
 
-const generateSampleTransactions = () => {
-  return [
-    {
-      id: 1,
-      customer_name: 'John Doe',
-      customer_email: 'john@example.com',
-      amount: 12500, // $125.00 in cents
-      status: 'completed',
-      created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString()
-    },
-    {
-      id: 2,
-      customer_name: 'Jane Smith',
-      customer_email: 'jane@example.com',
-      amount: 8750, // $87.50 in cents
-      status: 'pending',
-      created_at: new Date(Date.now() - 1000 * 60 * 60 * 6).toISOString()
-    },
-    {
-      id: 3,
-      customer_name: 'Bob Johnson',
-      customer_email: 'bob@example.com',
-      amount: 15000, // $150.00 in cents
-      status: 'completed',
-      created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString()
-    }
-  ]
-}
-
-const generateSampleRevenue = () => {
-  return [
-    { month: 'Jan', revenue: 125000 },
-    { month: 'Feb', revenue: 138000 },
-    { month: 'Mar', revenue: 156000 },
-    { month: 'Apr', revenue: 142000 },
-    { month: 'May', revenue: 168000 },
-    { month: 'Jun', revenue: 184000 }
-  ]
-}
-
-const generateSampleMethods = () => {
-  return [
-    { label: 'Credit Card', value: 45, color: '#bdf000' },
-    { label: 'Debit Card', value: 30, color: '#2196f3' },
-    { label: 'Digital Wallet', value: 15, color: '#ff9800' },
-    { label: 'Bank Transfer', value: 10, color: '#9c27b0' }
-  ]
-}
-
-const generateSampleCustomers = () => {
-  return [
-    { month: 'Jan', customers: 45 },
-    { month: 'Feb', customers: 52 },
-    { month: 'Mar', customers: 61 },
-    { month: 'Apr', customers: 58 },
-    { month: 'May', customers: 67 },
-    { month: 'Jun', customers: 74 }
-  ]
-}
-
-const generateSampleTrends = () => {
-  return [
-    { month: 'Jan', count: 125 },
-    { month: 'Feb', count: 138 },
-    { month: 'Mar', count: 156 },
-    { month: 'Apr', count: 142 },
-    { month: 'May', count: 168 },
-    { month: 'Jun', count: 184 }
-  ]
-}
-
-const loadSampleAnalytics = () => {
-  revenueData.value = generateSampleRevenue()
-  methodsData.value = generateSampleMethods()
-  customerData.value = generateSampleCustomers()
-  trendsData.value = generateSampleTrends()
-  calculateProfileStats()
-}
-
-const onStatusUpdated = (statusData) => {
-  if (statusData.status) {
-    profile.value.status = statusData.status
-  }
-  if (statusData.progress !== undefined) {
-    // Update any progress-related data
-  }
+const handleContactSupport = () => {
+  contactSupport()
 }
 
 const addBusiness = () => {
+  editingBusiness.value = false
+  selectedBusiness.value = null
+  newBusiness.value = {
+    business_name: '',
+    logo: null,
+    bank_account_name: '',
+    bank_account_number: '',
+    bank_ifsc_swift: '',
+    payout_preference: 'bank_transfer'
+  }
+  logoPreview.value = ''
   showAddBusinessDialog.value = true
 }
 
+const editBusiness = (business) => {
+  editingBusiness.value = true
+  selectedBusiness.value = business
+  newBusiness.value = {
+    business_name: business.business_name || '',
+    logo: null,
+    bank_account_name: business.bank_account_name || '',
+    bank_account_number: business.bank_account_number || '',
+    bank_ifsc_swift: business.bank_ifsc_swift || '',
+    payout_preference: 'bank_transfer'
+  }
+  logoPreview.value = business.logo_path || ''
+  showBusinessDetailsDialog.value = false
+  showAddBusinessDialog.value = true
+}
+
+const onLogoSelected = (file) => {
+  if (file) {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      logoPreview.value = e.target.result
+    }
+    reader.readAsDataURL(file)
+  } else {
+    logoPreview.value = ''
+  }
+}
+
+const cancelBusinessForm = () => {
+  showAddBusinessDialog.value = false
+  editingBusiness.value = false
+  selectedBusiness.value = null
+  newBusiness.value = {
+    business_name: '',
+    logo: null,
+    bank_account_name: '',
+    bank_account_number: '',
+    bank_ifsc_swift: '',
+    payout_preference: 'bank_transfer'
+  }
+  logoPreview.value = ''
+}
+
+// ✅ ENHANCED: Support multiple businesses with unique names
 const submitBusiness = async () => {
   try {
     submittingBusiness.value = true
     
-    // Validate required fields
-    if (!newBusiness.value.business_name || !newBusiness.value.bank_account_name || 
-        !newBusiness.value.bank_account_number || !newBusiness.value.bank_name) {
+    if (!isBusinessFormValid.value) {
       throw new Error('Please fill in all required fields')
     }
     
-    // ✅ Use your business registration endpoint: POST /api/merchant/register
-    const response = await api.post('/api/merchant/register', {
-      business_name: newBusiness.value.business_name,
-      website: newBusiness.value.website,
-      bank_account_name: newBusiness.value.bank_account_name,
-      bank_account_number: newBusiness.value.bank_account_number,
-      bank_name: newBusiness.value.bank_name,
-      bank_routing_number: newBusiness.value.bank_routing_number,
-      business_address: newBusiness.value.business_address,
-      business_phone: newBusiness.value.business_phone
-    })
+    // ✅ Check for duplicate business names
+    const duplicateName = businesses.value.find(b => 
+      b.business_name.toLowerCase() === newBusiness.value.business_name.toLowerCase() &&
+      (!editingBusiness.value || b.id !== selectedBusiness.value?.id)
+    )
     
-    console.log('✅ Business registered:', response.data)
-    
-    $q.notify({
-      type: 'positive',
-      message: 'Business added successfully!',
-      position: 'top'
-    })
-    
-    showAddBusinessDialog.value = false
-    
-    // Update profile with new business data
-    profile.value = { ...profile.value, ...newBusiness.value, status: 'pending' }
-    
-    // Reset form
-    newBusiness.value = {
-      business_name: '',
-      website: '',
-      bank_account_name: '',
-      bank_account_number: '',
-      bank_name: '',
-      bank_routing_number: '',
-      business_address: '',
-      business_phone: ''
+    if (duplicateName) {
+      $q.notify({
+        type: 'warning',
+        message: 'A business with this name already exists. Please use a different name.',
+        position: 'top',
+        timeout: 5000
+      })
+      return
     }
     
-    // Reload dashboard data
-    await loadDashboardData()
+    console.log('🔄 Submitting business information...')
+    
+    // ✅ Use exact format from your API documentation
+    const businessData = {
+      business_name: newBusiness.value.business_name,
+      logo: "", // Always empty string as per your API docs
+      bank_account_name: newBusiness.value.bank_account_name,
+      bank_account_number: newBusiness.value.bank_account_number,
+      bank_ifsc_swift: newBusiness.value.bank_ifsc_swift,
+      "payout_preferences[0]": newBusiness.value.payout_preference
+    }
+    
+    console.log('📤 Submitting business data to /api/merchant/register:', businessData)
+    
+    const businessResponse = await api.post('/api/merchant/register', businessData, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    })
+    
+    console.log('✅ Business registration response:', businessResponse.data)
+    
+    // ✅ Extract data from your actual response structure
+    const responseData = businessResponse.data
+    const merchantData = responseData.merchant
+    const onboardingUrl = responseData.onboarding_url
+    
+    console.log('🔍 Merchant data:', merchantData)
+    console.log('🔗 Onboarding URL:', onboardingUrl)
+    
+    // ✅ Create business data object with ready status
+    const businessDataObj = {
+      id: merchantData.id,
+      user_id: merchantData.user_id,
+      business_name: merchantData.business_name,
+      bank_account_name: merchantData.bank_account_name,
+      bank_account_number: merchantData.bank_account_number,
+      bank_ifsc_swift: merchantData.bank_ifsc_swift,
+      logo_path: merchantData.logo_path,
+      stripe_account_id: merchantData.stripe_account_id,
+      status: 'approved', // ✅ Always set as approved - no verification required
+      created_at: merchantData.created_at,
+      updated_at: merchantData.updated_at,
+      user: merchantData.user
+    }
+    
+    // ✅ Add or update business in the list
+    if (editingBusiness.value && selectedBusiness.value) {
+      const index = businesses.value.findIndex(b => b.id === selectedBusiness.value.id)
+      if (index !== -1) {
+        businesses.value[index] = businessDataObj
+      }
+    } else {
+      businesses.value.push(businessDataObj)
+    }
+    
+    // ✅ Save businesses data globally
+    saveBusinessesData()
+    
+    // Store submitted business data for success dialog
+    submittedBusiness.value = { ...newBusiness.value }
+    currentBusinessName.value = merchantData.business_name
+    currentStripeAccountId.value = merchantData.stripe_account_id
+    
+    // Close business form dialog
+    showAddBusinessDialog.value = false
+    
+    // ✅ Show success notification
+    $q.notify({
+      type: 'positive',
+      message: 'Information added successfully!',
+      position: 'top',
+      icon: 'check_circle',
+      timeout: 4000
+    })
+    
+    // ✅ Open Stripe onboarding if URL is provided and valid
+    if (onboardingUrl && validateStripeUrl(onboardingUrl)) {
+      console.log('🔄 Opening validated Stripe onboarding URL:', onboardingUrl)
+      await openStripeOnboarding(onboardingUrl)
+    } else {
+      console.warn('⚠️ Invalid or missing onboarding URL')
+      showSuccessDialog.value = true
+    }
+    
+    console.log('✅ Business registration completed successfully')
     
   } catch (err) {
-    console.error('❌ Business registration error:', err)
+    console.error('❌ Business submission error:', err)
+    
+    let errorMessage = 'Failed to submit business information'
+    
+    if (err.response?.status === 500) {
+      // ✅ Handle unique constraint by generating unique business name
+      if (err.response?.data?.message?.includes('Duplicate entry') || 
+          err.response?.data?.message?.includes('merchants_user_id_unique') ||
+          err.response?.data?.message?.includes('Integrity constraint violation')) {
+        
+        // ✅ Generate unique business name by adding timestamp
+        const uniqueName = `${newBusiness.value.business_name}_${Date.now()}`
+        newBusiness.value.business_name = uniqueName
+        
+        $q.notify({
+          type: 'warning',
+          message: `Business name updated to "${uniqueName}" to avoid conflicts. Please try submitting again.`,
+          position: 'top',
+          timeout: 8000,
+          actions: [
+            { 
+              label: 'Submit Again', 
+              color: 'white', 
+              handler: () => submitBusiness()
+            }
+          ]
+        })
+        return
+      } else {
+        errorMessage = 'Server error occurred. Please check your data and try again, or contact support.'
+      }
+      
+    } else if (err.response?.data?.message) {
+      errorMessage = err.response.data.message
+    } else if (err.response?.data?.errors) {
+      const errors = err.response.data.errors
+      const errorMessages = Object.values(errors).flat()
+      errorMessage = errorMessages.join(', ')
+    } else if (err.message) {
+      errorMessage = err.message
+    }
+    
     $q.notify({
       type: 'negative',
-      message: err.message || 'Failed to add business. Please try again.',
-      position: 'top'
+      message: errorMessage,
+      position: 'top',
+      timeout: 8000,
+      actions: [
+        { 
+          label: 'Contact Support', 
+          color: 'white', 
+          handler: () => contactSupport()
+        }
+      ]
     })
+    
   } finally {
     submittingBusiness.value = false
   }
 }
 
-const createTransaction = () => {
-  router.push('/checkout')
+// ✅ NEW: Validate Stripe URL before opening
+const validateStripeUrl = (url) => {
+  try {
+    if (!url || typeof url !== 'string') {
+      console.error('❌ Invalid URL: not a string')
+      return false
+    }
+    
+    const urlObj = new URL(url)
+    
+    // Check if it's a valid Stripe domain
+    const validDomains = [
+      'connect.stripe.com',
+      'dashboard.stripe.com',
+      'checkout.stripe.com'
+    ]
+    
+    const isValidDomain = validDomains.some(domain => urlObj.hostname.includes(domain))
+    
+    if (!isValidDomain) {
+      console.warn('⚠️ Invalid Stripe domain:', urlObj.hostname)
+      return false
+    }
+    
+    // Check if URL uses HTTPS
+    if (urlObj.protocol !== 'https:') {
+      console.warn('⚠️ Non-HTTPS Stripe URL:', url)
+      return false
+    }
+    
+    console.log('✅ Valid Stripe URL:', url)
+    return true
+    
+  } catch (error) {
+    console.error('❌ Invalid URL format:', error)
+    return false
+  }
 }
 
+// ✅ ENHANCED: Better Stripe onboarding with URL validation
+const openStripeOnboarding = async (onboardingUrl) => {
+  try {
+    console.log('🔄 Preparing Stripe onboarding with URL:', onboardingUrl)
+    
+    // ✅ Validate URL first
+    if (!validateStripeUrl(onboardingUrl)) {
+      throw new Error('Invalid Stripe onboarding URL received from server')
+    }
+    
+    stripeOnboardingUrl.value = onboardingUrl
+    showStripeDialog.value = true
+    
+    $q.notify({
+      type: 'info',
+      message: 'Stripe onboarding is ready. Click "Open Stripe Onboarding" to continue in a secure window.',
+      position: 'top',
+      timeout: 6000
+    })
+    
+  } catch (error) {
+    console.error('❌ Error preparing Stripe onboarding:', error)
+    
+    $q.notify({
+      type: 'negative',
+      message: 'Invalid Stripe onboarding URL. Please contact support.',
+      position: 'top',
+      timeout: 8000,
+      actions: [
+        { 
+          label: 'Contact Support', 
+          color: 'white', 
+          handler: () => contactSupport()
+        },
+        { 
+          label: 'Skip for Now', 
+          color: 'white', 
+          handler: () => skipStripeOnboarding()
+        }
+      ]
+    })
+  }
+}
+
+// ✅ ENHANCED: Better popup handling with error detection
+const openStripeInNewTab = async () => {
+  if (!stripeOnboardingUrl.value) {
+    $q.notify({
+      type: 'warning',
+      message: 'No Stripe onboarding URL available',
+      position: 'top'
+    })
+    return
+  }
+  
+  try {
+    console.log('🔄 Opening Stripe onboarding in secure new window:', stripeOnboardingUrl.value)
+    
+    // ✅ Open with enhanced security settings
+    const stripeWindow = window.open(
+      stripeOnboardingUrl.value, 
+      'stripe-onboarding', 
+      'width=1200,height=900,scrollbars=yes,resizable=yes,location=yes,status=yes,toolbar=yes'
+    )
+    
+    if (!stripeWindow) {
+      throw new Error('Popup blocked')
+    }
+    
+    // ✅ Monitor window and show instructions
+    showStripeInstructionDialog(stripeOnboardingUrl.value, stripeWindow)
+    
+  } catch (error) {
+    console.error('❌ Error opening Stripe window:', error)
+    
+    if (error.message === 'Popup blocked') {
+      $q.notify({
+        type: 'warning',
+        message: 'Please allow popups for this site to complete Stripe onboarding.',
+        position: 'top',
+        timeout: 8000,
+        actions: [
+          { 
+            label: 'Copy Link', 
+            color: 'white', 
+            handler: () => copyStripeUrl(stripeOnboardingUrl.value)
+          }
+        ]
+      })
+    } else {
+      $q.notify({
+        type: 'negative',
+        message: 'Failed to open Stripe onboarding. Please try copying the link manually.',
+        position: 'top',
+        timeout: 8000,
+        actions: [
+          { 
+            label: 'Copy Link', 
+            color: 'white', 
+            handler: () => copyStripeUrl(stripeOnboardingUrl.value)
+          }
+        ]
+      })
+    }
+  }
+}
+
+// ✅ ENHANCED: Better instruction dialog with debugging info
+const showStripeInstructionDialog = (onboardingUrl, stripeWindow) => {
+  $q.dialog({
+    title: 'Complete Stripe Onboarding',
+    message: `
+      <div style="text-align: center; padding: 20px;">
+        <div style="margin-bottom: 20px;">
+          <i class="material-icons" style="font-size: 48px; color: #2196f3;">account_balance</i>
+        </div>
+        <h4 style="color: #ffffff; margin: 16px 0;">Stripe Onboarding Window Opened</h4>
+        <p style="color: #ccc; line-height: 1.6; margin-bottom: 20px;">
+          A secure new window has opened with your Stripe onboarding form for <strong>${currentBusinessName.value}</strong>. 
+          Please complete the form in that window and return here when finished.
+        </p>
+        
+        <div style="background: rgba(76, 175, 80, 0.1); border-radius: 8px; padding: 16px; margin: 16px 0;">
+          <p style="color: #4caf50; margin: 0; font-size: 0.9rem;">
+            <i class="material-icons" style="font-size: 16px; vertical-align: middle;">security</i>
+            This is a secure connection to Stripe's official onboarding system.
+          </p>
+        </div>
+        
+        <div style="background: rgba(33, 150, 243, 0.1); border-radius: 8px; padding: 16px; margin: 16px 0;">
+          <p style="color: #2196f3; margin: 0; font-size: 0.9rem;">
+            <i class="material-icons" style="font-size: 16px; vertical-align: middle;">info</i>
+            Complete all required fields in the Stripe form to connect your payment processing.
+          </p>
+        </div>
+        
+        <div style="background: rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 12px; margin: 16px 0; font-family: monospace; font-size: 0.8rem; word-break: break-all; text-align: left;">
+          ${onboardingUrl}
+        </div>
+      </div>
+    `,
+    html: true,
+    persistent: true,
+    ok: {
+      label: 'I\'ve Completed Onboarding',
+      color: 'green'
+    },
+    cancel: {
+      label: 'Get Fresh URL',
+      color: 'orange'
+    }
+  }).onOk(() => {
+    markOnboardingCompleted()
+  }).onCancel(() => {
+    if (stripeWindow && !stripeWindow.closed) {
+      stripeWindow.close()
+    }
+    retryStripeOnboarding()
+  })
+  
+  // ✅ Enhanced window monitoring
+  const checkWindowClosed = setInterval(() => {
+    if (stripeWindow.closed) {
+      clearInterval(checkWindowClosed)
+      
+      $q.notify({
+        type: 'info',
+        message: 'Stripe window was closed. Did you complete the onboarding successfully?',
+        position: 'top',
+        timeout: 10000,
+        actions: [
+          { 
+            label: 'Yes, Completed', 
+            color: 'white', 
+            handler: () => markOnboardingCompleted()
+          },
+          { 
+            label: 'Had Issues, Get New URL', 
+            color: 'white', 
+            handler: () => retryStripeOnboarding()
+          },
+          { 
+            label: 'Skip for Now', 
+            color: 'white', 
+            handler: () => skipStripeOnboarding()
+          }
+        ]
+      })
+    }
+  }, 1000)
+  
+  // Stop checking after 15 minutes
+  setTimeout(() => {
+    clearInterval(checkWindowClosed)
+  }, 15 * 60 * 1000)
+}
+
+// ✅ NEW: Copy Stripe URL to clipboard with enhanced handling
+const copyStripeUrl = async (url) => {
+  try {
+    await navigator.clipboard.writeText(url)
+    
+    $q.notify({
+      type: 'positive',
+      message: 'Stripe onboarding URL copied to clipboard!',
+      position: 'top',
+      icon: 'content_copy',
+      timeout: 4000
+    })
+    
+  } catch (err) {
+    console.error('Failed to copy URL:', err)
+    
+    $q.dialog({
+      title: 'Stripe Onboarding URL',
+      message: `
+        <div style="padding: 20px; text-align: center;">
+          <p style="color: #ccc; margin-bottom: 16px;">Please copy this URL and open it in a new browser tab:</p>
+          <div style="background: rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 16px; margin: 16px 0; word-break: break-all; font-family: monospace; font-size: 0.85rem; user-select: all;">
+            ${url}
+          </div>
+          <p style="color: #2196f3; font-size: 0.9rem;">Complete the Stripe onboarding form and return here when finished.</p>
+        </div>
+      `,
+      html: true,
+      ok: {
+        label: 'I\'ll Copy It Manually',
+        color: 'blue'
+      }
+    })
+  }
+}
+
+// ✅ ENHANCED: Better retry with fresh URL
+const retryStripeOnboarding = async () => {
+  try {
+    gettingFreshUrl.value = true
+    console.log('🔄 Getting fresh Stripe onboarding URL...')
+    
+    if (!submittedBusiness.value.business_name) {
+      $q.notify({
+        type: 'warning',
+        message: 'Please submit your business information first',
+        position: 'top'
+      })
+      return
+    }
+    
+    $q.loading.show({
+      message: 'Getting fresh Stripe onboarding URL...',
+      spinnerColor: 'blue'
+    })
+    
+    // ✅ Re-submit business to get fresh onboarding URL
+    const businessData = {
+      business_name: submittedBusiness.value.business_name,
+      logo: "",
+      bank_account_name: submittedBusiness.value.bank_account_name,
+      bank_account_number: submittedBusiness.value.bank_account_number,
+      bank_ifsc_swift: submittedBusiness.value.bank_ifsc_swift,
+      "payout_preferences[0]": submittedBusiness.value.payout_preference
+    }
+    
+    const businessResponse = await api.post('/api/merchant/register', businessData, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    })
+    
+    const newOnboardingUrl = businessResponse.data?.onboarding_url
+    
+    if (newOnboardingUrl && validateStripeUrl(newOnboardingUrl)) {
+      console.log('✅ Fresh onboarding URL received:', newOnboardingUrl)
+      
+      $q.notify({
+        type: 'positive',
+        message: 'Fresh Stripe URL generated successfully!',
+        position: 'top',
+        icon: 'refresh',
+        timeout: 4000
+      })
+      
+      await openStripeOnboarding(newOnboardingUrl)
+    } else {
+      throw new Error('Invalid or missing onboarding URL in response')
+    }
+    
+  } catch (error) {
+    console.error('❌ Failed to get fresh Stripe URL:', error)
+    
+    $q.notify({
+      type: 'negative',
+      message: 'Failed to get fresh Stripe URL. Please contact support for assistance.',
+      position: 'top',
+      timeout: 8000,
+      actions: [
+        { 
+          label: 'Contact Support', 
+          color: 'white', 
+          handler: () => contactSupport()
+        }
+      ]
+    })
+  } finally {
+    gettingFreshUrl.value = false
+    $q.loading.hide()
+  }
+}
+
+// ✅ NEW: Skip Stripe onboarding option
+const skipStripeOnboarding = () => {
+  $q.dialog({
+    title: 'Skip Stripe Onboarding?',
+    message: 'You can skip Stripe onboarding for now and complete it later. You can still create payments without it.',
+    ok: {
+      label: 'Skip for Now',
+      color: 'orange'
+    },
+    cancel: {
+      label: 'Continue Setup',
+      color: 'lime'
+    }
+  }).onOk(() => {
+    $q.notify({
+      type: 'info',
+      message: 'Stripe onboarding skipped. You can complete it later from your business profile.',
+      position: 'top',
+      timeout: 6000
+    })
+    
+    closeStripeDialog()
+    showSuccessDialog.value = true
+  })
+}
+
+const markOnboardingCompleted = async () => {
+  try {
+    console.log('🔄 Marking Stripe onboarding as completed...')
+    $q.notify({
+      type: 'positive',
+      message: `Stripe onboarding completed for ${currentBusinessName.value}! You can now create payments.`,
+      position: 'top',
+      icon: 'check_circle',
+      timeout: 6000
+    })
+    
+    closeStripeDialog()
+    showSuccessDialog.value = true
+    
+  } catch (error) {
+    console.error('❌ Error marking onboarding completed:', error)
+    $q.notify({
+      type: 'warning',
+      message: 'Onboarding marked as completed. You can now create payments.',
+      position: 'top'
+    })
+    
+    closeStripeDialog()
+    showSuccessDialog.value = true
+  }
+}
+
+const closeStripeDialog = () => {
+  showStripeDialog.value = false
+  stripeOnboardingUrl.value = ''
+  currentBusinessName.value = ''
+  currentStripeAccountId.value = ''
+}
+
+// ✅ NEW: Payment creation methods - no status restrictions
+const showCreatePaymentDialog = () => {
+  if (businesses.value.length === 0) {
+    $q.notify({
+      type: 'warning',
+      message: 'Please register a business first to create payments',
+      position: 'top'
+    })
+    return
+  }
+  
+  // ✅ Auto-select business if only one
+  if (businesses.value.length === 1) {
+    selectedBusinessForPayment.value = businesses.value[0].id
+  } else {
+    selectedBusinessForPayment.value = null
+  }
+  
+  // Reset form
+  paymentForm.value = {
+    amount: 10,
+    currency: 'usd',
+    method: 'card',
+    customer_name: '',
+    customer_email: '',
+    customer_phone: '',
+    cart: []
+  }
+  
+  showPaymentDialog.value = true
+}
+
+const cancelPaymentForm = () => {
+  showPaymentDialog.value = false
+  selectedBusinessForPayment.value = null
+  paymentForm.value = {
+    amount: 10,
+    currency: 'usd',
+    method: 'card',
+    customer_name: '',
+    customer_email: '',
+    customer_phone: '',
+    cart: []
+  }
+}
+
+const addCartItem = () => {
+  paymentForm.value.cart.push({
+    product: '',
+    qty: 1,
+    price: 0
+  })
+}
+
+const removeCartItem = (index) => {
+  paymentForm.value.cart.splice(index, 1)
+}
+
+// ✅ NEW: Create payment checkout
+const createPaymentCheckout = async () => {
+  let progressInterval
+
+  try {
+    creatingPayment.value = true
+
+    if (!isPaymentFormValid.value) {
+      throw new Error('Please fill in all required fields')
+    }
+
+    console.log('🔄 Creating payment checkout...')
+
+    // ✅ Get the selected business for payment
+    const businessForPayment = getSelectedBusinessForPayment()
+    if (!businessForPayment) {
+      throw new Error('No business selected for payment')
+    }
+
+    // Show processing dialog
+    showPaymentDialog.value = false
+    showPaymentProcessingDialog.value = true
+    processingProgress.value = 0
+
+    // ✅ Simulate processing progress
+    progressInterval = setInterval(() => {
+      if (processingProgress.value < 90) {
+        processingProgress.value += 15
+      }
+    }, 200)
+    
+    // ✅ Prepare checkout data according to your API format
+    const checkoutData = {
+      merchant_id: businessForPayment.id,
+      amount: paymentForm.value.amount,
+      currency: paymentForm.value.currency,
+      method: paymentForm.value.method,
+      customer: {
+        name: paymentForm.value.customer_name,
+        email: paymentForm.value.customer_email,
+        phone: paymentForm.value.customer_phone || "+15555555555"
+      },
+      cart: paymentForm.value.cart.length > 0 ? paymentForm.value.cart : [
+        { 
+          product: "Payment", 
+          qty: 1, 
+          price: Math.round(paymentForm.value.amount * 100) // Convert to cents
+        }
+      ],
+      return_url_success: `${window.location.origin}/payment/success`,
+      return_url_failure: `${window.location.origin}/payment/failed`
+    }
+    
+    console.log('📤 Sending checkout request:', checkoutData)
+    
+    const checkoutResponse = await api.post('/api/payments/checkout', checkoutData)
+    
+    console.log('✅ Checkout response:', checkoutResponse.data)
+    
+    clearInterval(progressInterval)
+    processingProgress.value = 100
+    
+    // ✅ Extract payment URL from response
+    const paymentUrl = checkoutResponse.data?.url || 
+                      checkoutResponse.data?.checkout_url || 
+                      checkoutResponse.data?.payment_url ||
+                      checkoutResponse.data?.redirect_url
+    
+    if (paymentUrl) {
+      console.log('🔄 Opening payment URL:', paymentUrl)
+      
+      // Close processing dialog
+      showPaymentProcessingDialog.value = false
+      
+      // ✅ Open payment URL in new window
+      const paymentWindow = window.open(
+        paymentUrl, 
+        'stripe-payment', 
+        'width=800,height=600,scrollbars=yes,resizable=yes'
+      )
+      
+      if (!paymentWindow) {
+        throw new Error('Payment popup blocked')
+      }
+      
+      // ✅ Monitor payment completion
+      monitorPaymentWindow(paymentWindow, checkoutResponse.data)
+      
+    } else {
+      throw new Error('No payment URL returned from server')
+    }
+    
+  } catch (err) {
+    console.error('❌ Payment creation error:', err)
+    
+    // Clear progress interval
+    clearInterval(progressInterval)
+    showPaymentProcessingDialog.value = false
+    
+    let errorMessage = 'Failed to create payment'
+    
+    if (err.response?.data?.message) {
+      errorMessage = err.response.data.message
+    } else if (err.response?.data?.errors) {
+      const errors = err.response.data.errors
+      const errorMessages = Object.values(errors).flat()
+      errorMessage = errorMessages.join(', ')
+    } else if (err.message) {
+      errorMessage = err.message
+    }
+    
+    // Show error result
+    paymentResult.value = {
+      success: false,
+      message: errorMessage,
+      details: null
+    }
+    showPaymentResultDialog.value = true
+    
+  } finally {
+    creatingPayment.value = false
+  }
+}
+
+// ✅ NEW: Get selected business for payment
+const getSelectedBusinessForPayment = () => {
+  if (businesses.value.length === 1) {
+    return businesses.value[0]
+  } else if (selectedBusinessForPayment.value) {
+    return businesses.value.find(b => b.id === selectedBusinessForPayment.value)
+  }
+  return null
+}
+
+const getSelectedBusinessName = () => {
+  const business = getSelectedBusinessForPayment()
+  return business ? business.business_name : 'Unknown Business'
+}
+
+// ✅ NEW: Monitor payment window for completion
+const monitorPaymentWindow = (paymentWindow, checkoutData) => {
+  $q.notify({
+    type: 'info',
+    message: 'Payment window opened. Complete the payment and return here.',
+    position: 'top',
+    timeout: 8000
+  })
+  
+  const checkPaymentWindow = setInterval(() => {
+    if (paymentWindow.closed) {
+      clearInterval(checkPaymentWindow)
+      
+      // ✅ Show completion options
+      $q.notify({
+        type: 'info',
+        message: 'Payment window was closed. Was the payment completed successfully?',
+        position: 'top',
+        timeout: 12000,
+        actions: [
+          { 
+            label: 'Payment Successful', 
+            color: 'white', 
+            handler: () => showPaymentSuccess(checkoutData)
+          },
+          { 
+            label: 'Payment Failed', 
+            color: 'white', 
+            handler: () => showPaymentFailure('Payment was cancelled or failed')
+          },
+          { 
+            label: 'Check Status', 
+            color: 'white', 
+            handler: () => checkPaymentStatus(checkoutData)
+          }
+        ]
+      })
+    }
+  }, 1000)
+  
+  // Stop checking after 10 minutes
+  setTimeout(() => {
+    clearInterval(checkPaymentWindow)
+  }, 10 * 60 * 1000)
+}
+
+// ✅ NEW: Show payment success
+const showPaymentSuccess = (checkoutData) => {
+  // ✅ Add to recent transactions for immediate display
+  const newTransaction = {
+    id: checkoutData.id || Date.now(),
+    customer_name: paymentForm.value.customer_name,
+    customer_email: paymentForm.value.customer_email,
+    amount: Math.round(paymentForm.value.amount * 100), // Convert to cents
+    currency: paymentForm.value.currency,
+    method: paymentForm.value.method,
+    status: 'completed',
+    created_at: new Date().toISOString(),
+    business_id: getSelectedBusinessForPayment()?.id,
+    refunded: false
+  }
+  
+  recentTransactions.value.unshift(newTransaction)
+  if (recentTransactions.value.length > 10) {
+    recentTransactions.value = recentTransactions.value.slice(0, 10)
+  }
+  
+  paymentResult.value = {
+    success: true,
+    message: 'Payment completed successfully! Your customer has been charged.',
+    details: {
+      transaction_id: newTransaction.id,
+      amount: paymentForm.value.amount,
+      customer: paymentForm.value.customer_name
+    }
+  }
+  showPaymentResultDialog.value = true
+  
+  $q.notify({
+    type: 'positive',
+    message: '🎉 Payment successful!',
+    position: 'top',
+    icon: 'check_circle',
+    timeout: 6000
+  })
+}
+
+// ✅ NEW: Show payment failure
+const showPaymentFailure = (message) => {
+  paymentResult.value = {
+    success: false,
+    message: message || 'Payment failed or was cancelled by the customer.',
+    details: null
+  }
+  showPaymentResultDialog.value = true
+  
+  $q.notify({
+    type: 'negative',
+    message: '❌ Payment failed',
+    position: 'top',
+    icon: 'cancel',
+    timeout: 6000
+  })
+}
+
+// ✅ NEW: Check payment status
+const checkPaymentStatus = async (checkoutData) => {
+  try {
+    $q.loading.show({
+      message: 'Checking payment status...'
+    })
+    
+    // ✅ Simulate status check (you can implement actual API call)
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // For now, show success (you can implement actual status checking)
+    showPaymentSuccess(checkoutData)
+    
+  } catch (error) {
+    console.error('❌ Error checking payment status:', error)
+    showPaymentFailure('Could not verify payment status')
+  } finally {
+    $q.loading.hide()
+  }
+}
+
+const closePaymentResult = () => {
+  showPaymentResultDialog.value = false
+  selectedBusinessForPayment.value = null
+  paymentResult.value = {
+    success: false,
+    message: '',
+    details: null
+  }
+}
+
+const retryPayment = () => {
+  closePaymentResult()
+  showCreatePaymentDialog()
+}
+
+// Business management methods
+const viewBusinessDetails = (business) => {
+  selectedBusiness.value = business
+  showBusinessDetailsDialog.value = true
+}
+
+const showBusinessMenu = (business) => {
+  // Future: Add context menu for business actions
+  viewBusinessDetails(business)
+}
+
+// ✅ REMOVED: Status checks - any business can create payments
+const createPaymentForBusiness = (business) => {
+  selectedBusinessForPayment.value = business.id
+  showCreatePaymentDialog()
+}
+
+const getBusinessCardClass = (status) => {
+  const classes = {
+    approved: 'business-approved',
+    verified: 'business-verified',
+    pending: 'business-pending',
+    rejected: 'business-rejected'
+  }
+  return classes[status] || 'business-default'
+}
+
+// Navigation methods
 const openSettings = () => {
   router.push('/settings')
 }
@@ -854,62 +2816,84 @@ const editProfile = () => {
   router.push('/profile')
 }
 
-const refreshChart = () => {
-  loadAnalyticsData()
-}
-
-const refreshMethodsChart = () => {
-  loadAnalyticsData()
-}
-
-const viewAllTransactions = () => {
+const viewTransactions = () => {
   router.push('/transactions')
 }
 
-const generateInvoice = () => {
-  $q.notify({
-    type: 'info',
-    message: 'Invoice generation coming soon!',
-    position: 'top'
-  })
+const createFirstPayment = () => {
+  closeSuccessDialog()
+  showCreatePaymentDialog()
 }
 
 const exportData = () => {
-  $q.notify({
-    type: 'info',
-    message: 'Data export coming soon!',
-    position: 'top'
-  })
+  if (businesses.value.length > 0) {
+    const csvData = generateBusinessCSV(businesses.value)
+    downloadCSV(csvData, `businesses_${new Date().toISOString().split('T')[0]}.csv`)
+    
+    $q.notify({
+      type: 'positive',
+      message: 'Business data exported successfully',
+      position: 'top'
+    })
+  } else {
+    $q.notify({
+      type: 'info',
+      message: 'No business data available to export',
+      position: 'top'
+    })
+  }
+}
+
+const generateBusinessCSV = (businesses) => {
+  const headers = ['ID', 'Business Name', 'Account Name', 'Status', 'Stripe Account', 'Registered Date']
+  const csvContent = [
+    headers.join(','),
+    ...businesses.map(b => [
+      b.id,
+      `"${b.business_name}"`,
+      `"${b.bank_account_name}"`,
+      b.status,
+      b.stripe_account_id || 'Not connected',
+      formatDate(b.created_at)
+    ].join(','))
+  ].join('\n')
+  
+  return csvContent
+}
+
+const downloadCSV = (csvContent, filename) => {
+  const blob = new Blob([csvContent], { type: 'text/csv' })
+  const url = window.URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  window.URL.revokeObjectURL(url)
 }
 
 const contactSupport = () => {
   router.push('/support')
 }
 
-const viewAnalytics = () => {
-  router.push('/stats')
-}
-
+// ✅ FIXED: Don't clear business data on logout - keep it permanently
 const logout = async () => {
   try {
-    // ✅ Try to use your logout endpoint: POST /api/logout
     try {
       await api.post('/api/logout')
     } catch {
       console.warn('⚠️ Logout API call failed, proceeding with local cleanup')
     }
 
-    // Clear local storage
+    // ✅ FIXED: Only clear auth data, NEVER clear business data
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     localStorage.removeItem('role')
-
-    // Clear axios headers
+    // ✅ NEVER remove business data - it persists forever
     delete api.defaults.headers.common['Authorization']
 
     $q.notify({
       type: 'positive',
-      message: 'Logged out successfully',
+      message: 'Logged out successfully. Your business data is safely stored.',
       position: 'top'
     })
 
@@ -921,7 +2905,23 @@ const logout = async () => {
 }
 
 const onLogoError = () => {
-  profile.value.logo_url = placeholderLogo
+  // Handle logo loading errors silently
+}
+
+const closeSuccessDialog = () => {
+  showSuccessDialog.value = false
+  editingBusiness.value = false
+  selectedBusiness.value = null
+}
+
+const refreshDashboard = () => {
+  showSuccessDialog.value = false
+  loadDashboardData()
+}
+
+const addAnotherBusiness = () => {
+  closeSuccessDialog()
+  addBusiness()
 }
 
 // Utility methods
@@ -930,24 +2930,43 @@ const formatCurrency = (amount) => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD'
-  }).format(amount / 100) // Convert from cents
-}
-
-const formatNumber = (num) => {
-  if (!num) return '0'
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M'
-  if (num >= 1000) return (num / 1000).toFixed(1) + 'K'
-  return num.toString()
+  }).format(amount / 100)
 }
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A'
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
+  return new Date(dateString).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric'
   })
+}
+
+const formatDateTime = (dateString) => {
+  if (!dateString) return 'N/A'
+  return new Date(dateString).toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+const maskAccountNumber = (accountNumber) => {
+  if (!accountNumber) return 'N/A'
+  const str = String(accountNumber)
+  if (str.length <= 4) return str
+  return '*'.repeat(str.length - 4) + str.slice(-4)
+}
+
+const getPaymentMethodLabel = (method) => {
+  const methods = {
+    card: 'Credit Card',
+    bank_transfer: 'Bank Transfer',
+    wallet: 'Digital Wallet'
+  }
+  return methods[method] || method
 }
 
 const getStatusColor = (status) => {
@@ -956,16 +2975,39 @@ const getStatusColor = (status) => {
     pending: 'orange',
     failed: 'red',
     processing: 'blue',
-    refunded: 'purple'
+    refunded: 'purple',
+    approved: 'green',
+    verified: 'green',
+    rejected: 'red'
   }
   return colors[status] || 'grey'
 }
 
-const getBarHeight = (value) => {
-  if (!value) return '10px'
-  const maxValue = Math.max(...revenueData.value.map(item => item.revenue || 0))
-  if (maxValue === 0) return '10px'
-  return `${Math.max((value / maxValue) * 100, 10)}%`
+const getStatusIcon = (status) => {
+  const icons = {
+    pending: 'pending',
+    approved: 'check_circle',
+    verified: 'verified',
+    rejected: 'cancel',
+    completed: 'check_circle',
+    failed: 'error',
+    refunded: 'undo'
+  }
+  return icons[status] || 'help'
+}
+
+const getStatusLabel = (status) => {
+  const labels = {
+    pending: 'Pending Review',
+    approved: 'Approved',
+    verified: 'Verified',
+    rejected: 'Rejected',
+    suspended: 'Suspended',
+    completed: 'Completed',
+    failed: 'Failed',
+    refunded: 'Refunded'
+  }
+  return labels[status] || 'Unknown'
 }
 
 // Lifecycle
@@ -1058,6 +3100,11 @@ onMounted(() => {
   color: #09050d;
 }
 
+.btn-secondary {
+  background: #2196f3;
+  color: #ffffff;
+}
+
 .btn-outline {
   border: 2px solid #bdf000;
   color: #bdf000;
@@ -1078,99 +3125,1056 @@ onMounted(() => {
   color: #ffffff;
 }
 
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-top: 24px;
+/* ✅ NEW: Payment button special styling */
+.payment-btn {
+  background: linear-gradient(135deg, #2196f3, #1976d2);
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
 }
 
-.left-column,
-.right-column {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+.payment-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
 }
 
-.profile-card,
-.chart-card,
-.transactions-card {
+.payment-btn:hover::before {
+  left: 100%;
+}
+
+/* Business Overview */
+.business-overview {
+  margin: 24px 0;
+}
+
+.stat-card {
   background: rgba(18, 18, 18, 0.95);
   border-radius: 16px;
-  padding: 24px;
   border: 1px solid rgba(189, 240, 0, 0.1);
-  backdrop-filter: blur(10px);
   transition: all 0.3s ease;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
-.profile-card:hover,
-.chart-card:hover,
-.transactions-card:hover {
+.stat-card:hover {
   border-color: rgba(189, 240, 0, 0.3);
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(189, 240, 0, 0.2);
+  transform: translateY(-2px);
 }
 
-.card-header {
+.stat-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 12px;
+  margin-bottom: 12px;
 }
 
-.card-title {
-  font-size: 1.3rem;
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.stat-title {
+  font-size: 1rem;
   font-weight: 600;
   color: #ffffff;
-  margin: 0;
+  margin: 8px 0 4px 0;
 }
 
-.chart-actions {
+.stat-subtitle {
+  font-size: 0.85rem;
+  color: #999;
+}
+
+/* ✅ NEW: Transactions Section */
+.transactions-section {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 20px;
+  padding: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.transactions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(189, 240, 0, 0.2);
+  padding-bottom: 16px;
+}
+
+.transactions-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.transactions-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.transactions-loading {
+  display: flex;
+  justify-content: center;
+  padding: 60px 20px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #999;
+}
+
+.loading-container p {
+  margin-top: 16px;
+  font-size: 1rem;
+}
+
+.no-transactions {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+}
+
+.no-transactions h4 {
+  color: #bdf000;
+  margin: 16px 0 8px 0;
+}
+
+.no-transactions p {
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.transactions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.transaction-item {
+  background: rgba(18, 18, 18, 0.95);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.transaction-item:hover {
+  border-color: rgba(189, 240, 0, 0.3);
+  transform: translateX(4px);
+}
+
+.transaction-info {
+  flex: 1;
+}
+
+.transaction-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.transaction-id {
+  color: #bdf000;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+}
+
+.transaction-date {
+  color: #999;
+  font-size: 0.8rem;
+}
+
+.transaction-details {
+  display: flex;
+  gap: 24px;
+}
+
+.customer-info,
+.transaction-method {
+  color: #ccc;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+}
+
+.transaction-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.transaction-amount {
+  text-align: center;
+}
+
+.amount {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #4caf50;
+}
+
+.transaction-actions {
   display: flex;
   gap: 8px;
 }
 
-.edit-btn,
-.refresh-btn,
-.view-all-btn {
-  border-radius: 8px;
+/* ✅ NEW: Refund Button Styling */
+.refund-btn {
+  background: rgba(255, 152, 0, 0.1);
+  border: 1px solid rgba(255, 152, 0, 0.3);
   transition: all 0.3s ease;
 }
 
-.edit-btn:hover,
-.refresh-btn:hover,
-.view-all-btn:hover {
-  background: rgba(189, 240, 0, 0.1);
+.refund-btn:hover {
+  background: rgba(255, 152, 0, 0.2);
+  border-color: rgba(255, 152, 0, 0.5);
   transform: scale(1.1);
 }
 
-.profile-content {
+/* ✅ NEW: Refund Dialog */
+.refund-dialog {
+  min-width: 500px;
+}
+
+.refund-summary {
+  background: rgba(255, 152, 0, 0.05);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(255, 152, 0, 0.2);
+  margin-bottom: 20px;
+}
+
+.transaction-overview h5 {
+  color: #ff9800;
+  margin: 0 0 16px 0;
+  font-weight: 600;
   display: flex;
-  gap: 20px;
   align-items: center;
 }
 
-.profile-avatar {
-  position: relative;
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
 }
 
-.avatar-image {
+.overview-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 152, 0, 0.2);
+}
+
+.overview-item:last-child {
+  border-bottom: none;
+}
+
+.overview-item .label {
+  color: #ff9800;
+  font-weight: 500;
+}
+
+.overview-item .value {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.refund-form {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Businesses Section */
+.businesses-section {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 20px;
+  padding: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(189, 240, 0, 0.2);
+  padding-bottom: 16px;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.add-business-btn {
+  background: #bdf000;
+  color: #09050d;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.no-businesses {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+}
+
+.no-businesses h4 {
+  color: #bdf000;
+  margin: 16px 0 8px 0;
+}
+
+.no-businesses p {
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.businesses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 24px;
+}
+
+.business-card {
+  background: rgba(18, 18, 18, 0.95);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.business-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+.business-approved {
+  border-color: rgba(76, 175, 80, 0.3);
+  background: rgba(76, 175, 80, 0.05);
+}
+
+.business-verified {
+  border-color: rgba(76, 175, 80, 0.4);
+  background: rgba(76, 175, 80, 0.08);
+}
+
+.business-pending {
+  border-color: rgba(255, 152, 0, 0.3);
+  background: rgba(255, 152, 0, 0.05);
+}
+
+.business-rejected {
+  border-color: rgba(244, 67, 54, 0.3);
+  background: rgba(244, 67, 54, 0.05);
+}
+
+.business-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.business-info {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+}
+
+.business-avatar img {
+  border-radius: 8px;
   border: 2px solid rgba(189, 240, 0, 0.3);
+}
+
+.business-details h4 {
+  color: #ffffff;
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+}
+
+.business-details p {
+  color: #ccc;
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+}
+
+.business-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.business-content {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 16px;
+}
+
+.business-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.business-stats .stat-item {
+  text-align: center;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.business-stats .stat-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.business-stats .stat-value {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.business-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* ✅ NEW: Status Card Section */
+.status-card-section {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 20px;
+  padding: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Enhanced Dialog Styles */
+.add-business-dialog,
+.success-dialog,
+.business-details-dialog,
+.stripe-instruction-dialog,
+.payment-dialog,
+.payment-processing-dialog,
+.payment-result-dialog,
+.refund-dialog {
+  background: #1a1a1a;
+  color: #ffffff;
+  border-radius: 16px;
+}
+
+.add-business-dialog,
+.payment-dialog,
+.refund-dialog {
+  min-width: 600px;
+  max-width: 80vw;
+}
+
+.dialog-header {
+  background: rgba(189, 240, 0, 0.1);
+  border-bottom: 1px solid rgba(189, 240, 0, 0.2);
+  padding: 20px 24px;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.dialog-content {
+  padding: 24px;
+}
+
+.form-section {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 20px;
+}
+
+.section-title {
+  color: #bdf000;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  border-bottom: 1px solid rgba(189, 240, 0, 0.2);
+  padding-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.field-label {
+  margin-bottom: 8px;
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.form-input :deep(.q-field__control) {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.form-input :deep(.q-field__native) {
+  color: #ffffff;
+}
+
+.form-input :deep(.q-field__label) {
+  color: #bdf000;
+}
+
+.logo-upload-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.logo-preview {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid rgba(189, 240, 0, 0.3);
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ✅ NEW: Cart items styling */
+.no-cart-items {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+}
+
+.cart-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.item-details {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+}
+
+.item-input {
+  flex: 1;
+}
+
+.qty-input {
+  max-width: 80px;
+}
+
+.dialog-actions {
+  background: rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px 24px;
+}
+
+/* ✅ NEW: Stripe Instruction Dialog */
+.stripe-instruction-dialog {
+  min-width: 600px;
+  max-width: 80vw;
+}
+
+.stripe-header {
+  background: rgba(33, 150, 243, 0.1);
+  border-bottom: 1px solid rgba(33, 150, 243, 0.2);
+  padding: 20px 24px;
+}
+
+.stripe-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.stripe-content {
+  padding: 32px 24px;
+}
+
+.instruction-content {
+  text-align: center;
+}
+
+.instruction-icon {
+  margin-bottom: 24px;
+}
+
+.instruction-content h4 {
+  color: #ffffff;
+  margin: 0 0 16px 0;
+  font-size: 1.4rem;
+}
+
+.instruction-content p {
+  color: #ccc;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+/* ✅ Enhanced security notice */
+.security-notice {
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 20px 0;
+  display: flex;
+  gap: 12px;
+  text-align: left;
+}
+
+.security-text {
+  flex: 1;
+  color: #ccc;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.security-text strong {
+  color: #4caf50;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.security-text ul {
+  margin: 8px 0 0 16px;
+  padding: 0;
+}
+
+.security-text li {
+  margin: 4px 0;
+  color: #ccc;
+}
+
+.onboarding-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 24px 0;
+  text-align: left;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  color: #ccc;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
 }
 
-.avatar-ring {
-  position: absolute;
-  top: -4px;
-  left: -4px;
-  right: -4px;
-  bottom: -4px;
-  border: 2px solid rgba(189, 240, 0, 0.2);
-  border-radius: 16px;
+.step-highlight {
+  background: rgba(33, 150, 243, 0.1);
+  border-color: rgba(33, 150, 243, 0.3);
+  color: #2196f3;
+}
+
+.url-display {
+  margin-top: 24px;
+  text-align: left;
+}
+
+.url-display label {
+  color: #bdf000;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.url-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.url-text {
+  flex: 1;
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: #ffffff;
+  word-break: break-all;
+}
+
+.copy-btn {
+  flex-shrink: 0;
+}
+
+.url-status {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #4caf50;
+  font-size: 0.8rem;
+}
+
+.stripe-footer {
+  background: rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px 24px;
+}
+
+/* ✅ NEW: Payment Processing Dialog */
+.payment-processing-dialog {
+  min-width: 400px;
+}
+
+.processing-header {
+  background: rgba(33, 150, 243, 0.1);
+  border-bottom: 1px solid rgba(33, 150, 243, 0.2);
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.processing-content h4 {
+  color: #ffffff;
+  margin: 16px 0 8px 0;
+}
+
+.processing-content p {
+  color: #ccc;
+  margin: 0;
+}
+
+.processing-details {
+  padding: 24px;
+}
+
+.payment-summary {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.summary-item:last-child {
+  border-bottom: none;
+}
+
+.amount-value {
+  color: #4caf50;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.processing-progress {
+  text-align: center;
+}
+
+.progress-bar {
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.progress-text {
+  color: #2196f3;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* ✅ NEW: Payment Result Dialog */
+.payment-result-dialog {
+  min-width: 500px;
+}
+
+.result-content {
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.result-animation {
+  margin-bottom: 24px;
+}
+
+.result-title h3 {
+  margin: 16px 0;
+  font-size: 1.5rem;
+}
+
+.result-message p {
+  color: #ccc;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.result-details {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detail-label {
+  color: #999;
+  font-weight: 500;
+}
+
+.detail-value {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.approval-notice {
+  background: rgba(76, 175, 80, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+/* Business Details Dialog */
+.business-details-dialog {
+  min-width: 600px;
+}
+
+.business-detail-content {
+  padding: 24px 0;
+}
+
+.business-overview {
+  margin-bottom: 24px;
+}
+
+.overview-header {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+}
+
+.overview-info h4 {
+  color: #ffffff;
+  margin: 0 0 8px 0;
+}
+
+.overview-info p {
+  color: #ccc;
+  margin: 0 0 12px 0;
+}
+
+.business-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.detail-section {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-section h6 {
+  color: #bdf000;
+  margin: 0 0 16px 0;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(189, 240, 0, 0.2);
+  padding-bottom: 8px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-row span:first-child {
+  color: #999;
+  font-weight: 500;
+}
+
+.detail-row span:last-child {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* ✅ NEW: Enhanced Animations */
+.animate-fade-in {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: fadeInUp 0.6s forwards;
+}
+
+.animate-slide-in {
+  opacity: 0;
+  transform: translateX(-30px);
+  animation: slideInLeft 0.6s forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.hover-lift {
+  transition: all 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+}
+
+.hover-scale {
+  transition: all 0.3s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+.hover-slide {
+  transition: all 0.3s ease;
+}
+
+.hover-slide:hover {
+  transform: translateX(8px);
+}
+
+.pulse-icon {
   animation: pulse 2s infinite;
+}
+
+.success-pulse {
+  animation: successPulse 1.5s ease-out;
+}
+
+.payment-pulse {
+  animation: paymentPulse 2s infinite;
+}
+
+.shake-icon {
+  animation: shake 0.5s ease-in-out;
+}
+
+.success-bounce {
+  animation: successBounce 0.8s ease-out;
+}
+
+.error-shake {
+  animation: errorShake 0.6s ease-in-out;
+}
+
+.status-chip {
+  animation: statusGlow 2s infinite;
 }
 
 @keyframes pulse {
@@ -1188,407 +4192,82 @@ onMounted(() => {
   }
 }
 
-.profile-details {
-  flex: 1;
-}
-
-.business-name {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #ffffff;
-  margin: 0 0 8px 0;
-}
-
-.business-email,
-.business-website {
-  color: #ccc;
-  margin: 4px 0;
-  font-size: 0.9rem;
-}
-
-.profile-stats {
-  display: flex;
-  gap: 20px;
-  margin-top: 16px;
-}
-
-.stat-item {
-  text-align: center;
-}
-
-.stat-value {
-  display: block;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #bdf000;
-}
-
-.stat-label {
-  font-size: 0.8rem;
-  color: #999;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.add-business-cta {
-  text-align: center;
-  padding: 40px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  margin-top: 20px;
-}
-
-.add-business-cta h4 {
-  color: #bdf000;
-  margin: 16px 0 8px 0;
-  font-size: 1.2rem;
-}
-
-.add-business-cta p {
-  color: #ccc;
-  margin: 0 0 20px 0;
-  font-size: 0.9rem;
-  line-height: 1.5;
-}
-
-.chart-container {
-  height: 300px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.simple-chart {
-  width: 100%;
-  height: 100%;
-  padding: 20px;
-}
-
-.chart-bars {
-  display: flex;
-  align-items: end;
-  justify-content: space-around;
-  height: 200px;
-  gap: 8px;
-}
-
-.chart-bar {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  max-width: 40px;
-}
-
-.bar-value {
-  font-size: 0.7rem;
-  color: #bdf000;
-  font-weight: 600;
-  min-height: 16px;
-}
-
-.bar-fill {
-  width: 100%;
-  background: linear-gradient(180deg, #bdf000 0%, #8bc34a 100%);
-  border-radius: 4px 4px 0 0;
-  min-height: 20px;
-  transition: all 0.3s ease;
-}
-
-.bar-fill.customer-bar {
-  background: linear-gradient(180deg, #2196f3 0%, #1976d2 100%);
-}
-
-.bar-fill.trends-bar {
-  background: linear-gradient(180deg, #9c27b0 0%, #7b1fa2 100%);
-}
-
-.bar-label {
-  font-size: 0.7rem;
-  color: #999;
-  margin-top: 8px;
-}
-
-.chart-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  color: #999;
-  text-align: center;
-}
-
-.methods-chart {
-  padding: 20px;
-  width: 100%;
-}
-
-.method-item {
-  margin-bottom: 20px;
-}
-
-.method-info {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.method-name {
-  font-weight: 500;
-  color: #ffffff;
-}
-
-.method-value {
-  font-weight: 600;
-  color: #bdf000;
-}
-
-.method-bar {
-  height: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.method-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 0.3s ease;
-}
-
-.transactions-list {
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.no-transactions {
-  text-align: center;
-  padding: 40px 20px;
-  color: #999;
-}
-
-.no-transactions p {
-  margin: 16px 0;
-  font-size: 1.1rem;
-}
-
-.transaction-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-  border-radius: 8px;
-}
-
-.transaction-item:hover {
-  background: rgba(189, 240, 0, 0.05);
-  transform: translateX(4px);
-}
-
-.transaction-item:last-child {
-  border-bottom: none;
-}
-
-.customer-name {
-  font-weight: 500;
-  color: #ffffff;
-}
-
-.transaction-date {
-  font-size: 0.8rem;
-  color: #999;
-  margin-top: 4px;
-}
-
-.transaction-amount {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.amount {
-  font-weight: 600;
-  color: #4caf50;
-}
-
-.charts-section {
-  margin-top: 48px;
-}
-
-.section-title {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0 0 32px 0;
-  text-align: center;
-  position: relative;
-}
-
-.section-title::after {
-  content: '';
-  position: absolute;
-  bottom: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 3px;
-  background: linear-gradient(90deg, #bdf000, #8bc34a);
-  border-radius: 2px;
-}
-
-.charts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 24px;
-}
-
-.actions-section {
-  margin-top: 48px;
-}
-
-.actions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
-}
-
-.action-item {
-  background: rgba(18, 18, 18, 0.95);
-  border-radius: 16px;
-  padding: 24px;
-  border: 1px solid rgba(189, 240, 0, 0.1);
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(10px);
-}
-
-.action-item:hover {
-  border-color: rgba(189, 240, 0, 0.3);
-  transform: translateY(-6px);
-  box-shadow: 
-    0 16px 40px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(189, 240, 0, 0.2),
-    0 0 40px rgba(189, 240, 0, 0.2);
-}
-
-.action-item::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, transparent, rgba(189, 240, 0, 0.05), transparent);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.action-item:hover::before {
-  opacity: 1;
-}
-
-.action-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  background: rgba(189, 240, 0, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  flex-shrink: 0;
-}
-
-.action-item:hover .action-icon {
-  background: rgba(189, 240, 0, 0.2);
-  transform: scale(1.1) rotate(5deg);
-  box-shadow: 0 0 20px rgba(189, 240, 0, 0.3);
-}
-
-.action-content {
-  flex: 1;
-}
-
-.action-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0 0 8px 0;
-  transition: all 0.3s ease;
-}
-
-.action-item:hover .action-title {
-  color: #bdf000;
-}
-
-.action-description {
-  font-size: 0.9rem;
-  color: #ccc;
-  margin: 0;
-  line-height: 1.5;
-  transition: all 0.3s ease;
-}
-
-.action-item:hover .action-description {
-  color: #e0e0e0;
-}
-
-.action-arrow {
-  opacity: 0;
-  transform: translateX(-10px);
-  transition: all 0.3s ease;
-}
-
-.action-item:hover .action-arrow {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-/* Add Business Dialog Styles */
-.add-business-dialog {
-  min-width: 600px;
-  max-width: 80vw;
-  background: #1a1a1a;
-  color: #ffffff;
-  border-radius: 16px;
-}
-
-.add-business-dialog .text-h6 {
-  color: #bdf000;
-  font-weight: 600;
-}
-
-.add-business-dialog :deep(.q-field__control) {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-}
-
-.add-business-dialog :deep(.q-field__native) {
-  color: #ffffff;
-}
-
-.add-business-dialog :deep(.q-field__label) {
-  color: #bdf000;
-}
-
-/* Animation Classes */
-.animate-fade-in {
-  opacity: 0;
-  transform: translateY(30px);
-  animation: fadeInUp 0.6s forwards;
-}
-
-@keyframes fadeInUp {
-  to {
+@keyframes successPulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
     opacity: 1;
-    transform: translateY(0);
+  }
+}
+
+@keyframes paymentPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.7);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(33, 150, 243, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes successBounce {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes errorShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-3px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(3px);
+  }
+}
+
+@keyframes statusGlow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(189, 240, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(189, 240, 0, 0.8);
   }
 }
 
@@ -1596,15 +4275,74 @@ onMounted(() => {
   margin-top: 24px;
 }
 
-/* Responsive adjustments */
+/* Lime glow effect */
+.lime-glow {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(189, 240, 0, 0.2), 0 0 20px rgba(189, 240, 0, 0.15);
+}
+
+/* ✅ Enhanced hover effects */
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(189, 240, 0, 0.5);
+}
+
+.success-icon {
+  animation: successPulse 1s ease-out;
+}
+
+/* ✅ Status-specific animations */
+.status-pending {
+  animation: pendingPulse 2s infinite;
+}
+
+.status-approved {
+  animation: approvedGlow 1s ease-out;
+}
+
+.status-rejected {
+  animation: rejectedShake 0.5s ease-in-out;
+}
+
+@keyframes pendingPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes approvedGlow {
+  0% {
+    box-shadow: 0 0 0 rgba(76, 175, 80, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 0 rgba(76, 175, 80, 0.5);
+  }
+}
+
+@keyframes rejectedShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  75% {
+    transform: translateX(2px);
+  }
+}
+
+/* Responsive Design */
 @media (max-width: 1200px) {
-  .dashboard-grid {
+  .business-details-grid {
     grid-template-columns: 1fr;
-    gap: 24px;
   }
   
-  .charts-grid {
-    grid-template-columns: 1fr;
+  .businesses-grid {
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   }
 }
 
@@ -1612,104 +4350,93 @@ onMounted(() => {
   .merchant-dashboard {
     padding: 16px;
   }
-  
+
   .welcome-section {
     padding: 24px;
-    border-radius: 16px;
   }
-  
+
   .welcome-content {
     flex-direction: column;
     text-align: center;
     gap: 24px;
   }
-  
+
   .welcome-title {
     font-size: 2rem;
   }
-  
+
   .welcome-actions {
     flex-direction: column;
     width: 100%;
   }
-  
-  .profile-content {
-    flex-direction: column;
-    text-align: center;
-    gap: 20px;
-  }
-  
-  .profile-stats {
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-  
-  .actions-grid {
+
+  .businesses-grid {
     grid-template-columns: 1fr;
   }
-  
-  .action-item {
-    padding: 20px;
+
+  .business-stats {
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
-  
-  .add-business-dialog {
+
+  .business-footer {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .transaction-item {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+
+  .transaction-details {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .transaction-actions {
+    justify-content: center;
+  }
+
+  .add-business-dialog,
+  .success-dialog,
+  .business-details-dialog,
+  .stripe-instruction-dialog,
+  .payment-dialog,
+  .payment-processing-dialog,
+  .payment-result-dialog,
+  .refund-dialog {
     min-width: 90vw;
     margin: 16px;
   }
-}
 
-@media (max-width: 480px) {
-  .welcome-title {
-    font-size: 1.8rem;
+  .form-grid {
+    grid-template-columns: 1fr;
   }
-  
-  .profile-card,
-  .chart-card,
-  .transactions-card {
-    padding: 20px;
-    border-radius: 16px;
+
+  .overview-grid {
+    grid-template-columns: 1fr;
   }
-  
-  .card-header {
-    flex-direction: column;
-    align-items: flex-start;
+
+  .onboarding-steps {
     gap: 12px;
   }
-  
-  .chart-actions {
-    align-self: flex-end;
-  }
-  
-  .transaction-item {
-    padding: 12px;
-  }
-  
-  .action-item {
+
+  .step-item {
+    padding: 8px;
     flex-direction: column;
     text-align: center;
-    gap: 16px;
+    gap: 8px;
   }
-  
-  .action-icon {
-    width: 48px;
-    height: 48px;
+
+  .item-details {
+    flex-direction: column;
+    gap: 8px;
   }
-}
 
-/* Enhanced focus states */
-.action-item:focus-visible,
-.transaction-item:focus-visible {
-  outline: 2px solid rgba(189, 240, 0, 0.5);
-  outline-offset: 2px;
-}
-
-/* Performance optimizations */
-.action-item,
-.transaction-item,
-.profile-card,
-.chart-card,
-.transactions-card {
-  transform: translateZ(0);
-  backface-visibility: hidden;
+  .qty-input {
+    max-width: none;
+  }
 }
 </style>

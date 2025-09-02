@@ -34,29 +34,11 @@
             </div>
           </div>
           <div class="welcome-actions">
-            <q-btn 
-              color="lime" 
-              icon="people" 
-              label="Manage Merchants" 
-              @click="navigateTo('/admin/merchants')"
-              class="action-btn"
-            />
-            <q-btn 
-              color="blue" 
-              icon="refresh" 
-              label="Refresh Data" 
-              @click="loadDashboardData"
-              :loading="loading"
-              class="action-btn"
-            />
-            <q-btn 
-              flat 
-              color="red" 
-              icon="logout" 
-              label="Logout" 
-              @click="logout" 
-              class="action-btn"
-            />
+            <q-btn color="lime" icon="people" label="Manage Merchants" @click="navigateTo('/admin/merchants')"
+              class="action-btn" />
+            <q-btn color="blue" icon="refresh" label="Refresh Data" @click="loadDashboardData" :loading="loading"
+              class="action-btn" />
+            <q-btn flat color="red" icon="logout" label="Logout" @click="logout" class="action-btn" />
           </div>
         </div>
       </div>
@@ -111,7 +93,8 @@
                   </div>
                   <div class="kpi-trend">
                     <q-icon name="check_circle" size="16px" color="green" />
-                    <span class="trend-value">{{ Math.round((merchantStats.verified / merchantStats.total) * 100) }}%</span>
+                    <span class="trend-value">{{ Math.round((merchantStats.verified / merchantStats.total) * 100)
+                      }}%</span>
                   </div>
                 </div>
                 <div class="kpi-value">{{ merchantStats.verified }}</div>
@@ -149,19 +132,9 @@
             <div class="card-header">
               <h3 class="card-title">Merchant Management</h3>
               <div class="header-actions">
-                <q-btn 
-                  color="lime" 
-                  icon="add" 
-                  label="Add Merchant" 
-                  @click="showAddMerchantDialog = true" 
-                />
-                <q-btn 
-                  color="blue" 
-                  icon="refresh" 
-                  label="Refresh" 
-                  @click="loadAllMerchants" 
-                  :loading="merchantsLoading" 
-                />
+                <q-btn color="lime" icon="add" label="Add Merchant" @click="showAddMerchantDialog = true" />
+                <q-btn color="blue" icon="refresh" label="Refresh" @click="loadAllMerchants"
+                  :loading="merchantsLoading" />
               </div>
             </div>
 
@@ -214,25 +187,12 @@
             <div class="merchant-filters q-mb-md">
               <div class="row q-gutter-md items-center">
                 <div class="col-auto">
-                  <q-btn-toggle 
-                    v-model="merchantFilter" 
-                    :options="merchantFilterOptions" 
-                    color="lime"
-                    text-color="white" 
-                    size="sm" 
-                    @update:model-value="filterMerchants" 
-                  />
+                  <q-btn-toggle v-model="merchantFilter" :options="merchantFilterOptions" color="lime"
+                    text-color="white" size="sm" @update:model-value="filterMerchants" />
                 </div>
                 <div class="col-auto">
-                  <q-input 
-                    v-model="merchantSearch" 
-                    placeholder="Search merchants..." 
-                    outlined 
-                    dense 
-                    clearable
-                    @input="filterMerchants" 
-                    style="min-width: 250px"
-                  >
+                  <q-input v-model="merchantSearch" placeholder="Search merchants..." outlined dense clearable
+                    @input="filterMerchants" style="min-width: 250px">
                     <template v-slot:prepend>
                       <q-icon name="search" />
                     </template>
@@ -240,11 +200,7 @@
                 </div>
                 <q-space />
                 <div class="col-auto">
-                  <q-chip 
-                    :color="getFilterChipColor(merchantFilter)" 
-                    text-color="white" 
-                    size="sm"
-                  >
+                  <q-chip :color="getFilterChipColor(merchantFilter)" text-color="white" size="sm">
                     {{ filteredMerchants.length }} merchants
                   </q-chip>
                 </div>
@@ -252,15 +208,9 @@
             </div>
 
             <!-- Real Merchants Table -->
-            <q-table 
-              :rows="paginatedMerchants" 
-              :columns="enhancedMerchantColumns" 
-              :pagination="merchantPagination"
-              :loading="merchantsLoading"
-              row-key="id"
-              class="enhanced-merchant-table"
-              @request="onMerchantTableRequest"
-            >
+            <q-table :rows="paginatedMerchants" :columns="enhancedMerchantColumns" :pagination="merchantPagination"
+              :loading="merchantsLoading" row-key="id" class="enhanced-merchant-table"
+              @request="onMerchantTableRequest">
               <!-- Business Column -->
               <template v-slot:body-cell-business="props">
                 <q-td :props="props">
@@ -279,13 +229,8 @@
               <!-- Status Column -->
               <template v-slot:body-cell-status="props">
                 <q-td :props="props">
-                  <q-chip 
-                    :color="getStatusColor(props.value)" 
-                    text-color="white" 
-                    :icon="getStatusIcon(props.value)"
-                    size="sm" 
-                    class="status-chip"
-                  >
+                  <q-chip :color="getStatusColor(props.value)" text-color="white" :icon="getStatusIcon(props.value)"
+                    size="sm" class="status-chip">
                     {{ props.value }}
                   </q-chip>
                 </q-td>
@@ -315,54 +260,22 @@
               <template v-slot:body-cell-actions="props">
                 <q-td :props="props">
                   <div class="action-buttons">
-                    <q-btn 
-                      flat 
-                      round 
-                      dense 
-                      icon="visibility" 
-                      color="blue" 
-                      @click="viewMerchant(props.row)" 
-                      size="sm"
-                    >
+                    <q-btn flat round dense icon="visibility" color="blue" @click="viewMerchant(props.row)" size="sm">
                       <q-tooltip>View Details</q-tooltip>
                     </q-btn>
-                    
-                    <q-btn 
-                      v-if="props.row.status === 'pending'" 
-                      flat 
-                      round 
-                      dense 
-                      icon="check" 
-                      color="green"
-                      @click="approveMerchant(props.row)" 
-                      size="sm" 
-                      :loading="approvingMerchant === props.row.id"
-                    >
+
+                    <q-btn v-if="props.row.status === 'pending'" flat round dense icon="check" color="green"
+                      @click="approveMerchant(props.row)" size="sm" :loading="approvingMerchant === props.row.id">
                       <q-tooltip>Approve Merchant</q-tooltip>
                     </q-btn>
-                    
-                    <q-btn 
-                      v-if="props.row.status === 'pending'" 
-                      flat 
-                      round 
-                      dense 
-                      icon="close" 
-                      color="red"
-                      @click="rejectMerchant(props.row)" 
-                      size="sm"
-                    >
+
+                    <q-btn v-if="props.row.status === 'pending'" flat round dense icon="close" color="red"
+                      @click="rejectMerchant(props.row)" size="sm">
                       <q-tooltip>Reject Merchant</q-tooltip>
                     </q-btn>
-                    
-                    <q-btn 
-                      flat 
-                      round 
-                      dense 
-                      icon="more_vert" 
-                      color="grey" 
-                      @click="showMerchantMenu(props.row)"
-                      size="sm"
-                    >
+
+                    <q-btn flat round dense icon="more_vert" color="grey" @click="showMerchantMenu(props.row)"
+                      size="sm">
                       <q-tooltip>More Actions</q-tooltip>
                     </q-btn>
                   </div>
@@ -473,92 +386,46 @@
           <q-form @submit="submitNewMerchant" class="q-gutter-md">
             <div class="row q-gutter-md">
               <div class="col-12 col-md-6">
-                <q-input 
-                  v-model="newMerchant.business_name" 
-                  label="Business Name *" 
-                  outlined 
-                  dense 
-                  required
-                  :rules="[val => !!val || 'Business name is required']" 
-                />
+                <q-input v-model="newMerchant.business_name" label="Business Name *" outlined dense required
+                  :rules="[val => !!val || 'Business name is required']" />
               </div>
               <div class="col-12 col-md-6">
-                <q-input 
-                  v-model="newMerchant.email" 
-                  label="Email Address *" 
-                  type="email" 
-                  outlined 
-                  dense 
-                  required
+                <q-input v-model="newMerchant.email" label="Email Address *" type="email" outlined dense required
                   :rules="[
                     val => !!val || 'Email is required',
                     val => /.+@.+\..+/.test(val) || 'Enter a valid email'
-                  ]" 
-                />
+                  ]" />
               </div>
             </div>
 
             <div class="row q-gutter-md">
               <div class="col-12 col-md-6">
-                <q-input 
-                  v-model="newMerchant.bank_account_name" 
-                  label="Bank Account Name *" 
-                  outlined 
-                  dense 
-                  required
-                  :rules="[val => !!val || 'Bank account name is required']" 
-                />
+                <q-input v-model="newMerchant.bank_account_name" label="Bank Account Name *" outlined dense required
+                  :rules="[val => !!val || 'Bank account name is required']" />
               </div>
               <div class="col-12 col-md-6">
-                <q-input 
-                  v-model="newMerchant.bank_account_number" 
-                  label="Bank Account Number *" 
-                  outlined 
-                  dense 
-                  required
-                  :rules="[val => !!val || 'Bank account number is required']" 
-                />
+                <q-input v-model="newMerchant.bank_account_number" label="Bank Account Number *" outlined dense required
+                  :rules="[val => !!val || 'Bank account number is required']" />
               </div>
             </div>
 
             <div class="row q-gutter-md">
               <div class="col-12 col-md-6">
-                <q-input 
-                  v-model="newMerchant.phone" 
-                  label="Phone Number" 
-                  outlined 
-                  dense 
-                />
+                <q-input v-model="newMerchant.phone" label="Phone Number" outlined dense />
               </div>
               <div class="col-12 col-md-6">
-                <q-select 
-                  v-model="newMerchant.category" 
-                  :options="categoryOptions" 
-                  label="Business Category" 
-                  outlined
-                  dense 
-                />
+                <q-select v-model="newMerchant.category" :options="categoryOptions" label="Business Category" outlined
+                  dense />
               </div>
             </div>
 
-            <q-input 
-              v-model="newMerchant.description" 
-              label="Business Description" 
-              type="textarea" 
-              outlined 
-              rows="3" 
-            />
+            <q-input v-model="newMerchant.description" label="Business Description" type="textarea" outlined rows="3" />
           </q-form>
         </q-card-section>
 
         <q-card-actions align="right">
           <q-btn flat label="Cancel" v-close-popup />
-          <q-btn 
-            color="lime" 
-            label="Add Merchant" 
-            @click="submitNewMerchant" 
-            :loading="submittingMerchant" 
-          />
+          <q-btn color="lime" label="Add Merchant" @click="submitNewMerchant" :loading="submittingMerchant" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -602,12 +469,8 @@
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">Status:</span>
-                  <q-chip 
-                    :color="getStatusColor(selectedMerchant.status)" 
-                    text-color="white" 
-                    :icon="getStatusIcon(selectedMerchant.status)"
-                    size="sm"
-                  >
+                  <q-chip :color="getStatusColor(selectedMerchant.status)" text-color="white"
+                    :icon="getStatusIcon(selectedMerchant.status)" size="sm">
                     {{ selectedMerchant.status }}
                   </q-chip>
                 </div>
@@ -656,21 +519,10 @@
 
         <q-card-actions align="right" class="dialog-actions">
           <q-btn flat label="Close" v-close-popup />
-          <q-btn 
-            v-if="selectedMerchant?.status === 'pending'" 
-            color="green" 
-            icon="check" 
-            label="Approve" 
-            @click="approveMerchant(selectedMerchant)" 
-            :loading="approvingMerchant === selectedMerchant?.id"
-          />
-          <q-btn 
-            v-if="selectedMerchant?.status === 'pending'" 
-            color="red" 
-            icon="close" 
-            label="Reject" 
-            @click="rejectMerchant(selectedMerchant)" 
-          />
+          <q-btn v-if="selectedMerchant?.status === 'pending'" color="green" icon="check" label="Approve"
+            @click="approveMerchant(selectedMerchant)" :loading="approvingMerchant === selectedMerchant?.id" />
+          <q-btn v-if="selectedMerchant?.status === 'pending'" color="red" icon="close" label="Reject"
+            @click="rejectMerchant(selectedMerchant)" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -684,31 +536,24 @@
           </q-item-section>
           <q-item-section>View Details</q-item-section>
         </q-item>
-        
-        <q-item 
-          v-if="contextMenuMerchant?.status === 'pending'" 
-          clickable 
-          @click="approveMerchant(contextMenuMerchant)"
-        >
+
+        <q-item v-if="contextMenuMerchant?.status === 'pending'" clickable
+          @click="approveMerchant(contextMenuMerchant)">
           <q-item-section avatar>
             <q-icon name="check" color="green" />
           </q-item-section>
           <q-item-section>Approve Merchant</q-item-section>
         </q-item>
-        
-        <q-item 
-          v-if="contextMenuMerchant?.status === 'pending'" 
-          clickable 
-          @click="rejectMerchant(contextMenuMerchant)"
-        >
+
+        <q-item v-if="contextMenuMerchant?.status === 'pending'" clickable @click="rejectMerchant(contextMenuMerchant)">
           <q-item-section avatar>
             <q-icon name="close" color="red" />
           </q-item-section>
           <q-item-section>Reject Merchant</q-item-section>
         </q-item>
-        
+
         <q-separator />
-        
+
         <q-item clickable @click="copyMerchantInfo(contextMenuMerchant)">
           <q-item-section avatar>
             <q-icon name="content_copy" color="grey" />
@@ -842,7 +687,7 @@ const filteredMerchants = computed(() => {
     filtered = filtered.filter(merchant => 
       merchant.business_name?.toLowerCase().includes(search) ||
       merchant.email?.toLowerCase().includes(search) ||
-      String(merchant.id).includes(search)
+      String(merchant.tempId || merchant.id || '').includes(search)
     )
   }
 
@@ -868,7 +713,7 @@ const loadDashboardData = async () => {
 
     console.log('🔄 Loading admin dashboard data...')
 
-    // ✅ Load only real data from your actual API
+    // Load merchants data
     await loadAllMerchants()
 
     console.log('✅ Admin dashboard loaded successfully')
@@ -889,33 +734,74 @@ const loadAllMerchants = async () => {
     // ✅ Use your actual API endpoint: GET /api/admin/merchants
     const response = await api.get('/api/admin/merchants')
     
-    // Handle different response formats
-    const data = response.data
-    if (data.merchants) {
-      allMerchants.value = data.merchants
-    } else if (Array.isArray(data)) {
-      allMerchants.value = data
-    } else if (data.data) {
-      allMerchants.value = data.data
-    } else {
-      allMerchants.value = []
-    }
-
-    console.log('✅ Merchants loaded from API:', allMerchants.value.length)
+    console.log('📋 Raw merchant API response:', response.data)
     
-    // Calculate real statistics from API data
+    // ✅ Enhanced data processing to handle missing IDs
+    let merchantData = []
+    
+    if (response && response.data) {
+      if (Array.isArray(response.data)) {
+        merchantData = response.data
+      } else if (response.data.merchants && Array.isArray(response.data.merchants)) {
+        merchantData = response.data.merchants
+      } else if (response.data.data && Array.isArray(response.data.data)) {
+        merchantData = response.data.data
+      } else if (typeof response.data === 'object') {
+        merchantData = [response.data]
+      }
+    }
+    
+    // ✅ Process and normalize merchant data with guaranteed IDs
+    allMerchants.value = merchantData.map((merchant, index) => {
+      // Create a unique identifier for each merchant
+      let merchantId = merchant.id || merchant.merchant_id || merchant.user_id
+      
+      // If no ID exists, create one based on email or business name
+      if (!merchantId) {
+        const emailHash = merchant.email ? merchant.email.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() : ''
+        const businessHash = merchant.business_name ? merchant.business_name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() : ''
+        merchantId = `temp_${emailHash || businessHash || index}_${Date.now()}`
+        
+        console.warn('⚠️ Generated ID for merchant:', {
+          generated_id: merchantId,
+          business_name: merchant.business_name,
+          email: merchant.email
+        })
+      }
+      
+      return {
+        // ✅ Guaranteed unique ID
+        id: merchantId,
+        tempId: merchantId, // Backup ID field
+        
+        // ✅ Normalized data with fallbacks
+        business_name: merchant.business_name || merchant.name || 'Unknown Business',
+        email: merchant.email || 'No email',
+        phone: merchant.phone || '',
+        category: merchant.category || 'other',
+        status: merchant.status || 'pending',
+        bank_account_name: merchant.bank_account_name || '',
+        bank_account_number: merchant.bank_account_number || '',
+        bank_name: merchant.bank_name || '',
+        description: merchant.description || '',
+        created_at: merchant.created_at || new Date().toISOString(),
+        updated_at: merchant.updated_at || new Date().toISOString(),
+        logo_url: merchant.logo_url || null,
+        
+        // ✅ Keep original data for debugging
+        _original: merchant,
+        _hasOriginalId: !!(merchant.id || merchant.merchant_id || merchant.user_id)
+      }
+    })
+
+    console.log('✅ Merchants processed with IDs:', allMerchants.value.length)
+    console.log('📋 Sample processed merchant:', allMerchants.value[0])
+    
+    // Calculate statistics
     calculateMerchantStats()
     
   } catch (error) {
     console.error('❌ Failed to load merchants from API:', error)
-    
-    // Show error but don't use fallback data - keep it real
-    $q.notify({
-      type: 'negative',
-      message: 'Failed to load merchants. Please check your connection and try again.',
-      position: 'top',
-      timeout: 5000
-    })
     
     // Set empty state
     allMerchants.value = []
@@ -929,81 +815,120 @@ const loadAllMerchants = async () => {
       activeToday: 0,
       growth: 0
     }
+    
+    // Enhanced error messages
+    let errorMessage = 'Failed to load merchants'
+    
+    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+      errorMessage = 'Cannot connect to backend server at http://192.168.12.35:8000. Please ensure your Laravel server is running.'
+    } else if (error.response?.status === 401) {
+      errorMessage = 'Authentication failed. Please login again as admin.'
+    } else if (error.response?.status === 403) {
+      errorMessage = 'Access forbidden. You need admin privileges to view merchants.'
+    } else if (error.response?.status === 404) {
+      errorMessage = 'Merchants API endpoint not found on your backend server.'
+    }
+    
+    $q.notify({
+      type: 'negative',
+      message: errorMessage,
+      position: 'top',
+      timeout: 6000,
+      actions: [
+        { 
+          label: 'Retry', 
+          color: 'white', 
+          handler: () => loadAllMerchants()
+        }
+      ]
+    })
   } finally {
     merchantsLoading.value = false
   }
 }
 
 const calculateMerchantStats = () => {
-  const today = new Date().toDateString()
-  const thisMonth = new Date().getMonth()
-  const thisYear = new Date().getFullYear()
-  
-  const stats = {
-    total: allMerchants.value.length,
-    pending: 0,
-    verified: 0,
-    approved: 0,
-    suspended: 0,
-    newThisMonth: 0,
-    activeToday: 0,
-    growth: 0
-  }
-
-  let lastMonthCount = 0
-
-  allMerchants.value.forEach(merchant => {
-    const merchantDate = new Date(merchant.created_at)
+  try {
+    const today = new Date().toDateString()
+    const thisMonth = new Date().getMonth()
+    const thisYear = new Date().getFullYear()
     
-    // Count by status
-    switch (merchant.status) {
-      case 'pending':
-        stats.pending++
-        break
-      case 'verified':
-        stats.verified++
-        break
-      case 'approved':
-        stats.approved++
-        stats.verified++ // Approved counts as verified too
-        break
-      case 'suspended':
-        stats.suspended++
-        break
+    const stats = {
+      total: allMerchants.value.length,
+      pending: 0,
+      verified: 0,
+      approved: 0,
+      suspended: 0,
+      newThisMonth: 0,
+      activeToday: 0,
+      growth: 0
     }
 
-    // Count new this month
-    if (merchantDate.getMonth() === thisMonth && merchantDate.getFullYear() === thisYear) {
-      stats.newThisMonth++
+    let lastMonthCount = 0
+
+    allMerchants.value.forEach(merchant => {
+      // Count by status
+      switch (merchant.status) {
+        case 'pending':
+          stats.pending++
+          break
+        case 'verified':
+          stats.verified++
+          break
+        case 'approved':
+          stats.approved++
+          stats.verified++ // Approved counts as verified too
+          break
+        case 'suspended':
+          stats.suspended++
+          break
+      }
+
+      // Count new this month
+      try {
+        const merchantDate = new Date(merchant.created_at)
+        if (merchantDate.getMonth() === thisMonth && merchantDate.getFullYear() === thisYear) {
+          stats.newThisMonth++
+        }
+        
+        // Count last month for growth
+        const lastMonth = thisMonth === 0 ? 11 : thisMonth - 1
+        const lastMonthYear = thisMonth === 0 ? thisYear - 1 : thisYear
+        if (merchantDate.getMonth() === lastMonth && merchantDate.getFullYear() === lastMonthYear) {
+          lastMonthCount++
+        }
+      } catch {
+        // Invalid date, skip
+      }
+
+      // Count active today
+      try {
+        const updateDate = new Date(merchant.updated_at || merchant.created_at)
+        if (updateDate.toDateString() === today) {
+          stats.activeToday++
+        }
+      } catch {
+        // Invalid date, skip
+      }
+    })
+
+    // Calculate growth
+    if (lastMonthCount > 0) {
+      stats.growth = Math.round(((stats.newThisMonth - lastMonthCount) / lastMonthCount) * 100)
+    } else if (stats.newThisMonth > 0) {
+      stats.growth = 100
     }
 
-    // Count last month for growth calculation
-    const lastMonth = thisMonth === 0 ? 11 : thisMonth - 1
-    const lastMonthYear = thisMonth === 0 ? thisYear - 1 : thisYear
-    if (merchantDate.getMonth() === lastMonth && merchantDate.getFullYear() === lastMonthYear) {
-      lastMonthCount++
-    }
-
-    // Count active today (updated today)
-    if (new Date(merchant.updated_at || merchant.created_at).toDateString() === today) {
-      stats.activeToday++
-    }
-  })
-
-  // Calculate growth percentage
-  if (lastMonthCount > 0) {
-    stats.growth = Math.round(((stats.newThisMonth - lastMonthCount) / lastMonthCount) * 100)
-  } else if (stats.newThisMonth > 0) {
-    stats.growth = 100 // 100% growth if no merchants last month
+    merchantStats.value = stats
+    
+    console.log('📊 Merchant statistics:', stats)
+  } catch (error) {
+    console.error('❌ Error calculating merchant stats:', error)
   }
-
-  merchantStats.value = stats
-  
-  console.log('📊 Real merchant statistics calculated:', stats)
 }
 
 const filterMerchants = () => {
-  merchantPagination.value.page = 1 // Reset to first page when filtering
+  merchantPagination.value.page = 1
 }
 
 const onMerchantTableRequest = (props) => {
@@ -1015,21 +940,58 @@ const onMerchantTableRequest = (props) => {
 
 const approveMerchant = async (merchant) => {
   try {
-    approvingMerchant.value = merchant.id
+    // ✅ Enhanced merchant validation and ID handling
+    console.log('🔍 Attempting to approve merchant:', {
+      merchant: merchant,
+      business_name: merchant?.business_name,
+      id: merchant?.id,
+      tempId: merchant?.tempId,
+      email: merchant?.email,
+      hasOriginalId: merchant?._hasOriginalId
+    })
     
-    console.log('🔄 Approving merchant:', merchant.id)
+    if (!merchant) {
+      throw new Error('Merchant object is null or undefined')
+    }
     
-    // ✅ Use your actual API endpoint: POST /api/admin/approve-merchant/{id}
-    await api.post(`/api/admin/approve-merchant/${merchant.id}`)
+    // ✅ Try multiple ID sources
+    let merchantId = merchant.id || merchant.tempId || merchant.merchant_id || merchant.user_id
+    
+    // ✅ If still no ID, try to use email as identifier
+    if (!merchantId && merchant.email) {
+      merchantId = merchant.email
+      console.log('🔄 Using email as merchant identifier:', merchantId)
+    }
+    
+    if (!merchantId) {
+      throw new Error('Cannot identify merchant - no ID or email available')
+    }
+    
+    approvingMerchant.value = merchantId
+    
+    console.log('🔄 Approving merchant:', merchant.business_name, 'with ID:', merchantId)
+    
+    // ✅ Use your actual API endpoint
+    await api.post(`/api/admin/approve-merchant/${merchantId}`)
 
-    // Update local data immediately
-    const index = allMerchants.value.findIndex(m => m.id === merchant.id)
+    // ✅ Update local data
+    const index = allMerchants.value.findIndex(m => 
+      m.id === merchantId || 
+      m.tempId === merchantId || 
+      m.email === merchant.email ||
+      m.business_name === merchant.business_name
+    )
+    
     if (index !== -1) {
-      allMerchants.value[index].status = 'approved'
-      allMerchants.value[index].updated_at = new Date().toISOString()
+      allMerchants.value[index] = {
+        ...allMerchants.value[index],
+        status: 'approved',
+        updated_at: new Date().toISOString()
+      }
+      console.log('✅ Local merchant data updated')
     }
 
-    // Recalculate real stats
+    // Recalculate stats
     calculateMerchantStats()
 
     $q.notify({
@@ -1045,15 +1007,38 @@ const approveMerchant = async (merchant) => {
       showMerchantDetails.value = false
     }
 
-    console.log('✅ Merchant approved successfully')
-
   } catch (err) {
     console.error('❌ Approve merchant error:', err)
+    
+    let errorMessage = 'Failed to approve merchant'
+    
+    if (err.message.includes('Cannot identify merchant')) {
+      errorMessage = `Cannot approve "${merchant?.business_name || 'merchant'}" - missing identification data from backend`
+    } else if (err.code === 'ERR_NETWORK') {
+      errorMessage = 'Cannot connect to backend server. Please check if your Laravel server is running.'
+    } else if (err.response?.status === 404) {
+      errorMessage = 'Approval endpoint not found. Please check your backend API routes.'
+    } else if (err.response?.status === 401) {
+      errorMessage = 'Authentication failed. Please login again as admin.'
+    } else if (err.response?.data?.message) {
+      errorMessage = err.response.data.message
+    }
+    
     $q.notify({
       type: 'negative',
-      message: 'Failed to approve merchant. Please try again.',
+      message: errorMessage,
       position: 'top',
-      timeout: 4000
+      timeout: 5000,
+      actions: [
+        { 
+          label: 'Debug Info', 
+          color: 'white', 
+          handler: () => {
+            console.log('🔍 Debug - Merchant data:', merchant)
+            console.log('🔍 Debug - All merchants:', allMerchants.value)
+          }
+        }
+      ]
     })
   } finally {
     approvingMerchant.value = null
@@ -1074,35 +1059,36 @@ const rejectMerchant = async (merchant) => {
       persistent: true
     })
     
-    console.log('🔄 Rejecting merchant:', merchant.id)
+    // ✅ Update local data for rejection
+    const index = allMerchants.value.findIndex(m => 
+      m.id === merchant.id || 
+      m.tempId === merchant.tempId ||
+      m.email === merchant.email ||
+      m.business_name === merchant.business_name
+    )
     
-    // Update local data (rejection endpoint not in your API docs)
-    const index = allMerchants.value.findIndex(m => m.id === merchant.id)
     if (index !== -1) {
-      allMerchants.value[index].status = 'rejected'
-      allMerchants.value[index].updated_at = new Date().toISOString()
-      allMerchants.value[index].rejection_reason = reason || 'No reason provided'
+      allMerchants.value[index] = {
+        ...allMerchants.value[index],
+        status: 'rejected',
+        updated_at: new Date().toISOString(),
+        rejection_reason: reason || 'No reason provided'
+      }
     }
     
-    // Recalculate real stats
     calculateMerchantStats()
     
     $q.notify({
       type: 'warning',
       message: `${merchant.business_name} rejected`,
-      position: 'top',
-      timeout: 3000
+      position: 'top'
     })
     
-    // Close details dialog if open
     if (showMerchantDetails.value) {
       showMerchantDetails.value = false
     }
     
-    console.log('✅ Merchant rejected')
-    
   } catch (error) {
-    // User cancelled or error occurred
     if (error && error !== '') {
       console.error('❌ Failed to reject merchant:', error)
     }
@@ -1118,7 +1104,7 @@ const submitNewMerchant = async () => {
         !newMerchant.value.bank_account_name || !newMerchant.value.bank_account_number) {
       throw new Error('Please fill in all required fields')
     }
-    
+
     console.log('🔄 Adding new merchant...')
 
     // ✅ Use your business registration endpoint: POST /api/merchant/register
@@ -1132,15 +1118,17 @@ const submitNewMerchant = async () => {
       description: newMerchant.value.description
     })
 
-    console.log('✅ New merchant added:', response.data)
+    console.log('✅ New merchant registered:', response.data)
 
-    // Add to local data with API response
+    // ✅ Add to local data with guaranteed ID
     const newMerchantData = {
-      id: response.data?.id || Date.now(),
+      id: response.data?.id || `new_${Date.now()}`,
+      tempId: `new_${Date.now()}`,
       ...newMerchant.value,
       status: 'pending',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      _hasOriginalId: !!(response.data?.id),
       ...response.data
     }
     
@@ -1163,18 +1151,15 @@ const submitNewMerchant = async () => {
     $q.notify({
       type: 'positive',
       message: 'Merchant added successfully!',
-      position: 'top',
-      icon: 'check_circle',
-      timeout: 3000
+      position: 'top'
     })
 
   } catch (err) {
     console.error('❌ Add merchant error:', err)
     $q.notify({
       type: 'negative',
-      message: err.response?.data?.message || err.message || 'Failed to add merchant',
-      position: 'top',
-      timeout: 4000
+      message: err.message || 'Failed to add merchant',
+      position: 'top'
     })
   } finally {
     submittingMerchant.value = false
@@ -1182,6 +1167,7 @@ const submitNewMerchant = async () => {
 }
 
 const viewMerchant = (merchant) => {
+  console.log('👁️ Viewing merchant details:', merchant)
   selectedMerchant.value = merchant
   showMerchantDetails.value = true
 }
@@ -1191,23 +1177,13 @@ const showMerchantMenu = (merchant) => {
   showMerchantContextMenu.value = true
 }
 
-const copyMerchantInfo = (merchant) => {
-  const merchantInfo = `Merchant: ${merchant.business_name}\nEmail: ${merchant.email}\nStatus: ${merchant.status}\nID: ${merchant.id}`
-  
-  navigator.clipboard.writeText(merchantInfo).then(() => {
-    $q.notify({
-      type: 'positive',
-      message: 'Merchant information copied to clipboard',
-      position: 'top'
-    })
-  }).catch(() => {
-    $q.notify({
-      type: 'negative',
-      message: 'Failed to copy to clipboard',
-      position: 'top'
-    })
-  })
-}
+
+
+
+
+
+
+
 
 // Utility methods
 const getStatusColor = (status) => {
@@ -1250,11 +1226,16 @@ const getDefaultLogo = (businessName) => {
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A'
-  return new Date(dateString).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  })
+  try {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    })
+  } catch {
+    return 'N/A'
+  }
 }
 
 const formatTime = (date) => {
@@ -1266,27 +1247,22 @@ const formatTime = (date) => {
 
 const formatTimeAgo = (dateString) => {
   if (!dateString) return ''
-  const now = new Date()
-  const date = new Date(dateString)
-  const diff = now - date
-  
-  if (diff < 60000) return 'Just now'
-  if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`
-  if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`
-  if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`
-  return formatDate(dateString)
+  try {
+    const now = new Date()
+    const date = new Date(dateString)
+    const diff = now - date
+    
+    if (diff < 60000) return 'Just now'
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`
+    if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`
+    return formatDate(dateString)
+  } catch {
+    return ''
+  }
 }
 
-const formatDateTime = (dateString) => {
-  if (!dateString) return 'N/A'
-  return new Date(dateString).toLocaleString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
+
 
 const navigateTo = (path) => {
   router.push(path)
@@ -1294,10 +1270,8 @@ const navigateTo = (path) => {
 
 const logout = async () => {
   try {
-    // ✅ Try to use your logout endpoint: POST /api/logout
     try {
       await api.post('/api/logout')
-      console.log('✅ Logout API call successful')
     } catch {
       console.warn('⚠️ Logout API call failed, proceeding with local cleanup')
     }
@@ -1323,9 +1297,27 @@ const logout = async () => {
   }
 }
 
+// ✅ Debug helper for development
+const debugMerchantData = () => {
+  console.log('🔍 Debug - All merchants:', allMerchants.value)
+  console.log('🔍 Debug - Merchant IDs:', allMerchants.value.map(m => ({
+    business_name: m.business_name,
+    id: m.id,
+    tempId: m.tempId,
+    hasOriginalId: m._hasOriginalId,
+    email: m.email
+  })))
+  console.log('🔍 Debug - Stats:', merchantStats.value)
+}
+
 // Lifecycle
-onMounted(() => {
-  loadDashboardData()
+onMounted(async () => {
+  await loadDashboardData()
+  
+  // Debug in development
+  if (process.env.NODE_ENV === 'development') {
+    setTimeout(debugMerchantData, 2000)
+  }
 })
 </script>
 
@@ -1939,6 +1931,7 @@ onMounted(() => {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }

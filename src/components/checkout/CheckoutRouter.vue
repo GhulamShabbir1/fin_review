@@ -13,16 +13,16 @@
     <!-- Error page -->
     <transition name="fade-scale" mode="out-in">
       <div v-if="showError" class="error-container" key="error">
-        <q-card class="error-card modern-card">
+        <q-card class="error-card modern-card glow-animation">
           <q-card-section class="text-center">
-            <div class="error-icon">
+            <div class="error-icon pulse-animation">
               <q-icon name="error" size="64px" color="negative" />
             </div>
-            <div class="text-h5 text-negative q-mt-md">Checkout Error</div>
+            <div class="text-h5 text-negative q-mt-md floating-animation">Checkout Error</div>
             <div class="text-subtitle1 q-mt-sm text-grey-6">{{ errorMessage }}</div>
             <q-btn
               label="Try Again"
-              class="btn-primary q-mt-lg"
+              class="btn-primary q-mt-lg pulse-on-hover"
               @click="retryCheckout"
               :loading="retrying"
             />
@@ -34,13 +34,13 @@
     <!-- Loading state -->
     <transition name="fade" mode="out-in">
       <div v-if="checkoutState === 'loading'" class="loading-container" key="loading">
-        <div class="loading-content">
-          <q-spinner-dots size="50px" color="lime" />
+        <div class="loading-content floating-animation">
+          <q-spinner-dots size="50px" color="lime" class="pulse-animation" />
           <div class="loading-text">Initializing secure checkout...</div>
           <div class="loading-subtext">Preparing your payment environment</div>
           <div class="loading-progress">
             <div class="progress-bar">
-              <div class="progress-fill"></div>
+              <div class="progress-fill floating-animation"></div>
             </div>
           </div>
         </div>
@@ -194,6 +194,23 @@ onMounted(() => {
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   animation: errorCardEnter 0.6s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.error-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 107, 107, 0.1), transparent);
+  transition: left 0.7s ease;
+}
+
+.error-card:hover::before {
+  left: 100%;
 }
 
 .modern-card {
@@ -224,6 +241,23 @@ onMounted(() => {
   padding: 12px 32px;
   transition: all 0.3s ease;
   min-width: 140px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.7s ease;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
 }
 
 .btn-primary:hover {
@@ -263,6 +297,55 @@ onMounted(() => {
 
 .fade-scale-leave-active {
   animation: fadeOutScale 0.4s ease-in;
+}
+
+/* Floating animation */
+.floating-animation {
+  animation: floating 3s ease-in-out infinite;
+}
+
+@keyframes floating {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* Pulse animation */
+.pulse-animation {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+/* Glow animation */
+.glow-animation {
+  animation: glow 4s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 5px rgba(255, 107, 107, 0.2), 0 0 10px rgba(255, 107, 107, 0.1);
+  }
+  to {
+    box-shadow: 0 0 15px rgba(255, 107, 107, 0.3), 0 0 20px rgba(255, 107, 107, 0.2);
+  }
+}
+
+/* Pulse on hover */
+.pulse-on-hover:hover {
+  animation: pulse 0.6s ease;
 }
 
 @keyframes fadeInUp {
@@ -317,17 +400,6 @@ onMounted(() => {
   50% {
     transform: translateX(233%);
     width: 40%;
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4);
-  }
-  50% {
-    transform: scale(1.05);
-    box-shadow: 0 0 0 10px rgba(255, 107, 107, 0);
   }
 }
 
@@ -391,10 +463,60 @@ onMounted(() => {
   scroll-behavior: smooth;
 }
 
+/* Custom scrollbar */
+.checkout-router::-webkit-scrollbar {
+  width: 8px;
+}
+
+.checkout-router::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.checkout-router::-webkit-scrollbar-thumb {
+  background: rgba(189, 240, 0, 0.3);
+  border-radius: 4px;
+}
+
+.checkout-router::-webkit-scrollbar-thumb:hover {
+  background: rgba(189, 240, 0, 0.5);
+}
+
 /* Enhanced focus states */
 .btn-primary:focus {
   outline: 2px solid rgba(189, 240, 0, 0.5);
   outline-offset: 2px;
   animation: pulse 0.6s ease;
+}
+
+/* Loading animation enhancements */
+:deep(.q-spinner) {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Glow effect for cards */
+.modern-card {
+  position: relative;
+}
+
+.modern-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(189, 240, 0, 0.5), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.modern-card:hover::before {
+  opacity: 1;
 }
 </style>
