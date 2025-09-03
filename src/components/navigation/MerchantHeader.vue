@@ -14,6 +14,20 @@
                 <q-chip v-if="isDev" size="sm" color="orange" text-color="white" class="q-ml-sm">DEV</q-chip>
             </q-toolbar-title>
 
+            <!-- Back Button -->
+            <q-btn 
+                v-if="showBackButton" 
+                flat 
+                round 
+                dense 
+                icon="arrow_back" 
+                @click="goBack" 
+                class="back-btn q-mr-md"
+                color="lime"
+            >
+                <q-tooltip>Go Back</q-tooltip>
+            </q-btn>
+
             <!-- Desktop Navigation -->
             <div class="gt-sm merchant-nav">
                 <q-btn flat dense icon="dashboard" label="Dashboard" to="/dashboard" class="nav-btn" />
@@ -178,6 +192,21 @@ const user = ref({
 const isMobile = computed(() => $q.screen.lt.md)
 const isDev = computed(() => process.env.NODE_ENV === 'development')
 const userAvatar = computed(() => user.value.avatar || 'https://placehold.co/36x36/121018/bdf000?text=M')
+
+// Back button logic
+const showBackButton = computed(() => {
+  const currentRoute = router.currentRoute.value
+  return currentRoute.name !== 'dashboard' && currentRoute.name !== 'home'
+})
+
+const goBack = () => {
+  if (router.options.history.state.back) {
+    router.back()
+  } else {
+    // Fallback to dashboard if no history
+    router.push('/dashboard')
+  }
+}
 
 // Methods
 const viewProfile = () => {
@@ -458,6 +487,19 @@ onMounted(async () => {
 
 .text-lime {
     color: #bdf000;
+}
+
+/* Back Button Styles */
+.back-btn {
+    background: rgba(189, 240, 0.1);
+    border: 1px solid rgba(189, 240, 0.3);
+    transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+    background: rgba(189, 240, 0.2);
+    border-color: rgba(189, 240, 0.5);
+    transform: scale(1.1);
 }
 
 /* Animation classes */

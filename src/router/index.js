@@ -31,6 +31,7 @@ const routes = [
 
   { path: '/dashboard', name: 'dashboard', component: MerchantDashboard, meta: { title: 'Merchant Dashboard - FinteckX', requiresAuth: true, role: 'merchant' } },
   { path: '/admin-dashboard', name: 'admin-dashboard', component: AdminDashboardPage, meta: { title: 'Admin Dashboard - FinteckX', requiresAuth: true, role: 'admin' } },
+  { path: '/profile', name: 'merchant-profile', component: () => import('../pages/MerchantProfilePage.vue'), meta: { title: 'Merchant Profile - FinteckX', requiresAuth: true, role: 'merchant' } },
 
   { path: '/transactions', name: 'transactions', component: TransactionsPage, meta: { title: 'Transactions - FinteckX', requiresAuth: true } },
   { path: '/stats', name: 'stats', component: StatsPage, meta: { title: 'Analytics - FinteckX', requiresAuth: true } },
