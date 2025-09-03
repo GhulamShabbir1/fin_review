@@ -125,6 +125,280 @@
         </div>
       </div>
 
+      <!-- Enhanced Analytics Section with Charts -->
+      <div class="analytics-section q-mb-xl animate-fade-in" style="animation-delay: 0.2s">
+        <div class="section-header">
+          <h3 class="section-title">
+            <q-icon name="analytics" size="24px" color="lime" class="q-mr-sm" />
+            Platform Analytics
+          </h3>
+          <div class="section-actions">
+            <q-btn-toggle 
+              v-model="timeframe" 
+              :options="timeframeOptions" 
+              color="lime" 
+              text-color="white"
+              size="sm" 
+              @update:model-value="loadAnalyticsData" 
+            />
+            <q-btn 
+              flat 
+              round 
+              dense 
+              icon="refresh" 
+              color="lime" 
+              @click="loadAnalyticsData" 
+              :loading="loadingAnalytics"
+              class="hover-scale"
+            />
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <!-- Platform Revenue Chart -->
+          <div class="chart-card lime-glow hover-lift">
+            <div class="chart-header">
+              <h4 class="chart-title">
+                <q-icon name="trending_up" size="20px" color="lime" class="q-mr-sm" />
+                Platform Revenue
+              </h4>
+              <div class="chart-subtitle">Total revenue across all merchants</div>
+            </div>
+            <div class="chart-container">
+              <div v-if="loadingAnalytics" class="chart-loading">
+                <q-spinner-dots color="lime" size="40px" />
+                <p>Loading analytics...</p>
+              </div>
+              <div v-else-if="revenueData.length > 0" class="chart-content">
+                <div class="revenue-chart">
+                  <div class="chart-stats">
+                    <div class="stat-item">
+                      <span class="stat-label">Total:</span>
+                      <span class="stat-value">${{ formatNumber(getTotalRevenue()) }}</span>
+                    </div>
+                    <div class="stat-item">
+                      <span class="stat-label">Average:</span>
+                      <span class="stat-value">${{ formatNumber(getAverageRevenue()) }}</span>
+                    </div>
+                    <div class="stat-item">
+                      <span class="stat-value" :class="getGrowthClass()">{{ getRevenueGrowth() }}%</span>
+                      <span class="stat-label">Growth</span>
+                    </div>
+                  </div>
+                  <div class="revenue-bars">
+                    <div 
+                      v-for="(item, index) in revenueData.slice(0, 12)" 
+                      :key="index" 
+                      class="revenue-bar hover-scale"
+                      @click="showRevenueDetails(item, index)"
+                    >
+                      <div class="bar-value">${{ formatNumber(item.revenue || item.value || 0) }}</div>
+                      <div 
+                        class="bar-fill" 
+                        :style="{
+                          height: getBarHeight(item.revenue || item.value || 0, revenueData),
+                          background: getRevenueBarGradient(index)
+                        }"
+                      ></div>
+                      <div class="bar-label">{{ item.date || item.label || `M${index + 1}` }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="chart-empty">
+                <q-icon name="analytics" size="48px" color="grey-5" />
+                <p>No revenue data available</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Merchant Growth Chart -->
+          <div class="chart-card lime-glow hover-lift">
+            <div class="chart-header">
+              <h4 class="chart-title">
+                <q-icon name="people" size="20px" color="blue" class="q-mr-sm" />
+                Merchant Growth
+              </h4>
+              <div class="chart-subtitle">New merchant registrations</div>
+            </div>
+            <div class="chart-container">
+              <div v-if="loadingAnalytics" class="chart-loading">
+                <q-spinner-dots color="blue" size="40px" />
+                <p>Loading merchant data...</p>
+              </div>
+              <div v-else-if="merchantGrowthData.length > 0" class="chart-content">
+                <div class="growth-chart">
+                  <div class="chart-stats">
+                    <div class="stat-item">
+                      <span class="stat-label">Total:</span>
+                      <span class="stat-value">{{ formatNumber(getTotalMerchants()) }}</span>
+                    </div>
+                    <div class="stat-item">
+                      <span class="stat-label">This Month:</span>
+                      <span class="stat-value">{{ formatNumber(getThisMonthMerchants()) }}</span>
+                    </div>
+                    <div class="stat-item">
+                      <span class="stat-value" :class="getMerchantGrowthClass()">{{ getMerchantGrowth() }}%</span>
+                      <span class="stat-label">Growth</span>
+                    </div>
+                  </div>
+                  <div class="growth-line">
+                    <svg class="growth-svg" viewBox="0 0 400 200">
+                      <path 
+                        :d="getGrowthPath(merchantGrowthData)" 
+                        fill="none" 
+                        stroke="url(#growthGradient)" 
+                        stroke-width="3"
+                        class="growth-path"
+                      />
+                      <defs>
+                        <linearGradient id="growthGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" style="stop-color:#4CAF50;stop-opacity:1" />
+                          <stop offset="100%" style="stop-color:#2196F3;stop-opacity:1" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    <div class="growth-points">
+                      <div 
+                        v-for="(point, index) in merchantGrowthData" 
+                        :key="index"
+                        class="growth-point hover-scale"
+                        :style="{ left: `${(index / (merchantGrowthData.length - 1)) * 100}%` }"
+                        @click="showGrowthDetails(point, index)"
+                      >
+                        <div class="point-tooltip">{{ point.count }} merchants</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="chart-empty">
+                <q-icon name="people" size="48px" color="grey-5" />
+                <p>No merchant growth data available</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transaction Volume Chart -->
+          <div class="chart-card lime-glow hover-lift">
+            <div class="chart-header">
+              <h4 class="chart-title">
+                <q-icon name="receipt" size="20px" color="teal" class="q-mr-sm" />
+                Transaction Volume
+              </h4>
+              <div class="chart-subtitle">Platform transaction trends</div>
+            </div>
+            <div class="chart-container">
+              <div v-if="loadingAnalytics" class="chart-loading">
+                <q-spinner-dots color="teal" size="40px" />
+                <p>Loading transactions...</p>
+              </div>
+              <div v-else-if="transactionData.length > 0" class="chart-content">
+                <div class="transaction-chart">
+                  <div class="chart-stats">
+                    <div class="stat-item">
+                      <span class="stat-label">Total:</span>
+                      <span class="stat-value">{{ formatNumber(getTotalTransactions()) }}</span>
+                    </div>
+                    <div class="stat-item">
+                      <span class="stat-label">Success Rate:</span>
+                      <span class="stat-value">{{ getSuccessRate() }}%</span>
+                    </div>
+                    <div class="stat-item">
+                      <span class="stat-label">Avg Amount:</span>
+                      <span class="stat-value">${{ formatNumber(getAverageTransactionAmount()) }}</span>
+                    </div>
+                  </div>
+                  <div class="transaction-bars">
+                    <div 
+                      v-for="(item, index) in transactionData.slice(0, 12)" 
+                      :key="index" 
+                      class="transaction-bar hover-scale"
+                      @click="showTransactionDetails(item, index)"
+                    >
+                      <div class="bar-stack">
+                        <div 
+                          class="bar-success" 
+                          :style="{ height: getTransactionBarHeight(item.success, transactionData) }"
+                        ></div>
+                        <div 
+                          class="bar-failed" 
+                          :style="{ height: getTransactionBarHeight(item.failed || 0, transactionData) }"
+                        ></div>
+                      </div>
+                      <div class="bar-label">{{ item.date || item.label || `M${index + 1}` }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="chart-empty">
+                <q-icon name="receipt" size="48px" color="grey-5" />
+                <p>No transaction data available</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Platform Performance Metrics -->
+          <div class="chart-card lime-glow hover-lift">
+            <div class="chart-header">
+              <h4 class="chart-title">
+                <q-icon name="speed" size="20px" color="purple" class="q-mr-sm" />
+                Platform Performance
+              </h4>
+              <div class="chart-subtitle">Key platform indicators</div>
+            </div>
+            <div class="chart-container">
+              <div v-if="loadingAnalytics" class="chart-loading">
+                <q-spinner-dots color="purple" size="40px" />
+                <p>Loading metrics...</p>
+              </div>
+              <div v-else class="chart-content">
+                <div class="performance-metrics">
+                  <div class="metrics-grid">
+                    <div class="metric-item hover-scale">
+                      <div class="metric-icon">
+                        <q-icon name="schedule" size="24px" color="orange" />
+                      </div>
+                      <div class="metric-content">
+                        <div class="metric-value">{{ avgResponseTime }}ms</div>
+                        <div class="metric-label">Avg Response Time</div>
+                      </div>
+                    </div>
+                    <div class="metric-item hover-scale">
+                      <div class="metric-icon">
+                        <q-icon name="check_circle" size="24px" color="green" />
+                      </div>
+                      <div class="metric-content">
+                        <div class="metric-value">{{ uptimePercentage }}%</div>
+                        <div class="metric-label">Platform Uptime</div>
+                      </div>
+                    </div>
+                    <div class="metric-item hover-scale">
+                      <div class="metric-icon">
+                        <q-icon name="security" size="24px" color="blue" />
+                      </div>
+                      <div class="metric-content">
+                        <div class="metric-value">{{ securityScore }}/100</div>
+                        <div class="metric-label">Security Score</div>
+                      </div>
+                    </div>
+                    <div class="metric-item hover-scale">
+                      <div class="metric-icon">
+                        <q-icon name="support_agent" size="24px" color="teal" />
+                      </div>
+                      <div class="metric-content">
+                        <div class="metric-value">{{ supportTickets }}</div>
+                        <div class="metric-label">Open Tickets</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Real Merchants Management Section -->
       <div class="merchants-section q-mb-xl animate-fade-in" style="animation-delay: 0.3s">
         <q-card class="merchants-card lime-glow">
@@ -634,6 +908,24 @@ const newMerchant = ref({
   category: null,
   description: ''
 })
+
+// Analytics State
+const timeframe = ref('monthly')
+const loadingAnalytics = ref(false)
+const revenueData = ref([])
+const merchantGrowthData = ref([])
+const transactionData = ref([])
+const avgResponseTime = ref(45)
+const uptimePercentage = ref(99.9)
+const securityScore = ref(95)
+const supportTickets = ref(12)
+
+const timeframeOptions = [
+  { label: '7D', value: 'weekly' },
+  { label: '30D', value: 'monthly' },
+  { label: '90D', value: 'quarterly' },
+  { label: '1Y', value: 'yearly' }
+]
 
 // Options
 const merchantFilterOptions = [
