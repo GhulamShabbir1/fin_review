@@ -201,7 +201,6 @@
             <div v-else class="chart-empty">
               <q-icon name="analytics" size="48px" color="grey-5" />
               <p>No revenue data available</p>
-              <q-btn flat color="lime" label="Load Sample Data" @click="loadSampleRevenue" />
             </div>
           </div>
         </div>
@@ -3333,76 +3332,49 @@ const loadAnalyticsData = async () => {
 
 const loadRevenueData = async () => {
   try {
-    // Try to get real data from API
     const response = await api.get('/api/merchant/transactions', {
       params: { timeframe: timeframe.value }
     })
-    
     if (response.data?.transactions) {
       revenueData.value = calculateRevenueFromTransactions(response.data.transactions)
     } else {
-      // Fallback to sample data
-      loadSampleRevenue()
+      revenueData.value = []
     }
   } catch (error) {
-    console.warn('Using fallback revenue data:', error)
-    loadSampleRevenue()
+    console.warn('Revenue analytics API error:', error)
+    revenueData.value = []
   }
 }
 
 const loadMethodsData = async () => {
   try {
-    // Try to get real data from API
     const response = await api.get('/api/merchant/transactions', {
       params: { timeframe: timeframe.value }
     })
-    
     if (response.data?.transactions) {
       methodsData.value = calculatePaymentMethodsFromTransactions(response.data.transactions)
     } else {
-      // Fallback to sample data
-      methodsData.value = [
-        { label: 'Credit Card', value: 45, color: '#4CAF50' },
-        { label: 'Digital Wallet', value: 30, color: '#2196F3' },
-        { label: 'Bank Transfer', value: 15, color: '#FF9800' },
-        { label: 'UPI', value: 10, color: '#9C27B0' }
-      ]
+      methodsData.value = []
     }
   } catch (error) {
-    console.warn('Using fallback methods data:', error)
-    methodsData.value = [
-      { label: 'Credit Card', value: 45, color: '#4CAF50' },
-      { label: 'Digital Wallet', value: 30, color: '#2196F3' },
-      { label: 'Bank Transfer', value: 15, color: '#FF9800' },
-      { label: 'UPI', value: 10, color: '#9C27B0' }
-    ]
+    console.warn('Methods analytics API error:', error)
+    methodsData.value = []
   }
 }
 
 const loadTransactionData = async () => {
   try {
-    // Try to get real data from API
     const response = await api.get('/api/merchant/transactions', {
       params: { timeframe: timeframe.value }
     })
-    
     if (response.data?.transactions) {
       transactionData.value = calculateTransactionTrends(response.data.transactions)
     } else {
-      // Fallback to sample data
-      transactionData.value = [
-        { date: 'Jan', count: 450, success: 445, failed: 5 },
-        { date: 'Feb', count: 520, success: 515, failed: 5 },
-        { date: 'Mar', count: 580, success: 575, failed: 5 }
-      ]
+      transactionData.value = []
     }
   } catch (error) {
-    console.warn('Using fallback transaction data:', error)
-    transactionData.value = [
-      { date: 'Jan', count: 450, success: 445, failed: 5 },
-      { date: 'Feb', count: 520, success: 515, failed: 5 },
-      { date: 'Mar', count: 580, success: 575, failed: 5 }
-    ]
+    console.warn('Transactions analytics API error:', error)
+    transactionData.value = []
   }
 }
 
