@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'http://192.168.12.80:8000', // ✅ Your AWS deployment
+  baseURL: 'http://192.168.12.80:8000/api',
  headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
@@ -22,7 +22,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.code === 'ERR_NETWORK') {
-      console.error('Network error - check if backend server is running on http://192.168.12.35:8000')
+      console.error('Network error - check if backend server is running and /api base path is correct')
     }
     return Promise.reject(error)
   }
