@@ -28,7 +28,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
       })
       
       // ✅ Using your actual endpoint: GET /api/merchant/transactions
-      const { data } = await api.get('/api/merchant/transactions', {
+      const { data } = await api.get('/merchant/transactions', {
         params: Object.fromEntries(params)
       })
       
@@ -83,7 +83,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
       })
       
       // ✅ Using your actual endpoint: GET /api/merchant/transactions (admin viewing all)
-      const { data } = await api.get('/api/merchant/transactions', {
+      const { data } = await api.get('/merchant/transactions', {
         params: Object.fromEntries(params)
       })
       

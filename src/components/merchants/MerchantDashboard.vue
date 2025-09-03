@@ -2188,7 +2188,7 @@ const submitBusiness = async () => {
     
     console.log('📤 Submitting business data to /api/merchant/register:', businessData)
     
-    const businessResponse = await api.post('/api/merchant/register', businessData, {
+    const businessResponse = await api.post('/merchant/register', businessData, {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
@@ -2626,7 +2626,7 @@ const retryStripeOnboarding = async () => {
       "payout_preferences[0]": submittedBusiness.value.payout_preference
     }
     
-    const businessResponse = await api.post('/api/merchant/register', businessData, {
+    const businessResponse = await api.post('/merchant/register', businessData, {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
@@ -2846,7 +2846,7 @@ const createPaymentCheckout = async () => {
     
     console.log('📤 Sending checkout request:', checkoutData)
     
-    const checkoutResponse = await api.post('/api/payments/checkout', checkoutData)
+    const checkoutResponse = await api.post('/payments/checkout', checkoutData)
     
     console.log('✅ Checkout response:', checkoutResponse.data)
     
@@ -3170,7 +3170,7 @@ const contactSupport = () => {
 const logout = async () => {
   try {
     try {
-      await api.post('/api/logout')
+      await api.post('/auth/logout')
     } catch {
       console.warn('⚠️ Logout API call failed, proceeding with local cleanup')
     }
@@ -3332,7 +3332,7 @@ const loadAnalyticsData = async () => {
 
 const loadRevenueData = async () => {
   try {
-    const response = await api.get('/api/merchant/transactions', {
+    const response = await api.get('/merchant/transactions', {
       params: { timeframe: timeframe.value }
     })
     if (response.data?.transactions) {
@@ -3348,7 +3348,7 @@ const loadRevenueData = async () => {
 
 const loadMethodsData = async () => {
   try {
-    const response = await api.get('/api/merchant/transactions', {
+    const response = await api.get('/merchant/transactions', {
       params: { timeframe: timeframe.value }
     })
     if (response.data?.transactions) {
@@ -3364,7 +3364,7 @@ const loadMethodsData = async () => {
 
 const loadTransactionData = async () => {
   try {
-    const response = await api.get('/api/merchant/transactions', {
+    const response = await api.get('/merchant/transactions', {
       params: { timeframe: timeframe.value }
     })
     if (response.data?.transactions) {
@@ -3378,16 +3378,7 @@ const loadTransactionData = async () => {
   }
 }
 
-const loadSampleRevenue = () => {
-  revenueData.value = [
-    { date: 'Jan', revenue: 125000 },
-    { date: 'Feb', revenue: 138000 },
-    { date: 'Mar', revenue: 156000 },
-    { date: 'Apr', revenue: 142000 },
-    { date: 'May', revenue: 168000 },
-    { date: 'Jun', revenue: 184000 }
-  ]
-}
+// sample loaders removed; relying solely on backend data
 
 const calculateRevenueFromTransactions = (transactions) => {
   const monthlyRevenue = {}

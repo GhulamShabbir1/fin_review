@@ -94,7 +94,7 @@ router.beforeEach(async (to, from, next) => {
     }
     if (!storedRole) {
       try {
-        const resp = await api.get('/api/profile')
+        const resp = await api.get('/auth/profile')
         const profileUser = resp?.data?.user || resp?.data
         if (profileUser) {
           localStorage.setItem('user', JSON.stringify(profileUser))
