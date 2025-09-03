@@ -179,7 +179,7 @@ const onSubmit = async () => {
 
     let loginResponse
     try {
-      loginResponse = await api.post('/api/auth/login', {
+      loginResponse = await api.post('/auth/login', {
         email: email.value,
         password: password.value
       })
@@ -222,17 +222,9 @@ const onSubmit = async () => {
       try {
         let userResponse
         try {
-          userResponse = await api.get('/api/merchant/user-profile')
+          userResponse = await api.get('/merchant/user-profile')
         } catch {
-          try {
-            userResponse = await api.get('/api/profile')
-          } catch {
-            try {
-              userResponse = await api.get('/api/user')
-            } catch {
-              userResponse = await api.get('/api/me')
-            }
-          }
+          userResponse = await api.get('/auth/profile')
         }
         user = userResponse.data?.user || userResponse.data
         if (user && !user.role) user.role = 'merchant'

@@ -41,7 +41,7 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true
     try {
       // ✅ Using your actual endpoint: POST /api/auth/register
-      const { data } = await api.post('/api/auth/register', {
+      const { data } = await api.post('/auth/register', {
         name: userData.name,
         email: userData.email,
         password: userData.password,
@@ -69,7 +69,7 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true
     try {
       // ✅ Using your actual endpoint: POST /api/auth/login (need to add to backend)
-      const response = await api.post('/api/auth/login', {
+      const response = await api.post('/auth/login', {
         email: credentials.email,
         password: credentials.password
       })
@@ -126,7 +126,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       if (token.value) {
         // ✅ Using your actual endpoint: POST /api/logout
-        await api.post('/api/auth/logout')
+        await api.post('/auth/logout')
       }
     } catch (error) {
       console.warn('⚠️ Logout error:', error)
@@ -174,7 +174,7 @@ export const useAuthStore = defineStore('auth', () => {
       })
 
       // ✅ Using your actual endpoint: POST /api/merchant/register
-      const { data } = await api.post('/api/merchant/register', formData, {
+      const { data } = await api.post('/merchant/register', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
