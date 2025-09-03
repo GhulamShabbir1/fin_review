@@ -1330,7 +1330,7 @@ const formatNumber = (num) => {
   return new Intl.NumberFormat('en-US').format(num)
 }
 
-const showRevenueDetails = (item, index) => {
+const showRevenueDetails = (item) => {
   $q.notify({
     type: 'info',
     message: `${item.date}: $${formatNumber(item.revenue || item.value || 0)}`,
@@ -1338,7 +1338,7 @@ const showRevenueDetails = (item, index) => {
   })
 }
 
-const showGrowthDetails = (point, index) => {
+const showGrowthDetails = (point) => {
   $q.notify({
     type: 'info',
     message: `${point.date}: ${point.count} new merchants`,
@@ -1346,7 +1346,7 @@ const showGrowthDetails = (point, index) => {
   })
 }
 
-const showTransactionDetails = (item, index) => {
+const showTransactionDetails = (item) => {
   $q.notify({
     type: 'info',
     message: `${item.date}: ${item.count} transactions (${item.success} successful)`,

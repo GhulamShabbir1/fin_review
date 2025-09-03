@@ -185,6 +185,7 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
 import { Notify } from 'quasar'
+import { useAuthStore } from '../../store/auth'
 // Merchant store functionality moved to auth store
 
 const props = defineProps({
@@ -197,7 +198,7 @@ const modelValue = ref(props.modelValue)
 watch(() => props.modelValue, v => modelValue.value = v)
 watch(modelValue, v => emit('update:modelValue', v))
 
-const store = useMerchantStore(pinia)
+const store = useAuthStore()
 const submitting = ref(false)
 const uploadProgress = ref(0)
 const placeholderLogo = 'https://placehold.co/80x80/121018/bdf000?text=LOGO'

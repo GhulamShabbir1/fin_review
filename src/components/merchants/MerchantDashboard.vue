@@ -1598,6 +1598,11 @@ const currencyOptions = [
 const refundReasons = [
   { label: 'Customer Request', value: 'customer_request' },
   { label: 'Product Defective', value: 'defective_product' },
+  { label: 'Service Not Delivered', value: 'service_not_delivered' },
+  { label: 'Duplicate Charge', value: 'duplicate_charge' },
+  { label: 'Fraudulent Transaction', value: 'fraud' },
+  { label: 'Other', value: 'other' }
+]
 
 // Analytics State
 const timeframe = ref('monthly')
@@ -1617,11 +1622,6 @@ const timeframeOptions = [
   { label: '30D', value: 'monthly' },
   { label: '90D', value: 'quarterly' },
   { label: '1Y', value: 'yearly' }
-]
-  { label: 'Service Not Delivered', value: 'service_not_delivered' },
-  { label: 'Duplicate Charge', value: 'duplicate_charge' },
-  { label: 'Fraudulent Transaction', value: 'fraud' },
-  { label: 'Other', value: 'other' }
 ]
 
 const placeholderLogo = 'https://placehold.co/200x200/121018/bdf000?text=Logo'
@@ -3557,7 +3557,7 @@ const formatNumber = (num) => {
   return new Intl.NumberFormat('en-US').format(num)
 }
 
-const showRevenueDetails = (item, index) => {
+const showRevenueDetails = (item) => {
   $q.notify({
     type: 'info',
     message: `${item.date}: $${formatNumber(item.revenue || item.value || 0)}`,
@@ -3565,7 +3565,7 @@ const showRevenueDetails = (item, index) => {
   })
 }
 
-const showMethodDetails = (method, index) => {
+const showMethodDetails = (method) => {
   $q.notify({
     type: 'info',
     message: `${method.label}: ${method.value}% of transactions`,
@@ -3573,7 +3573,7 @@ const showMethodDetails = (method, index) => {
   })
 }
 
-const showTransactionDetails = (item, index) => {
+const showTransactionDetails = (item) => {
   $q.notify({
     type: 'info',
     message: `${item.date}: ${item.count} transactions (${item.success} successful)`,
