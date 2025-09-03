@@ -116,7 +116,7 @@
       </div>
     </div>
 
-    <!-- Enhanced Analytics Section with Charts -->
+    <!-- Enhanced Analytics Section with Modern Charts -->
     <div class="analytics-section q-mb-xl animate-fade-in" style="animation-delay: 0.15s">
       <div class="section-header">
         <h3 class="section-title">
@@ -146,8 +146,8 @@
       </div>
 
       <div class="charts-grid">
-        <!-- Revenue Chart -->
-        <div class="chart-card lime-glow hover-lift">
+        <!-- Revenue Chart - Modern Design -->
+        <div class="chart-card modern-chart lime-glow hover-lift">
           <div class="chart-header">
             <h4 class="chart-title">
               <q-icon name="trending_up" size="20px" color="lime" class="q-mr-sm" />
@@ -161,36 +161,38 @@
               <p>Loading analytics...</p>
             </div>
             <div v-else-if="revenueData.length > 0" class="chart-content">
-              <div class="revenue-chart">
-                <div class="chart-stats">
-                  <div class="stat-item">
-                    <span class="stat-label">Total:</span>
+              <div class="revenue-chart modern-chart">
+                <div class="chart-stats modern-stats">
+                  <div class="stat-item modern-stat">
+                    <span class="stat-label">Total Revenue</span>
                     <span class="stat-value">${{ formatNumber(getTotalRevenue()) }}</span>
+                    <span class="stat-change positive">+{{ getRevenueGrowth() }}%</span>
                   </div>
-                  <div class="stat-item">
-                    <span class="stat-label">Average:</span>
+                  <div class="stat-item modern-stat">
+                    <span class="stat-label">Monthly Avg</span>
                     <span class="stat-value">${{ formatNumber(getAverageRevenue()) }}</span>
                   </div>
-                  <div class="stat-item">
-                    <span class="stat-label">Growth:</span>
-                    <span class="stat-value" :class="getGrowthClass()">{{ getRevenueGrowth() }}%</span>
-                  </div>
                 </div>
-                <div class="revenue-bars">
+                <div class="revenue-bars modern-bars">
                   <div 
                     v-for="(item, index) in revenueData.slice(0, 12)" 
                     :key="index" 
-                    class="revenue-bar hover-scale"
-                    @click="showRevenueDetails(item, index)"
+                    class="revenue-bar modern-bar hover-scale"
+                    @click="showRevenueDetails(item)"
                   >
-                    <div class="bar-value">${{ formatNumber(item.revenue || item.value || 0) }}</div>
+                    <div class="bar-tooltip">
+                      <div class="tooltip-value">${{ formatNumber(item.revenue || item.value || 0) }}</div>
+                      <div class="tooltip-date">{{ item.date || item.label || `M${index + 1}` }}</div>
+                    </div>
                     <div 
-                      class="bar-fill" 
+                      class="bar-fill modern-fill" 
                       :style="{
                         height: getBarHeight(item.revenue || item.value || 0, revenueData),
                         background: getRevenueBarGradient(index)
                       }"
-                    ></div>
+                    >
+                      <div class="bar-glow"></div>
+                    </div>
                     <div class="bar-label">{{ item.date || item.label || `M${index + 1}` }}</div>
                   </div>
                 </div>
@@ -204,8 +206,8 @@
           </div>
         </div>
 
-        <!-- Payment Methods Chart -->
-        <div class="chart-card lime-glow hover-lift">
+        <!-- Payment Methods Chart - Modern Design -->
+        <div class="chart-card modern-chart blue-glow hover-lift">
           <div class="chart-header">
             <h4 class="chart-title">
               <q-icon name="payment" size="20px" color="blue" class="q-mr-sm" />
@@ -219,22 +221,22 @@
               <p>Loading payment methods...</p>
             </div>
             <div v-else-if="methodsData.length > 0" class="chart-content">
-              <div class="methods-chart">
-                <div class="methods-summary">
+              <div class="methods-chart modern-chart">
+                <div class="methods-summary modern-summary">
                   <div class="total-transactions">
-                    <span class="summary-label">Total Transactions:</span>
+                    <span class="summary-label">Total Transactions</span>
                     <span class="summary-value">{{ formatNumber(getTotalTransactions()) }}</span>
                   </div>
                 </div>
-                <div class="methods-list">
+                <div class="methods-list modern-methods">
                   <div 
                     v-for="(method, index) in methodsData.slice(0, 6)" 
                     :key="index" 
-                    class="method-item hover-scale"
-                    @click="showMethodDetails(method, index)"
+                    class="method-item modern-method hover-scale"
+                    @click="showMethodDetails(method)"
                   >
                     <div class="method-info">
-                      <div class="method-icon">
+                      <div class="method-icon modern-icon">
                         <q-icon :name="getPaymentMethodIcon(method.label)" size="20px" :color="method.color" />
                       </div>
                       <div class="method-details">
@@ -242,14 +244,16 @@
                         <div class="method-percentage">{{ method.value }}%</div>
                       </div>
                     </div>
-                    <div class="method-bar">
+                    <div class="method-bar modern-bar">
                       <div 
-                        class="method-bar-fill" 
+                        class="method-bar-fill modern-fill" 
                         :style="{ 
                           width: `${method.value}%`, 
-                          background: method.color 
+                          background: getMethodGradient(method.color)
                         }"
-                      ></div>
+                      >
+                        <div class="bar-shine"></div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -262,8 +266,8 @@
           </div>
         </div>
 
-        <!-- Transaction Trends Chart -->
-        <div class="chart-card lime-glow hover-lift">
+        <!-- Transaction Trends Chart - Modern Design -->
+        <div class="chart-card modern-chart teal-glow hover-lift">
           <div class="chart-header">
             <h4 class="chart-title">
               <q-icon name="receipt" size="20px" color="teal" class="q-mr-sm" />
@@ -277,33 +281,41 @@
               <p>Loading transactions...</p>
             </div>
             <div v-else-if="transactionData.length > 0" class="chart-content">
-              <div class="transaction-chart">
-                <div class="chart-stats">
-                  <div class="stat-item">
-                    <span class="stat-label">Total:</span>
+              <div class="transaction-chart modern-chart">
+                <div class="chart-stats modern-stats">
+                  <div class="stat-item modern-stat">
+                    <span class="stat-label">Total Transactions</span>
                     <span class="stat-value">{{ formatNumber(getTotalTransactions()) }}</span>
                   </div>
-                  <div class="stat-item">
-                    <span class="stat-label">Success Rate:</span>
-                    <span class="stat-value">{{ getSuccessRate() }}%</span>
+                  <div class="stat-item modern-stat">
+                    <span class="stat-label">Success Rate</span>
+                    <span class="stat-value success-rate">{{ getSuccessRate() }}%</span>
                   </div>
                 </div>
-                <div class="transaction-bars">
+                <div class="transaction-bars modern-bars">
                   <div 
                     v-for="(item, index) in transactionData.slice(0, 12)" 
                     :key="index" 
-                    class="transaction-bar hover-scale"
-                    @click="showTransactionDetails(item, index)"
+                    class="transaction-bar modern-bar hover-scale"
+                    @click="showTransactionDetails(item)"
                   >
-                    <div class="bar-stack">
+                    <div class="bar-tooltip">
+                      <div class="tooltip-success">{{ item.success }} successful</div>
+                      <div class="tooltip-failed">{{ item.failed || 0 }} failed</div>
+                    </div>
+                    <div class="bar-stack modern-stack">
                       <div 
-                        class="bar-success" 
+                        class="bar-success modern-success" 
                         :style="{ height: getTransactionBarHeight(item.success, transactionData) }"
-                      ></div>
+                      >
+                        <div class="bar-glow success-glow"></div>
+                      </div>
                       <div 
-                        class="bar-failed" 
+                        class="bar-failed modern-failed" 
                         :style="{ height: getTransactionBarHeight(item.failed || 0, transactionData) }"
-                      ></div>
+                      >
+                        <div class="bar-glow failed-glow"></div>
+                      </div>
                     </div>
                     <div class="bar-label">{{ item.date || item.label || `M${index + 1}` }}</div>
                   </div>
@@ -3492,10 +3504,7 @@ const getRevenueGrowth = () => {
   return Math.round(((current - previous) / previous) * 100)
 }
 
-const getGrowthClass = () => {
-  const growth = getRevenueGrowth()
-  return growth >= 0 ? 'text-positive' : 'text-negative'
-}
+
 
 const getTotalTransactions = () => {
   return transactionData.value.reduce((sum, item) => sum + (item.count || 0), 0)
@@ -3550,6 +3559,10 @@ const getMethodColor = (method) => {
     upi: '#9C27B0'
   }
   return colors[method] || '#9E9E9E'
+}
+
+const getMethodGradient = (color) => {
+  return `linear-gradient(135deg, ${color}, ${color}dd)`
 }
 
 const formatNumber = (num) => {
@@ -5373,6 +5386,394 @@ onMounted(() => {
 
   .qty-input {
     max-width: none;
+  }
+}
+
+/* ===== MODERN CHART STYLES ===== */
+.modern-chart {
+  background: linear-gradient(135deg, rgba(18, 18, 18, 0.95) 0%, rgba(25, 25, 25, 0.95) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(20px);
+}
+
+.modern-chart:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Modern Glow Effects */
+.lime-glow {
+  box-shadow: 0 0 20px rgba(189, 240, 0, 0.2);
+}
+
+.blue-glow {
+  box-shadow: 0 0 20px rgba(33, 150, 243, 0.2);
+}
+
+.teal-glow {
+  box-shadow: 0 0 20px rgba(0, 188, 212, 0.2);
+}
+
+.purple-glow {
+  box-shadow: 0 0 20px rgba(156, 39, 176, 0.2);
+}
+
+/* Modern Stats */
+.modern-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.modern-stat {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.modern-stat::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #bdf000, #4CAF50, #bdf000);
+  animation: shimmer 2s infinite;
+}
+
+.stat-change {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 8px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-change.positive {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4CAF50;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+/* Modern Bars */
+.modern-bars {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+  height: 220px;
+  padding: 24px 0;
+  position: relative;
+}
+
+.modern-bar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.modern-bar:hover {
+  transform: scale(1.08);
+  z-index: 10;
+}
+
+.modern-bar:hover .bar-tooltip {
+  opacity: 1;
+  transform: translateY(-8px);
+}
+
+/* Modern Bar Fill */
+.modern-fill {
+  width: 100%;
+  border-radius: 8px 8px 0 0;
+  min-height: 24px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.modern-fill::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.modern-bar:hover .modern-fill::before {
+  opacity: 1;
+}
+
+/* Bar Glow Effects */
+.bar-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+  border-radius: 8px 8px 0 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.modern-bar:hover .bar-glow {
+  opacity: 1;
+}
+
+.success-glow {
+  background: linear-gradient(180deg, rgba(76, 175, 80, 0.3) 0%, transparent 100%);
+}
+
+.failed-glow {
+  background: linear-gradient(180deg, rgba(244, 67, 54, 0.3) 0%, transparent 100%);
+}
+
+/* Modern Tooltips */
+.bar-tooltip {
+  position: absolute;
+  top: -60px;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(0);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  z-index: 100;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.tooltip-value {
+  font-weight: 700;
+  color: #bdf000;
+  margin-bottom: 4px;
+}
+
+.tooltip-date {
+  color: #ccc;
+  font-size: 0.75rem;
+}
+
+.tooltip-success {
+  font-weight: 700;
+  color: #4CAF50;
+  margin-bottom: 4px;
+}
+
+.tooltip-failed {
+  color: #F44336;
+  font-size: 0.75rem;
+}
+
+/* Modern Methods */
+.modern-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modern-method {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.modern-method:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateX(8px);
+}
+
+.modern-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.modern-method:hover .modern-icon {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 100%);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.modern-bar {
+  width: 140px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modern-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.bar-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shine 2s infinite;
+}
+
+/* Modern Stack */
+.modern-stack {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.modern-success {
+  width: 100%;
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  border-radius: 8px 8px 0 0;
+  min-height: 24px;
+  transition: all 0.4s ease;
+  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+}
+
+.modern-failed {
+  width: 100%;
+  background: linear-gradient(135deg, #F44336, #d32f2f);
+  border-radius: 0 0 8px 8px;
+  min-height: 24px;
+  transition: all 0.4s ease;
+  box-shadow: 0 4px 16px rgba(244, 67, 54, 0.3);
+}
+
+/* Modern Metrics */
+.modern-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.modern-metric {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.modern-metric::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #bdf000, #4CAF50, #bdf000);
+  animation: shimmer 2s infinite;
+}
+
+.modern-metric:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.08) 100%);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-4px);
+}
+
+.metric-trend {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metric-trend.positive {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4CAF50;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.success-rate {
+  color: #4CAF50;
+  font-weight: 700;
+}
+
+/* Animations */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes shine {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Responsive Modern Charts */
+@media (max-width: 1200px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .modern-stats {
+    grid-template-columns: 1fr;
+  }
+  
+  .modern-metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .modern-bars {
+    gap: 8px;
+    height: 180px;
+  }
+  
+  .modern-bar {
+    min-width: 30px;
+  }
+  
+  .bar-tooltip {
+    display: none;
   }
 }
 </style>
