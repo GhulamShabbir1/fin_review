@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'http://192.168.12.80:8000', // ✅ Your AWS deployment
+  baseURL: 'http://13.51.167.136', // ✅ Your AWS deployment
  headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
