@@ -170,13 +170,10 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useAuthStore } from '../../store/auth'
-import { useMerchantsStore } from '../../store/merchants'
-import { pinia } from '../../store/pinia'
 
 const router = useRouter()
 const $q = useQuasar()
-const auth = useAuthStore(pinia)
-const merchant = useMerchantsStore(pinia)
+const auth = useAuthStore()
 
 // Reactive data
 const drawerOpen = ref(false)
@@ -261,12 +258,13 @@ onMounted(async () => {
     try {
         notifications.value = 2
 
-        if (merchant.profile) {
+        // User data will be loaded from auth store
+        if (auth.user) {
             user.value = {
-                name: merchant.profile.contact_name || 'Merchant User',
-                email: merchant.profile.email || 'merchant@finteckx.com',
-                business_name: merchant.profile.business_name || 'My Business',
-                avatar: merchant.profile.logo_url || null
+                name: auth.user.name || 'Merchant User',
+                email: auth.user.email || 'merchant@finteckx.com',
+                business_name: auth.user.business_name || 'My Business',
+                avatar: auth.user.avatar || null
             }
         }
         

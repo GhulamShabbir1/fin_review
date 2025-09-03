@@ -185,8 +185,7 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
 import { Notify } from 'quasar'
-import { useMerchantStore } from '../../store/merchants'
-import { pinia } from '../../store/pinia'
+// Merchant store functionality moved to auth store
 
 const props = defineProps({
     modelValue: { type: Boolean, default: false },

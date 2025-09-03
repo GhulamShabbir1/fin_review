@@ -153,11 +153,10 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useAuthStore } from '../../store/auth'
-import { pinia } from '../../store/pinia'
 
 const router = useRouter()
 const $q = useQuasar()
-const auth = useAuthStore(pinia)
+const auth = useAuthStore()
 
 // Reactive data
 const drawerOpen = ref(false)
