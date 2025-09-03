@@ -220,12 +220,7 @@ const onSubmit = async () => {
       console.log('🔑 Admin user detected:', user)
     } else {
       try {
-        let userResponse
-        try {
-          userResponse = await api.get('/merchant/user-profile')
-        } catch {
-          userResponse = await api.get('/auth/profile')
-        }
+        const userResponse = await api.get('/auth/profile')
         user = userResponse.data?.user || userResponse.data
         if (user && !user.role) user.role = 'merchant'
       } catch (profileError) {

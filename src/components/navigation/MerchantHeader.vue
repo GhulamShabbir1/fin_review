@@ -166,14 +166,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useAuthStore } from '../../store/auth'
 
 const router = useRouter()
 const $q = useQuasar()
-const auth = useAuthStore()
+let auth = null
 
 // Reactive data
 const drawerOpen = ref(false)
@@ -255,11 +255,17 @@ const animateNotification = () => {
 
 // Initialize
 onMounted(async () => {
+    await nextTick()
+    try {
+        auth = useAuthStore()
+    } catch (e) {
+        console.warn('Auth store not ready yet:', e)
+    }
     try {
         notifications.value = 2
 
         // User data will be loaded from auth store
-        if (auth.user) {
+        if (auth?.user) {
             user.value = {
                 name: auth.user.name || 'Merchant User',
                 email: auth.user.email || 'merchant@finteckx.com',
