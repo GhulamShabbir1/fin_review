@@ -276,7 +276,7 @@
                   dense 
                   icon="refresh" 
                   color="orange"
-                  disabled
+                  @click="openRefund(transaction)"
                 />
               </div>
             </div>
@@ -301,6 +301,46 @@
       v-model="showAddBusinessDialog"
       @business-added="onBusinessAdded"
     />
+
+    <!-- Refund Dialog -->
+    <q-dialog v-model="showRefundDialog" persistent class="refund-dialog">
+      <q-card style="min-width: 420px">
+        <q-card-section>
+          <div class="text-h6">Refund Payment</div>
+          <div class="text-subtitle2 q-mt-xs">Transaction #{{ refundTargetTx?.id }}</div>
+        </q-card-section>
+        <q-separator />
+        <q-card-section>
+          <div class="refund-summary q-mb-md">
+            <div>Amount: <b>${{ formatNumber(refundTargetTx?.amount || 0) }}</b></div>
+            <div>Status: <q-chip :label="refundTargetTx?.status" dense /></div>
+          </div>
+          <q-select
+            v-model="refundReason"
+            :options="refundReasons"
+            label="Refund reason"
+            outlined
+            dense
+            emit-value
+            map-options
+          />
+          <q-input
+            v-model="refundNote"
+            type="textarea"
+            label="Note (optional)"
+            outlined
+            dense
+            autogrow
+            class="q-mt-md"
+          />
+        </q-card-section>
+        <q-separator />
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" color="grey" v-close-popup :disable="refundLoading" />
+          <q-btn unelevated color="orange" :loading="refundLoading" label="Refund" @click="submitRefund" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -311,10 +351,12 @@ import { useAuthStore } from '../../store/auth'
 import { useQuasar } from 'quasar'
 import api from '../../boot/axios'
 import AddBusinessDialog from './AddBusinessDialog.vue'
+import { useTransactionsStore } from '../../store/transactions'
 
 const router = useRouter()
 const auth = useAuthStore()
 const $q = useQuasar()
+const transactionsStore = useTransactionsStore()
 
 // Reactive data
 const loading = ref(false)
@@ -323,6 +365,18 @@ const totalRevenue = ref(0)
 const businesses = ref([])
 const transactions = ref([])
 const showAddBusinessDialog = ref(false)
+const showRefundDialog = ref(false)
+const refundTargetTx = ref(null)
+const refundReason = ref('duplicate')
+const refundNote = ref('')
+const refundLoading = ref(false)
+const refundReasons = [
+  { label: 'Duplicate charge', value: 'duplicate' },
+  { label: 'Customer request', value: 'customer_request' },
+  { label: 'Fraudulent', value: 'fraudulent' },
+  { label: 'Product not delivered', value: 'not_delivered' },
+  { label: 'Other', value: 'other' }
+]
 
 // Computed properties
 const approvedBusinessCount = computed(() => 
@@ -375,6 +429,13 @@ const canRefund = (transaction) => {
   return transaction.status === 'completed' && !transaction.refunded
 }
 
+const openRefund = (transaction) => {
+  refundTargetTx.value = transaction
+  refundReason.value = 'duplicate'
+  refundNote.value = ''
+  showRefundDialog.value = true
+}
+
 // Actions
 const logout = async () => {
   try {
@@ -422,6 +483,33 @@ const loadDashboardData = async () => {
     })
   } finally {
     loading.value = false
+  }
+}
+
+const refreshTransactions = async () => {
+  try {
+    const resp = await api.get('/merchant/transactions')
+    const list = resp.data.data || []
+    transactions.value = list
+    totalRevenue.value = list.reduce((sum, t) => sum + (t.amount || 0), 0)
+  } catch (e) {
+    console.error('Refresh transactions failed', e)
+  }
+}
+
+const submitRefund = async () => {
+  if (!refundTargetTx.value) return
+  refundLoading.value = true
+  try {
+    await transactionsStore.refundTransaction(refundTargetTx.value.id, refundReason.value)
+    $q.notify({ type: 'positive', message: 'Refund processed successfully' })
+    showRefundDialog.value = false
+    await refreshTransactions()
+  } catch (error) {
+    console.error('Refund failed', error)
+    $q.notify({ type: 'negative', message: error?.response?.data?.message || 'Refund failed' })
+  } finally {
+    refundLoading.value = false
   }
 }
 
