@@ -1,6 +1,6 @@
 <template>
   <div class="payment-method-selector">
-    <div class="selector-header animate-fade-in">
+    <div class="selector-header">
       <h3 class="selector-title">Choose Payment Method</h3>
       <p class="selector-subtitle">Select your preferred payment option</p>
     </div>
@@ -24,7 +24,7 @@
         
         <div class="method-content">
           <div class="method-icon">
-            <q-icon :name="method.icon" size="32px" class="icon-animate" />
+            <q-icon :name="method.icon" size="32px" />
           </div>
           
           <div class="method-info">
@@ -38,7 +38,6 @@
               v-if="method.loading"
               size="20px"
               color="lime"
-              class="status-animate"
             />
             <!-- Selected state -->
             <q-icon
@@ -46,7 +45,6 @@
               name="check_circle"
               color="lime"
               size="24px"
-              class="status-animate"
             />
             <!-- Disabled state -->
             <q-icon
@@ -61,7 +59,6 @@
               name="arrow_forward"
               color="lime"
               size="20px"
-              class="status-animate"
             />
             <!-- Default state -->
             <q-icon
@@ -81,7 +78,7 @@
     </div>
     
     <!-- Additional payment info -->
-    <div class="payment-info animate-fade-in" style="animation-delay: 0.2s">
+    <div class="payment-info">
       <div class="info-item">
         <q-icon name="security" color="lime" size="16px" class="info-icon" />
         <span>All payments are encrypted and secure</span>
@@ -97,8 +94,8 @@
     </div>
 
     <!-- Selected method details -->
-    <transition name="fade-slide">
-      <div v-if="selectedMethodDetails" class="method-details animate-fade-in" style="animation-delay: 0.3s">
+    <q-slide-transition>
+      <div v-if="selectedMethodDetails" class="method-details">
         <div class="details-header">
           <h4 class="details-title">Payment Details</h4>
         </div>
@@ -106,7 +103,7 @@
           <p>{{ selectedMethodDetails }}</p>
         </div>
       </div>
-    </transition>
+    </q-slide-transition>
   </div>
 </template>
 
@@ -198,9 +195,9 @@ const methodBackgroundStyle = (method) => {
   if (method.loading) {
     return {
       background: `linear-gradient(45deg, 
-        rgba(189, 240, 0, 0.1),
-        rgba(189, 240, 0, 0.2),
-        rgba(189, 240, 0, 0.1)
+        rgba(189, 253, 0, 0.1),
+        rgba(189, 253, 0, 0.2),
+        rgba(189, 253, 0, 0.1)
       )`,
       animation: 'gradientShift 1.5s ease-in-out infinite'
     }
@@ -209,9 +206,9 @@ const methodBackgroundStyle = (method) => {
   if (selectedMethod.value === method.id) {
     return {
       background: `linear-gradient(45deg, 
-        rgba(189, 240, 0, 0.15),
-        rgba(189, 240, 0, 0.25),
-        rgba(189, 240, 0, 0.15)
+        rgba(189, 253, 0, 0.15),
+        rgba(189, 253, 0, 0.25),
+        rgba(189, 253, 0, 0.15)
       )`
     }
   }
@@ -219,15 +216,15 @@ const methodBackgroundStyle = (method) => {
   if (hoverMethod.value === method.id && method.available) {
     return {
       background: `linear-gradient(45deg, 
-        rgba(189, 240, 0, 0.05),
-        rgba(189, 240, 0, 0.1),
-        rgba(189, 240, 0, 0.05)
+        rgba(189, 253, 0, 0.05),
+        rgba(189, 253, 0, 0.1),
+        rgba(189, 253, 0, 0.05)
       )`
     }
   }
   
   return {
-    background: 'rgba(189, 240, 0, 0.02)'
+    background: 'rgba(189, 253, 0, 0.02)'
   }
 }
 
@@ -250,11 +247,11 @@ watch(availableMethods, (methods) => {
 
 <style scoped>
 .payment-method-selector {
-  background: rgba(18, 18, 18, 0.95);
+  background: rgba(23, 23, 25, 0.95);
   border-radius: 20px;
   padding: 32px;
   margin-bottom: 24px;
-  border: 1px solid rgba(189, 240, 0, 0.2);
+  border: 1px solid rgba(189, 253, 0, 0.2);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(10px);
   position: relative;
@@ -271,7 +268,7 @@ watch(availableMethods, (methods) => {
   font-size: 1.5rem;
   font-weight: 700;
   color: #ffffff;
-  background: linear-gradient(135deg, #bdf000, #ffffff);
+  background: linear-gradient(135deg, #bdfd00, #ffffff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -326,18 +323,18 @@ watch(availableMethods, (methods) => {
 }
 
 .method-option:hover:not(.method-disabled):not(.method-loading) {
-  border-color: rgba(189, 240, 0, 0.4);
+  border-color: rgba(189, 253, 0, 0.4);
   transform: translateY(-4px);
   box-shadow: 
     0 12px 32px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(189, 240, 0, 0.2);
+    0 0 0 1px rgba(189, 253, 0, 0.2);
 }
 
 .method-option.method-selected {
-  border-color: #bdf000;
+  border-color: #bdfd00;
   box-shadow: 
-    0 12px 40px rgba(189, 240, 0, 0.3),
-    0 0 0 2px rgba(189, 240, 0, 0.3);
+    0 12px 40px rgba(189, 253, 0, 0.3),
+    0 0 0 2px rgba(189, 253, 0, 0.3);
   transform: translateY(-2px);
 }
 
@@ -364,16 +361,16 @@ watch(availableMethods, (methods) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(189, 240, 0, 0.15), rgba(189, 240, 0, 0.1));
+  background: linear-gradient(135deg, rgba(189, 253, 0, 0.15), rgba(189, 253, 0, 0.1));
   border-radius: 12px;
-  color: #bdf000;
-  border: 1px solid rgba(189, 240, 0, 0.3);
+  color: #bdfd00;
+  border: 1px solid rgba(189, 253, 0, 0.3);
   transition: all 0.3s ease;
 }
 
 .method-selected .method-icon {
-  background: linear-gradient(135deg, rgba(189, 240, 0, 0.25), rgba(189, 240, 0, 0.15));
-  box-shadow: 0 0 20px rgba(189, 240, 0, 0.3);
+  background: linear-gradient(135deg, rgba(189, 253, 0, 0.25), rgba(189, 253, 0, 0.15));
+  box-shadow: 0 0 20px rgba(189, 253, 0, 0.3);
 }
 
 .method-info {
@@ -417,7 +414,7 @@ watch(availableMethods, (methods) => {
 
 .payment-info {
   padding-top: 24px;
-  border-top: 1px solid rgba(189, 240, 0, 0.2);
+  border-top: 1px solid rgba(189, 253, 0, 0.2);
   display: grid;
   gap: 12px;
 }
@@ -438,9 +435,9 @@ watch(availableMethods, (methods) => {
 .method-details {
   margin-top: 24px;
   padding: 20px;
-  background: rgba(189, 240, 0, 0.08);
+  background: rgba(189, 253, 0, 0.08);
   border-radius: 12px;
-  border: 1px solid rgba(189, 240, 0, 0.2);
+  border: 1px solid rgba(189, 253, 0, 0.2);
 }
 
 .details-header {
@@ -450,7 +447,7 @@ watch(availableMethods, (methods) => {
 .details-title {
   margin: 0;
   font-size: 1.1rem;
-  color: #bdf000;
+  color: #bdfd00;
   font-weight: 600;
 }
 
@@ -458,51 +455,6 @@ watch(availableMethods, (methods) => {
   color: #ccc;
   font-size: 0.9rem;
   line-height: 1.5;
-}
-
-/* Animation Classes */
-.animate-fade-in {
-  opacity: 0;
-  transform: translateY(20px);
-  animation: fadeInUp 0.6s forwards;
-}
-
-@keyframes fadeInUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.fade-slide-enter-active {
-  animation: fadeInUp 0.4s ease-out;
-}
-
-.fade-slide-leave-active {
-  animation: fadeOutDown 0.3s ease-in;
-}
-
-@keyframes fadeOutDown {
-  to {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-}
-
-.icon-animate {
-  transition: all 0.3s ease;
-}
-
-.method-option:hover .icon-animate {
-  transform: scale(1.1);
-}
-
-.status-animate {
-  transition: all 0.3s ease;
-}
-
-.method-option:hover .status-animate {
-  transform: scale(1.1);
 }
 
 @keyframes gradientShift {
@@ -571,21 +523,13 @@ watch(availableMethods, (methods) => {
 
 /* Enhanced focus states */
 .method-option:focus-visible {
-  outline: 2px solid rgba(189, 240, 0, 0.5);
+  outline: 2px solid rgba(189, 253, 0, 0.5);
   outline-offset: 2px;
-}
-
-/* Smooth transitions */
-* {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Accessibility improvements */
 @media (prefers-reduced-motion: reduce) {
-  .animate-fade-in,
-  .method-option,
-  .icon-animate,
-  .status-animate {
+  .method-option {
     animation: none;
     transition: none;
   }
