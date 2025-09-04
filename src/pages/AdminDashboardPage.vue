@@ -1052,58 +1052,52 @@ const loadAnalyticsData = async () => {
 
 const loadRevenueData = async () => {
   try {
-    // Try to get real data from API
-    const response = await api.get('/api/admin/transactions', {
-      params: { timeframe: timeframe.value }
+    this.loading = true
+    const response = await api.get('/admin/stats/revenue', {
+      params: { timeframe: this.selectedTimeframe }
     })
-    
-    if (response.data?.transactions) {
-      revenueData.value = calculateRevenueFromTransactions(response.data.transactions)
-    } else {
-      // Fallback to sample data
-      loadSampleRevenue()
-    }
+    this.revenueData = response.data.data || response.data
+    this.updateRevenueChart()
   } catch (error) {
-    console.warn('Using fallback revenue data:', error)
-    loadSampleRevenue()
+    console.error('Failed to load revenue data:', error)
+    this.revenueData = []
+    this.updateRevenueChart()
+  } finally {
+    this.loading = false
   }
 }
 
 const loadMerchantGrowthData = async () => {
   try {
-    // Try to get real data from API
-    const response = await api.get('/api/admin/merchants', {
-      params: { timeframe: timeframe.value }
+    this.loading = true
+    const response = await api.get('/admin/stats/transactions', {
+      params: { timeframe: this.selectedTimeframe }
     })
-    
-    if (response.data?.merchants) {
-      merchantGrowthData.value = calculateMerchantGrowth(response.data.merchants)
-    } else {
-      // Fallback to sample data
-      loadSampleMerchantGrowth()
-    }
+    this.growthData = response.data.data || response.data
+    this.updateGrowthChart()
   } catch (error) {
-    console.warn('Using fallback merchant growth data:', error)
-    loadSampleMerchantGrowth()
+    console.error('Failed to load growth data:', error)
+    this.growthData = []
+    this.updateGrowthChart()
+  } finally {
+    this.loading = false
   }
 }
 
 const loadTransactionData = async () => {
   try {
-    // Try to get real data from API
-    const response = await api.get('/api/admin/transactions', {
-      params: { timeframe: timeframe.value }
+    this.loading = true
+    const response = await api.get('/admin/stats/methods', {
+      params: { timeframe: this.selectedTimeframe }
     })
-    
-    if (response.data?.transactions) {
-      transactionData.value = calculateTransactionTrends(response.data.transactions)
-    } else {
-      // Fallback to sample data
-      loadSampleTransactionData()
-    }
+    this.transactionData = response.data.data || response.data
+    this.updateTransactionChart()
   } catch (error) {
-    console.warn('Using fallback transaction data:', error)
-    loadSampleTransactionData()
+    console.error('Failed to load transaction data:', error)
+    this.transactionData = []
+    this.updateTransactionChart()
+  } finally {
+    this.loading = false
   }
 }
 
@@ -1124,100 +1118,18 @@ const loadPerformanceMetrics = async () => {
   }
 }
 
-const loadSampleRevenue = () => {
-  revenueData.value = [
-    { date: 'Jan', revenue: 125000 },
-    { date: 'Feb', revenue: 138000 },
-    { date: 'Mar', revenue: 156000 },
-    { date: 'Apr', revenue: 142000 },
-    { date: 'May', revenue: 168000 },
-    { date: 'Jun', revenue: 184000 }
-  ]
-}
 
-const loadSampleMerchantGrowth = () => {
-  merchantGrowthData.value = [
-    { date: 'Jan', count: 45 },
-    { date: 'Feb', count: 52 },
-    { date: 'Mar', count: 58 },
-    { date: 'Apr', count: 65 },
-    { date: 'May', count: 72 },
-    { date: 'Jun', count: 78 }
-  ]
-}
 
-const loadSampleTransactionData = () => {
-  transactionData.value = [
-    { date: 'Jan', count: 450, success: 445, failed: 5 },
-    { date: 'Feb', count: 520, success: 515, failed: 5 },
-    { date: 'Mar', count: 580, success: 575, failed: 5 }
-  ]
-}
 
-const calculateRevenueFromTransactions = (transactions) => {
-  const monthlyRevenue = {}
-  
-  transactions.forEach(transaction => {
-    if (transaction.status === 'completed') {
-      const date = new Date(transaction.created_at)
-      const monthKey = date.toLocaleDateString('en-US', { month: 'short' })
-      
-      if (!monthlyRevenue[monthKey]) {
-        monthlyRevenue[monthKey] = 0
-      }
-      monthlyRevenue[monthKey] += transaction.amount || 0
-    }
-  })
-  
-  return Object.entries(monthlyRevenue).map(([date, revenue]) => ({
-    date,
-    revenue
-  }))
-}
 
-const calculateMerchantGrowth = (merchants) => {
-  const monthlyGrowth = {}
-  
-  merchants.forEach(merchant => {
-    const date = new Date(merchant.created_at)
-    const monthKey = date.toLocaleDateString('en-US', { month: 'short' })
-    
-    if (!monthlyGrowth[monthKey]) {
-      monthlyGrowth[monthKey] = 0
-    }
-    monthlyGrowth[monthKey]++
-  })
-  
-  return Object.entries(monthlyGrowth).map(([date, count]) => ({
-    date,
-    count
-  }))
-}
 
-const calculateTransactionTrends = (transactions) => {
-  const monthlyData = {}
-  
-  transactions.forEach(transaction => {
-    const date = new Date(transaction.created_at)
-    const monthKey = date.toLocaleDateString('en-US', { month: 'short' })
-    
-    if (!monthlyData[monthKey]) {
-      monthlyData[monthKey] = { count: 0, success: 0, failed: 0 }
-    }
-    
-    monthlyData[monthKey].count++
-    if (transaction.status === 'completed') {
-      monthlyData[monthKey].success++
-    } else if (transaction.status === 'failed') {
-      monthlyData[monthKey].failed++
-    }
-  })
-  
-  return Object.entries(monthlyData).map(([date, data]) => ({
-    date,
-    ...data
-  }))
-}
+
+
+
+
+
+
+
 
 const getTotalRevenue = () => {
   return revenueData.value.reduce((sum, item) => sum + (item.revenue || item.value || 0), 0)

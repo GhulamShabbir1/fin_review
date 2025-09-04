@@ -1773,7 +1773,7 @@ const loadRecentTransactions = async () => {
     
     // ✅ Try to load from API
     try {
-      const response = await api.get('/api/merchant/transactions', {
+              const response = await api.get('/merchant/transactions', {
         params: { limit: 10 }
       })
       
@@ -3332,118 +3332,63 @@ const loadAnalyticsData = async () => {
 
 const loadRevenueData = async () => {
   try {
-    const response = await api.get('/merchant/transactions', {
-      params: { timeframe: timeframe.value }
+    this.loading = true
+    const response = await api.get('/merchant/stats/revenue', {
+      params: { timeframe: this.selectedTimeframe }
     })
-    if (response.data?.transactions) {
-      revenueData.value = calculateRevenueFromTransactions(response.data.transactions)
-    } else {
-      revenueData.value = []
-    }
+    this.revenueData = response.data.data || response.data
+    this.updateRevenueChart()
   } catch (error) {
-    console.warn('Revenue analytics API error:', error)
-    revenueData.value = []
+    console.error('Failed to load revenue data:', error)
+    this.revenueData = []
+    this.updateRevenueChart()
+  } finally {
+    this.loading = false
   }
 }
 
 const loadMethodsData = async () => {
   try {
-    const response = await api.get('/merchant/transactions', {
-      params: { timeframe: timeframe.value }
+    this.loading = true
+    const response = await api.get('/merchant/stats/methods', {
+      params: { timeframe: this.selectedTimeframe }
     })
-    if (response.data?.transactions) {
-      methodsData.value = calculatePaymentMethodsFromTransactions(response.data.transactions)
-    } else {
-      methodsData.value = []
-    }
+    this.methodsData = response.data.data || response.data
+    this.updateMethodsChart()
   } catch (error) {
-    console.warn('Methods analytics API error:', error)
-    methodsData.value = []
+    console.error('Failed to load methods data:', error)
+    this.methodsData = []
+    this.updateMethodsChart()
+  } finally {
+    this.loading = false
   }
 }
 
 const loadTransactionData = async () => {
   try {
-    const response = await api.get('/merchant/transactions', {
-      params: { timeframe: timeframe.value }
+    this.loading = true
+    const response = await api.get('/merchant/stats/transactions', {
+      params: { timeframe: this.selectedTimeframe }
     })
-    if (response.data?.transactions) {
-      transactionData.value = calculateTransactionTrends(response.data.transactions)
-    } else {
-      transactionData.value = []
-    }
+    this.transactionData = response.data.data || response.data
+    this.updateTransactionChart()
   } catch (error) {
-    console.warn('Transactions analytics API error:', error)
-    transactionData.value = []
+    console.error('Failed to load transaction data:', error)
+    this.transactionData = []
+    this.updateTransactionChart()
+  } finally {
+    this.loading = false
   }
 }
 
 // sample loaders removed; relying solely on backend data
 
-const calculateRevenueFromTransactions = (transactions) => {
-  const monthlyRevenue = {}
-  
-  transactions.forEach(transaction => {
-    if (transaction.status === 'completed') {
-      const date = new Date(transaction.created_at)
-      const monthKey = date.toLocaleDateString('en-US', { month: 'short' })
-      
-      if (!monthlyRevenue[monthKey]) {
-        monthlyRevenue[monthKey] = 0
-      }
-      monthlyRevenue[monthKey] += transaction.amount || 0
-    }
-  })
-  
-  return Object.entries(monthlyRevenue).map(([date, revenue]) => ({
-    date,
-    revenue
-  }))
-}
 
-const calculatePaymentMethodsFromTransactions = (transactions) => {
-  const methodCounts = {}
-  let total = 0
-  
-  transactions.forEach(transaction => {
-    if (transaction.status === 'completed') {
-      const method = transaction.payment_method || 'card'
-      methodCounts[method] = (methodCounts[method] || 0) + 1
-      total++
-    }
-  })
-  
-  return Object.entries(methodCounts).map(([method, count]) => ({
-    label: getPaymentMethodLabel(method),
-    value: Math.round((count / total) * 100),
-    color: getMethodColor(method)
-  }))
-}
 
-const calculateTransactionTrends = (transactions) => {
-  const monthlyData = {}
-  
-  transactions.forEach(transaction => {
-    const date = new Date(transaction.created_at)
-    const monthKey = date.toLocaleDateString('en-US', { month: 'short' })
-    
-    if (!monthlyData[monthKey]) {
-      monthlyData[monthKey] = { count: 0, success: 0, failed: 0 }
-    }
-    
-    monthlyData[monthKey].count++
-    if (transaction.status === 'completed') {
-      monthlyData[monthKey].success++
-    } else if (transaction.status === 'failed') {
-      monthlyData[monthKey].failed++
-    }
-  })
-  
-  return Object.entries(monthlyData).map(([date, data]) => ({
-    date,
-    ...data
-  }))
-}
+
+
+
+
 
 const calculateTotals = () => {
   totalRevenue.value = getTotalRevenue()
@@ -3514,15 +3459,7 @@ const getPaymentMethodIcon = (method) => {
   return icons[method] || 'payment'
 }
 
-const getMethodColor = (method) => {
-  const colors = {
-    card: '#4CAF50',
-    bank_transfer: '#2196F3',
-    wallet: '#FF9800',
-    upi: '#9C27B0'
-  }
-  return colors[method] || '#9E9E9E'
-}
+
 
 const getMethodGradient = (color) => {
   return `linear-gradient(135deg, ${color}, ${color}dd)`

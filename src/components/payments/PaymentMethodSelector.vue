@@ -837,7 +837,7 @@ const loadPayments = async () => {
 
     // ✅ Use your payment checkout endpoint to get payment data
     try {
-      const response = await api.get('/api/payments/transactions')
+      const response = await api.get('/merchant/transactions')
       
       // Handle different response formats
       const data = response.data
@@ -957,7 +957,7 @@ const approvePayment = async (payment) => {
     if (confirmed) {
       // ✅ Try to use actual API endpoint (not in your API docs)
       try {
-        await api.post(`/api/payments/${payment.id}/approve`)
+        await api.post(`/merchant/transactions/${payment.id}/approve`)
       } catch (apiError) {
         console.warn('⚠️ Payment approval API not available',apiError)
       }
@@ -993,7 +993,7 @@ const refundPayment = async (payment) => {
     if (confirmed) {
       // ✅ Try to use actual refund endpoint (not in your API docs)
       try {
-        await api.post(`/api/payments/${payment.id}/refund`)
+        await api.post(`/merchant/transactions/${payment.id}/refund`)
       } catch (apiError) {
         console.warn('⚠️ Payment refund API not available', apiError)
       }
@@ -1028,7 +1028,7 @@ const createNewPayment = async () => {
     }
 
     // ✅ Use your payment checkout endpoint: POST /api/payments/checkout
-    const response = await api.post('/api/payments/checkout', {
+    const response = await api.post('/payments/checkout', {
       customer_name: newPayment.value.customer,
       customer_email: newPayment.value.email,
       amount: Math.round(newPayment.value.amount * 100), // Convert to cents
@@ -1089,7 +1089,7 @@ const exportPayments = async () => {
     
     // ✅ Try to use export endpoint (not in your API docs)
     try {
-      const response = await api.get('/api/payments/export', {
+      const response = await api.get('/merchant/transactions/export', {
         responseType: 'blob',
         params: filters.value
       })

@@ -171,12 +171,12 @@
                       </q-btn>
 
                       <q-btn v-if="props.row.status === 'pending'" flat round dense icon="check" color="green"
-                        @click="approveMerchant(props.row)" size="sm">
+                        @click="approveMerchant(props.row.id)" size="sm">
                         <q-tooltip>Approve Merchant</q-tooltip>
                       </q-btn>
 
                       <q-btn v-if="props.row.status === 'pending'" flat round dense icon="close" color="red"
-                        @click="rejectMerchant(props.row)" size="sm">
+                        @click="rejectMerchant(props.row.id)" size="sm">
                         <q-tooltip>Reject Merchant</q-tooltip>
                       </q-btn>
 
@@ -367,10 +367,10 @@
                 <!-- Action Buttons -->
                 <div class="merchant-actions q-mt-lg text-center">
                   <q-btn v-if="selectedMerchant.status === 'pending'" color="green" icon="check"
-                    label="Approve Merchant" @click="approveMerchant(selectedMerchant)" class="q-mr-sm"
+                    label="Approve Merchant" @click="approveMerchant(selectedMerchant.id)" class="q-mr-sm"
                     :loading="processingAction" />
                   <q-btn v-if="selectedMerchant.status === 'pending'" color="red" icon="close" label="Reject Merchant"
-                    @click="rejectMerchant(selectedMerchant)" class="q-mr-sm" :loading="processingAction" />
+                    @click="rejectMerchant(selectedMerchant.id)" class="q-mr-sm" :loading="processingAction" />
                   <q-btn color="orange" icon="edit" label="Edit Details" @click="editMerchant(selectedMerchant)"
                     class="q-mr-sm" />
                 </div>
@@ -533,7 +533,7 @@ const loadMerchants = async () => {
     console.log('🔄 Loading merchants...')
 
     // ✅ Use your actual API endpoint: GET /api/admin/merchants
-    const response = await api.get('/api/admin/merchants')
+    const response = await api.get('/admin/merchants')
 
     console.log('📋 Raw API response:', response.data)
 
@@ -769,12 +769,12 @@ const viewMerchant = (merchant) => {
   showMerchantDetails.value = true
 }
 
-const approveMerchant = async (merchant) => {
+const approveMerchant = async (merchantId) => {
   try {
     // ✅ Log full merchant object for debugging
-    console.log("🧩 Merchant object before approval:", JSON.stringify(merchant, null, 2))
+    console.log("🧩 Merchant object before approval:", JSON.stringify(merchantId, null, 2))
 
-    if (!merchant) {
+    if (!merchantId) {
       console.error("❌ Merchant object is null/undefined")
       $q.notify({
         type: "negative",
@@ -785,27 +785,17 @@ const approveMerchant = async (merchant) => {
     }
 
     // ✅ Extract ID from possible fields
-    const merchantId =
-      merchant.id ||
-      merchant._id ||
-      merchant.merchant_id ||
-      merchant.user_id ||
-      merchant.pk
+    const merchantIdToUse = merchantId
 
     console.log("🔍 Merchant ID check:", {
-      id: merchant.id,
-      _id: merchant._id,
-      merchant_id: merchant.merchant_id,
-      user_id: merchant.user_id,
-      pk: merchant.pk,
-      finalId: merchantId,
+      id: merchantIdToUse,
     })
 
-    if (!merchantId) {
-      console.error("❌ No valid ID found for merchant:", merchant)
+    if (!merchantIdToUse) {
+      console.error("❌ No valid ID found for merchant:", merchantIdToUse)
       $q.notify({
         type: "negative",
-        message: `Cannot approve "${merchant.business_name}" - merchant ID is missing from backend data`,
+        message: `Cannot approve merchant - merchant ID is missing from backend data`,
         position: "top",
         timeout: 5000,
       })
@@ -813,30 +803,28 @@ const approveMerchant = async (merchant) => {
     }
 
     processingAction.value = true
-    approvingMerchant.value = merchantId
+    approvingMerchant.value = merchantIdToUse
 
     console.log("🔄 Approving merchant:", {
-      id: merchantId,
-      business_name: merchant.business_name,
-      email: merchant.email,
+      id: merchantIdToUse,
     })
 
     // ⚡ Decide based on backend route
     const usePathParam = true // ⬅️ change to false if backend expects JSON body
 
     if (usePathParam) {
-      await api.post(`/api/admin/approve-merchant/${merchantId}`)
+      await api.post(`/admin/approve-merchant/${merchantIdToUse}`)
     } else {
-      await api.post("/api/admin/approve-merchant", { merchantId })
+      await api.post("/admin/approve-merchant", { merchantId: merchantIdToUse })
     }
 
     // ✅ Update local merchants array
     const index = merchants.value.findIndex(
       (m) =>
-        (m.id && m.id === merchantId) ||
-        (m._id && m._id === merchantId) ||
-        (m.merchant_id && m.merchant_id === merchantId) ||
-        (m.email && m.email === merchant.email)
+        (m.id && m.id === merchantIdToUse) ||
+        (m._id && m._id === merchantIdToUse) ||
+        (m.merchant_id && m.merchant_id === merchantIdToUse) ||
+        (m.email && m.email === merchantIdToUse) // Assuming email is the ID for rejection
     )
 
     if (index !== -1) {
@@ -855,7 +843,7 @@ const approveMerchant = async (merchant) => {
 
     $q.notify({
       type: "positive",
-      message: `${merchant.business_name} approved successfully!`,
+      message: `Merchant approved successfully!`,
       position: "top",
       icon: "check_circle",
       timeout: 3000,
@@ -896,7 +884,7 @@ const approveMerchant = async (merchant) => {
           label: "Debug Info",
           color: "white",
           handler: () =>
-            console.log("🔍 Debug - Merchant data:", merchant),
+            console.log("🔍 Debug - Merchant data:", merchantId),
         },
       ],
     })
@@ -907,12 +895,12 @@ const approveMerchant = async (merchant) => {
 }
 
 
-const rejectMerchant = async (merchant) => {
+const rejectMerchant = async (merchantId) => {
   try {
     // ✅ Validate merchant data
-    const merchantId = merchant.id || merchant.merchant_id || merchant.user_id
+    const merchantIdToUse = merchantId
 
-    if (!merchantId) {
+    if (!merchantIdToUse) {
       $q.notify({
         type: 'negative',
         message: 'Cannot reject merchant - ID is missing',
@@ -923,7 +911,7 @@ const rejectMerchant = async (merchant) => {
 
     const reason = await $q.dialog({
       title: 'Reject Merchant',
-      message: `Are you sure you want to reject "${merchant.business_name}"?`,
+      message: `Are you sure you want to reject this merchant?`,
       prompt: {
         model: '',
         type: 'text',
@@ -936,16 +924,15 @@ const rejectMerchant = async (merchant) => {
     processingAction.value = true
 
     console.log('🔄 Rejecting merchant:', {
-      id: merchantId,
-      business_name: merchant.business_name,
+      id: merchantIdToUse,
       reason: reason
     })
 
     // ✅ Update local data (rejection endpoint not in your API docs)
     const index = merchants.value.findIndex(m =>
-      (m.id && m.id === merchantId) ||
-      (m.merchant_id && m.merchant_id === merchantId) ||
-      (m.email && m.email === merchant.email)
+      (m.id && m.id === merchantIdToUse) ||
+      (m.merchant_id && m.merchant_id === merchantIdToUse) ||
+      (m.email && m.email === merchantIdToUse) // Assuming email is the ID for rejection
     )
 
     if (index !== -1) {
@@ -961,7 +948,7 @@ const rejectMerchant = async (merchant) => {
 
     $q.notify({
       type: 'warning',
-      message: `${merchant.business_name} has been rejected`,
+      message: `Merchant rejected`,
       position: 'top',
       timeout: 3000
     })
@@ -1007,7 +994,7 @@ const addMerchant = async () => {
     console.log('🔄 Adding new merchant...')
 
     // ✅ Use your business registration endpoint: POST /api/merchant/register
-    const response = await api.post('/api/merchant/register', {
+    const response = await api.post('/merchant/register', {
       business_name: newMerchant.value.business_name,
       email: newMerchant.value.email,
       bank_account_name: newMerchant.value.bank_account_name,

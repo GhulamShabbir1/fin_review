@@ -225,7 +225,7 @@ const loadPaymentStatus = async () => {
     // ✅ Since no specific payment status endpoint exists in your API,
     // we'll check the merchant transactions to find the payment
     try {
-      const response = await api.get('/api/merchant/transactions')
+              const response = await api.get('/merchant/transactions')
       const transactions = response.data?.transactions || response.data || []
 
       // Find the transaction by ID

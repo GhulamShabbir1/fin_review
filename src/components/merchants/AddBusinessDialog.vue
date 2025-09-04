@@ -272,21 +272,23 @@ const submit = async () => {
 
     try {
         submitting.value = true
-        const fd = new FormData()
         
-        Object.entries(form.value).forEach(([k, v]) => {
-            if (Array.isArray(v)) {
-                v.forEach(val => fd.append(`${k}[]`, val.value || val))
-            } else if (v !== undefined && v !== null) {
-                fd.append(k, v)
+        const formData = new FormData()
+        Object.keys(form.value).forEach(key => {
+          if (form.value[key] !== null && form.value[key] !== undefined) {
+            if (key === 'logo' && form.value[key] instanceof File) {
+              formData.append('logo', form.value[key])
+            } else if (key === 'payout_preferences' && Array.isArray(form.value[key])) {
+              form.value[key].forEach((pref, index) => {
+                formData.append(`payout_preferences[${index}]`, pref)
+              })
+            } else {
+              formData.append(key, form.value[key])
             }
+          }
         })
         
-        if (logo.value) {
-            fd.append('logo', logo.value)
-        }
-        
-        await store.addBusiness(props.merchantId, fd, (e) => {
+        await store.addBusiness(props.merchantId, formData, (e) => {
             if (!e?.total) return
             uploadProgress.value = Math.round((e.loaded * 100) / e.total)
         })

@@ -713,8 +713,9 @@ const currencyOptions = [
 // Methods
 const loadSettings = async () => {
   try {
-    const response = await api.get('/api/admin/settings')
-    const settings = response.data
+    saving.value.system = true
+    const response = await api.get('/admin/settings')
+    const settings = response.data.data || response.data
     
     if (settings.system) systemSettings.value = { ...systemSettings.value, ...settings.system }
     if (settings.payment) paymentSettings.value = { ...paymentSettings.value, ...settings.payment }
@@ -723,13 +724,15 @@ const loadSettings = async () => {
     if (settings.backup) backupSettings.value = { ...backupSettings.value, ...settings.backup }
   } catch (error) {
     console.error('Failed to load settings:', error)
+  } finally {
+    saving.value.system = false
   }
 }
 
 const saveSystemSettings = async () => {
   try {
     saving.value.system = true
-    await api.put('/api/admin/settings/system', systemSettings.value)
+    await api.put('/admin/settings/system', systemSettings.value)
     Notify.create({
       type: 'positive',
       message: 'System settings saved successfully',
@@ -750,7 +753,7 @@ const saveSystemSettings = async () => {
 const savePaymentSettings = async () => {
   try {
     saving.value.payment = true
-    await api.put('/api/admin/settings/payment', paymentSettings.value)
+    await api.put('/admin/settings/payment', paymentSettings.value)
     Notify.create({
       type: 'positive',
       message: 'Payment settings saved successfully',
@@ -771,7 +774,7 @@ const savePaymentSettings = async () => {
 const saveSecuritySettings = async () => {
   try {
     saving.value.security = true
-    await api.put('/api/admin/settings/security', securitySettings.value)
+    await api.put('/admin/settings/security', securitySettings.value)
     Notify.create({
       type: 'positive',
       message: 'Security settings saved successfully',
@@ -792,7 +795,7 @@ const saveSecuritySettings = async () => {
 const saveEmailSettings = async () => {
   try {
     saving.value.email = true
-    await api.put('/api/admin/settings/email', emailSettings.value)
+    await api.put('/admin/settings/email', emailSettings.value)
     Notify.create({
       type: 'positive',
       message: 'Email settings saved successfully',
@@ -813,7 +816,7 @@ const saveEmailSettings = async () => {
 const saveBackupSettings = async () => {
   try {
     saving.value.backup = true
-    await api.put('/api/admin/settings/backup', backupSettings.value)
+    await api.put('/admin/settings/backup', backupSettings.value)
     Notify.create({
       type: 'positive',
       message: 'Backup settings saved successfully',
@@ -833,7 +836,7 @@ const saveBackupSettings = async () => {
 
 const testEmail = async () => {
   try {
-    await api.post('/api/admin/settings/test-email')
+    await api.post('/admin/settings/test-email')
     Notify.create({
       type: 'positive',
       message: 'Test email sent successfully',
@@ -851,7 +854,7 @@ const testEmail = async () => {
 
 const runBackup = async () => {
   try {
-    await api.post('/api/admin/backup/run')
+    await api.post('/admin/backup/run')
     Notify.create({
       type: 'positive',
       message: 'Backup started successfully',

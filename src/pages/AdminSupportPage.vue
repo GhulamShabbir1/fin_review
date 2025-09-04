@@ -543,8 +543,8 @@ const filteredTickets = computed(() => {
 const loadTickets = async () => {
   try {
     loading.value = true
-    const response = await api.get('/api/admin/support/tickets')
-    tickets.value = response.data.tickets || getDemoTickets()
+    const response = await api.get('/admin/support/tickets')
+    tickets.value = response.data.data || response.data
     supportStats.value = response.data.stats || supportStats.value
   } catch (error) {
     console.error('Failed to load tickets:', error)
@@ -602,7 +602,7 @@ const formatFullTime = (timestamp) => {
 
 const updateTicketStatus = async () => {
   try {
-    await api.put(`/api/admin/support/tickets/${selectedTicket.value.id}/status`, {
+    await api.put(`/admin/support/tickets/${selectedTicket.value.id}/status`, {
       status: selectedTicket.value.status
     })
     const ticket = tickets.value.find(t => t.id === selectedTicket.value.id)
@@ -626,7 +626,7 @@ const updateTicketStatus = async () => {
 
 const updateTicketPriority = async () => {
   try {
-    await api.put(`/api/admin/support/tickets/${selectedTicket.value.id}/priority`, {
+    await api.put(`/admin/support/tickets/${selectedTicket.value.id}/priority`, {
       priority: selectedTicket.value.priority
     })
     const ticket = tickets.value.find(t => t.id === selectedTicket.value.id)
@@ -650,7 +650,7 @@ const updateTicketPriority = async () => {
 
 const updateTicketAssignee = async () => {
   try {
-    await api.put(`/api/admin/support/tickets/${selectedTicket.value.id}/assignee`, {
+    await api.put(`/admin/support/tickets/${selectedTicket.value.id}/assignee`, {
       assignee: selectedTicket.value.assignee
     })
     const ticket = tickets.value.find(t => t.id === selectedTicket.value.id)
@@ -674,7 +674,7 @@ const updateTicketAssignee = async () => {
 
 const resolveTicket = async () => {
   try {
-    await api.put(`/api/admin/support/tickets/${selectedTicket.value.id}/resolve`)
+    await api.put(`/admin/support/tickets/${selectedTicket.value.id}/resolve`)
     selectedTicket.value.status = 'resolved'
     const ticket = tickets.value.find(t => t.id === selectedTicket.value.id)
     if (ticket) {
@@ -708,8 +708,8 @@ const assignToMe = async () => {
 const createTicket = async () => {
   try {
     creating.value = true
-    const response = await api.post('/api/admin/support/tickets', newTicket.value)
-    tickets.value.unshift(response.data)
+    const response = await api.post('/admin/support/tickets', newTicket.value)
+    tickets.value.unshift(response.data.data || response.data)
     showNewTicketDialog.value = false
     newTicket.value = { title: '', description: '', category: null, priority: 'medium', requester: '' }
     Notify.create({
@@ -732,7 +732,7 @@ const createTicket = async () => {
 const sendResponse = async () => {
   try {
     sending.value = true
-    await api.post(`/api/admin/support/tickets/${selectedTicket.value.id}/response`, response.value)
+    await api.post(`/admin/support/tickets/${selectedTicket.value.id}/response`, response.value)
     
     if (response.value.resolveTicket) {
       selectedTicket.value.status = 'resolved'
@@ -771,7 +771,7 @@ const viewReports = () => {
 
 const exportTickets = async () => {
   try {
-    const response = await api.get('/api/admin/support/tickets/export', {
+    const response = await api.get('/admin/support/tickets/export', {
       responseType: 'blob',
       params: ticketFilters.value
     })

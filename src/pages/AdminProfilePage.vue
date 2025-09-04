@@ -470,9 +470,9 @@ const recentActivity = ref([
 // Methods
 const loadProfile = async () => {
   try {
-    const response = await api.get('/api/admin/profile')
-    adminProfile.value = { ...adminProfile.value, ...response.data }
-    profileForm.value = { ...response.data }
+    const response = await api.get('/admin/profile')
+    adminProfile.value = { ...adminProfile.value, ...response.data.data }
+    profileForm.value = { ...response.data.data }
   } catch (error) {
     console.error('Failed to load profile:', error)
   }
@@ -480,8 +480,8 @@ const loadProfile = async () => {
 
 const loadStats = async () => {
   try {
-    const response = await api.get('/api/admin/stats/overview')
-    stats.value = { ...stats.value, ...response.data }
+    const response = await api.get('/admin/stats/overview')
+    stats.value = { ...stats.value, ...response.data.data }
   } catch (error) {
     console.error('Failed to load stats:', error)
   }
@@ -490,7 +490,7 @@ const loadStats = async () => {
 const updateProfile = async () => {
   try {
     saving.value = true
-    await api.put('/api/admin/profile', profileForm.value)
+          await api.put('/admin/profile', profileForm.value)
     adminProfile.value = { ...adminProfile.value, ...profileForm.value }
     editMode.value = false
     Notify.create({
@@ -518,9 +518,10 @@ const cancelEdit = () => {
 const changePassword = async () => {
   try {
     changingPassword.value = true
-    await api.post('/api/admin/change-password', {
-      currentPassword: passwordForm.value.current,
-      newPassword: passwordForm.value.new
+    await api.post('/admin/change-password', {
+      current_password: passwordForm.value.current,
+      new_password: passwordForm.value.new,
+      new_password_confirmation: passwordForm.value.confirm
     })
     showPasswordDialog.value = false
     passwordForm.value = { current: '', new: '', confirm: '' }
@@ -553,7 +554,7 @@ const handleAvatarUpload = async (event) => {
     const formData = new FormData()
     formData.append('avatar', file)
     
-    const response = await api.post('/api/admin/upload-avatar', formData, {
+    const response = await api.post('/admin/upload-avatar', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     
@@ -575,7 +576,7 @@ const handleAvatarUpload = async (event) => {
 
 const updateSecuritySetting = async (setting, value) => {
   try {
-    await api.put('/api/admin/security-settings', { [setting]: value })
+    await api.put('/admin/security-settings', { [setting]: value })
     Notify.create({
       type: 'positive',
       message: 'Security setting updated',
@@ -593,7 +594,7 @@ const updateSecuritySetting = async (setting, value) => {
 
 const saveNotificationSettings = async () => {
   try {
-    await api.put('/api/admin/notification-settings', notificationSettings.value)
+    await api.put('/admin/notification-settings', notificationSettings.value)
     showNotificationDialog.value = false
     Notify.create({
       type: 'positive',
@@ -612,7 +613,7 @@ const saveNotificationSettings = async () => {
 
 const initiateBackup = async () => {
   try {
-    await api.post('/api/admin/backup')
+    await api.post('/admin/backup')
     Notify.create({
       type: 'positive',
       message: 'System backup initiated successfully',
@@ -630,7 +631,7 @@ const initiateBackup = async () => {
 
 const exportData = async () => {
   try {
-    const response = await api.get('/api/admin/export', { responseType: 'blob' })
+    const response = await api.get('/admin/export', { responseType: 'blob' })
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url

@@ -486,7 +486,7 @@ const loadRevenueData = async () => {
 
     // ✅ Try to load from your backend (endpoint not in API docs)
     try {
-      const response = await api.get('/api/admin/analytics/revenue', {
+      const response = await api.get('/admin/stats/revenue', {
         params: { timeframe: revenueTimeframe.value, ...props.filters }
       })
       revenueData.value = response.data?.data || response.data || []
@@ -509,7 +509,7 @@ const loadMethodsData = async () => {
     console.log('🔄 Loading payment methods data...')
 
     try {
-      const response = await api.get('/api/admin/analytics/payment-methods', {
+      const response = await api.get('/admin/stats/methods', {
         params: props.filters
       })
       methodsData.value = response.data?.data || response.data || []
@@ -532,7 +532,7 @@ const loadTrendsData = async () => {
     console.log('🔄 Loading transaction trends...')
 
     try {
-      const response = await api.get('/api/admin/analytics/trends', {
+      const response = await api.get('/admin/stats/transactions', {
         params: { timeframe: trendsTimeframe.value, ...props.filters }
       })
       trendsData.value = response.data?.data || response.data || []
@@ -555,7 +555,7 @@ const loadCheckoutData = async () => {
     console.log('🔄 Loading checkout time data...')
 
     try {
-      const response = await api.get('/api/admin/analytics/checkout-time', {
+      const response = await api.get('/admin/stats/checkout-time', {
         params: props.filters
       })
       const data = response.data
@@ -580,7 +580,7 @@ const loadGeographyData = async () => {
     console.log('🔄 Loading geography data...')
 
     try {
-      const response = await api.get('/api/admin/analytics/geography', {
+      const response = await api.get('/admin/stats/geography', {
         params: props.filters
       })
       const data = response.data

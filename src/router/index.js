@@ -57,61 +57,46 @@ router.beforeEach(async (to, from, next) => {
   if (to.meta.title) document.title = to.meta.title
 
   const token = localStorage.getItem('token')
-  if (token && (to.name === 'login' || to.name === 'register')) {
-    let role = ''
+  
+  if (to.meta.requiresAuth && !token) {
+    next('/login')
+    return
+  }
+  
+  if (token && to.path === '/login') {
+    // User is already logged in, redirect based on role
     try {
-      const storedUser = JSON.parse(localStorage.getItem('user') || 'null')
-      role = String(storedUser?.role || '').toLowerCase()
-    } catch {
-      // ignore
-    }
-    if (!role) {
-      role = String(localStorage.getItem('role') || '').toLowerCase()
-    }
-    if (role === 'admin') return next({ name: 'admin-dashboard' })
-    if (role === 'merchant') return next({ name: 'dashboard' })
-    return next({ name: 'dashboard' })
-  }
-
-  if (!to.meta.requiresAuth) {
-    return next()
-  }
-
-  if (!token) {
-    return next({ name: 'login', query: { redirect: to.fullPath } })
-  }
-
-  if (to.meta.role) {
-    let storedRole = ''
-    try {
-      const storedUser = JSON.parse(localStorage.getItem('user') || 'null')
-      storedRole = String(storedUser?.role || '').toLowerCase()
-    } catch {
-      // ignore
-    }
-    if (!storedRole) {
-      storedRole = String(localStorage.getItem('role') || '').toLowerCase()
-    }
-    if (!storedRole) {
-      try {
-        const resp = await api.get('/auth/profile')
-        const profileUser = resp?.data?.user || resp?.data
-        if (profileUser) {
-          localStorage.setItem('user', JSON.stringify(profileUser))
-          localStorage.setItem('role', String(profileUser.role || '').toLowerCase())
-          storedRole = String(profileUser.role || '').toLowerCase()
-        }
-      } catch {
-        // ignore
+      const response = await api.get('/auth/profile')
+      const userRole = response.data.user?.role
+      
+      if (userRole === 'admin') {
+        next('/admin-dashboard')
+      } else {
+        next('/dashboard')
       }
+    } catch (error) {
+      console.error('Failed to get user profile:', error)
+      next('/dashboard')
     }
-    if (storedRole !== to.meta.role) {
-      if (storedRole === 'admin') return next({ name: 'admin-dashboard' })
-      if (storedRole === 'merchant') return next({ name: 'dashboard' })
-      return next({ name: 'login', query: { redirect: to.fullPath } })
+    return
+  }
+  
+  if (to.meta.requiresAdmin) {
+    try {
+      const response = await api.get('/auth/profile')
+      const userRole = response.data.user?.role
+      
+      if (userRole !== 'admin') {
+        next('/dashboard')
+        return
+      }
+    } catch (error) {
+      console.error('Failed to verify admin role:', error)
+      next('/dashboard')
+      return
     }
   }
-
+  
   next()
 })
 

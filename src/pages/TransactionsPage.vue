@@ -623,7 +623,7 @@ const loadTransactions = async () => {
     console.log('🔄 Loading transactions...')
 
     // ✅ Use your actual API endpoint: GET /api/merchant/transactions
-    const response = await api.get('/api/merchant/transactions')
+    const response = await api.get('/merchant/transactions')
     
     // Handle different response formats
     const data = response.data

@@ -475,8 +475,8 @@ const filteredAlerts = computed(() => {
 const loadAlerts = async () => {
   try {
     loading.value = true
-    const response = await api.get('/api/admin/alerts')
-    alerts.value = response.data.alerts || getDemoAlerts()
+    const response = await api.get('/admin/alerts')
+    alerts.value = response.data.data || response.data
     alertStats.value = response.data.stats || alertStats.value
   } catch (error) {
     console.error('Failed to load alerts:', error)
@@ -527,7 +527,7 @@ const formatFullTime = (timestamp) => {
 
 const markAsRead = async (alertId) => {
   try {
-    await api.put(`/api/admin/alerts/${alertId}/read`)
+    await api.put(`/admin/alerts/${alertId}/read`)
     const alert = alerts.value.find(a => a.id === alertId)
     if (alert) {
       alert.read = true
@@ -552,7 +552,7 @@ const markAsRead = async (alertId) => {
 
 const resolveAlert = async (alertId) => {
   try {
-    await api.put(`/api/admin/alerts/${alertId}/resolve`)
+    await api.put(`/admin/alerts/${alertId}/resolve`)
     const alert = alerts.value.find(a => a.id === alertId)
     if (alert) {
       alert.status = 'resolved'
@@ -580,7 +580,8 @@ const resolveAlert = async (alertId) => {
 
 const clearAllAlerts = async () => {
   try {
-    await api.delete('/api/admin/alerts/clear-all')
+    loading.value = true // Changed from clearing to loading to match original
+    await api.post('/admin/alerts/clear-all')
     alerts.value = alerts.value.filter(alert => alert.status !== 'resolved')
     Notify.create({
       type: 'positive',
@@ -594,6 +595,8 @@ const clearAllAlerts = async () => {
       message: 'Failed to clear alerts',
       position: 'top'
     })
+  } finally {
+    loading.value = false // Changed from clearing to loading to match original
   }
 }
 

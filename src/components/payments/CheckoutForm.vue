@@ -757,8 +757,8 @@ const processPayment = async () => {
 
     console.log('🔄 Processing payment:', paymentData)
     
-    // ✅ Use your actual payment checkout endpoint: POST /api/payments/checkout
-    const response = await api.post('/api/payments/checkout', paymentData)
+    // ✅ Use your actual payment checkout endpoint: POST /payments/checkout
+    const response = await api.post('/payments/checkout', paymentData)
     
     console.log('✅ Payment response:', response.data)
     
@@ -812,7 +812,7 @@ const selectWallet = async (wallet) => {
     }
     
     // ✅ Use your payment checkout endpoint
-    const response = await api.post('/api/payments/checkout', paymentData)
+    const response = await api.post('/payments/checkout', paymentData)
     
     // Handle wallet-specific processing
     if (response.data?.redirect_url) {

@@ -335,10 +335,8 @@ const filteredActivities = computed(() => {
 const loadActivities = async () => {
   try {
     loading.value = true
-    const response = await api.get('/api/admin/activities', {
-      params: { page: 1, limit: 20 }
-    })
-    activities.value = response.data.activities || getDemoActivities()
+    const response = await api.get('/admin/activities')
+    activities.value = response.data.data || response.data
     activityStats.value = response.data.stats || activityStats.value
     currentPage.value = 1
     hasMore.value = response.data.hasMore || false
@@ -354,7 +352,7 @@ const loadMoreActivities = async () => {
   try {
     loadingMore.value = true
     currentPage.value += 1
-    const response = await api.get('/api/admin/activities', {
+    const response = await api.get('/admin/activities', {
       params: { page: currentPage.value, limit: 20 }
     })
     activities.value.push(...(response.data.activities || []))
@@ -411,7 +409,7 @@ const formatTime = (timestamp) => {
 
 const exportActivities = async () => {
   try {
-    const response = await api.get('/api/admin/activities/export', {
+    const response = await api.get('/admin/activities/export', {
       responseType: 'blob',
       params: filters.value
     })
