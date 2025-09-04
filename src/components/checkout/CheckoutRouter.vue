@@ -1,51 +1,51 @@
 <template>
   <div class="checkout-router">
     <!-- Checkout page -->
-    <transition name="fade-slide" mode="out-in">
+    <q-slide-transition>
       <CheckoutPage v-if="showCheckout" key="checkout" />
-    </transition>
+    </q-slide-transition>
     
     <!-- Payment status page -->
-    <transition name="fade-slide" mode="out-in">
+    <q-slide-transition>
       <PaymentStatus v-if="showStatus" key="status" />
-    </transition>
+    </q-slide-transition>
     
     <!-- Error page -->
-    <transition name="fade-scale" mode="out-in">
+    <q-slide-transition>
       <div v-if="showError" class="error-container" key="error">
-        <q-card class="error-card modern-card glow-animation">
+        <q-card class="error-card modern-card">
           <q-card-section class="text-center">
-            <div class="error-icon pulse-animation">
+            <div class="error-icon">
               <q-icon name="error" size="64px" color="negative" />
             </div>
-            <div class="text-h5 text-negative q-mt-md floating-animation">Checkout Error</div>
+            <div class="text-h5 text-negative q-mt-md">Checkout Error</div>
             <div class="text-subtitle1 q-mt-sm text-grey-6">{{ errorMessage }}</div>
             <q-btn
               label="Try Again"
-              class="btn-primary q-mt-lg pulse-on-hover"
+              class="btn-primary q-mt-lg"
               @click="retryCheckout"
               :loading="retrying"
             />
           </q-card-section>
         </q-card>
       </div>
-    </transition>
+    </q-slide-transition>
     
     <!-- Loading state -->
-    <transition name="fade" mode="out-in">
+    <q-fade-transition>
       <div v-if="checkoutState === 'loading'" class="loading-container" key="loading">
-        <div class="loading-content floating-animation">
-          <q-spinner-dots size="50px" color="lime" class="pulse-animation" />
+        <div class="loading-content">
+          <q-spinner-dots size="50px" color="lime" />
           <div class="loading-text">Initializing secure checkout...</div>
           <div class="loading-subtext">Preparing your payment environment</div>
           <div class="loading-progress">
             <div class="progress-bar">
-              <div class="progress-fill floating-animation"></div>
+              <div class="progress-fill"></div>
             </div>
           </div>
         </div>
       </div>
-    </transition>
+    </q-fade-transition>
   </div>
 </template>
 
@@ -131,7 +131,7 @@ onMounted(() => {
 <style scoped>
 .checkout-router {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0a0a0a 0%, #121212 50%, #1a1a1a 100%);
+  background: linear-gradient(135deg, #09050d 0%, #121018 50%, #171719 100%);
   position: relative;
 }
 
@@ -146,11 +146,10 @@ onMounted(() => {
 .loading-content {
   text-align: center;
   max-width: 400px;
-  animation: fadeInUp 0.8s ease-out;
 }
 
 .loading-text {
-  color: #bdf000;
+  color: #bdfd00;
   font-size: 1.2rem;
   font-weight: 600;
   margin-top: 20px;
@@ -180,7 +179,7 @@ onMounted(() => {
   position: absolute;
   height: 100%;
   width: 30%;
-  background: linear-gradient(90deg, #bdf000, #a0d000);
+  background: linear-gradient(90deg, #bdfd00, #a0d000);
   border-radius: 2px;
   animation: progressPulse 2s ease-in-out infinite;
 }
@@ -188,12 +187,11 @@ onMounted(() => {
 .error-card {
   max-width: 500px;
   width: 100%;
-  background: rgba(18, 18, 18, 0.95);
+  background: rgba(23, 23, 25, 0.95);
   border-radius: 20px;
   overflow: hidden;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  animation: errorCardEnter 0.6s ease-out;
   position: relative;
   overflow: hidden;
 }
@@ -214,7 +212,7 @@ onMounted(() => {
 }
 
 .modern-card {
-  background: rgba(18, 18, 18, 0.95);
+  background: rgba(23, 23, 25, 0.95);
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
@@ -233,7 +231,7 @@ onMounted(() => {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #bdf000, #a0d000);
+  background: linear-gradient(135deg, #bdfd00, #a0d000);
   color: #09050d;
   font-weight: 600;
   border: none;
@@ -262,7 +260,7 @@ onMounted(() => {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(189, 240, 0, 0.3);
+  box-shadow: 0 8px 24px rgba(189, 253, 0, 0.3);
 }
 
 .btn-primary:active {
@@ -274,50 +272,7 @@ onMounted(() => {
   font-weight: 600;
 }
 
-/* Animation Classes */
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.5s ease;
-}
-
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
-}
-
-.fade-slide-enter-active {
-  animation: fadeInUp 0.6s ease-out;
-}
-
-.fade-slide-leave-active {
-  animation: fadeOutDown 0.4s ease-in;
-}
-
-.fade-scale-enter-active {
-  animation: fadeInScale 0.6s ease-out;
-}
-
-.fade-scale-leave-active {
-  animation: fadeOutScale 0.4s ease-in;
-}
-
-/* Floating animation */
-.floating-animation {
-  animation: floating 3s ease-in-out infinite;
-}
-
-@keyframes floating {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
 /* Pulse animation */
-.pulse-animation {
-  animation: pulse 2s ease-in-out infinite;
-}
-
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
@@ -329,69 +284,6 @@ onMounted(() => {
   }
 }
 
-/* Glow animation */
-.glow-animation {
-  animation: glow 4s ease-in-out infinite alternate;
-}
-
-@keyframes glow {
-  from {
-    box-shadow: 0 0 5px rgba(255, 107, 107, 0.2), 0 0 10px rgba(255, 107, 107, 0.1);
-  }
-  to {
-    box-shadow: 0 0 15px rgba(255, 107, 107, 0.3), 0 0 20px rgba(255, 107, 107, 0.2);
-  }
-}
-
-/* Pulse on hover */
-.pulse-on-hover:hover {
-  animation: pulse 0.6s ease;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeOutDown {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-}
-
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes fadeOutScale {
-  from {
-    opacity: 1;
-    transform: scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-}
-
 @keyframes progressPulse {
   0%, 100% {
     transform: translateX(0%);
@@ -400,17 +292,6 @@ onMounted(() => {
   50% {
     transform: translateX(233%);
     width: 40%;
-  }
-}
-
-@keyframes errorCardEnter {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
   }
 }
 
@@ -474,19 +355,18 @@ onMounted(() => {
 }
 
 .checkout-router::-webkit-scrollbar-thumb {
-  background: rgba(189, 240, 0, 0.3);
+  background: rgba(189, 253, 0, 0.3);
   border-radius: 4px;
 }
 
 .checkout-router::-webkit-scrollbar-thumb:hover {
-  background: rgba(189, 240, 0, 0.5);
+  background: rgba(189, 253, 0, 0.5);
 }
 
 /* Enhanced focus states */
 .btn-primary:focus {
-  outline: 2px solid rgba(189, 240, 0, 0.5);
+  outline: 2px solid rgba(189, 253, 0, 0.5);
   outline-offset: 2px;
-  animation: pulse 0.6s ease;
 }
 
 /* Loading animation enhancements */
@@ -511,7 +391,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(189, 240, 0, 0.5), transparent);
+  background: linear-gradient(90deg, transparent, rgba(189, 253, 0, 0.5), transparent);
   opacity: 0;
   transition: opacity 0.3s ease;
 }

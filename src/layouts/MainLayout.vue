@@ -601,18 +601,19 @@ export default {
   }
 }
 </script>
+
 <style scoped>
 /* Global Styles */
 .fintech-layout {
-  background: linear-gradient(135deg, #0a0a0a 0%, #0f0e12 50%, #121018 100%);
-  color: #fff;
+  background: linear-gradient(135deg, #09050d 0%, #0f0e12 50%, #171719 100%);
+  color: #ffffff;
 }
 
 /* Header Styles */
 .header-glass {
-  background: rgba(10, 10, 10, 0.85) !important;
+  background: rgba(9, 5, 13, 0.85) !important;
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(189, 240, 0, 0.15);
+  border-bottom: 1px solid rgba(189, 253, 0, 0.15);
 }
 
 .header-toolbar {
@@ -631,6 +632,7 @@ export default {
 .brand-text {
   font-size: 1.4rem;
   margin-left: 10px;
+  color: #bdfd00 !important;
 }
 
 .nav-btn {
@@ -639,12 +641,12 @@ export default {
 }
 
 .nav-btn:hover {
-  color: #bdf000 !important;
+  color: #bdfd00 !important;
 }
 
 /* Button Styles */
 .btn-primary {
-  background: linear-gradient(135deg, #bdf000, #a0d000);
+  background: linear-gradient(135deg, #bdfd00, #a0d000);
   color: #09050d;
   font-weight: 700;
   border: none;
@@ -653,24 +655,24 @@ export default {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(189, 240, 0, 0.4);
+  box-shadow: 0 6px 20px rgba(189, 253, 0, 0.4);
 }
 
 .btn-secondary {
-  background: rgba(189, 240, 0, 0.1);
-  color: #bdf000;
-  border: 1px solid rgba(189, 240, 0.4);
+  background: rgba(189, 253, 0, 0.1);
+  color: #bdfd00;
+  border: 1px solid rgba(189, 253, 0, 0.4);
   font-weight: 500;
   transition: all 0.3s ease;
 }
 
 .btn-secondary:hover {
-  background: rgba(189, 240, 0, 0.2);
+  background: rgba(189, 253, 0, 0.2);
   transform: translateY(-2px);
 }
 
 .btn-outline {
-  color: #fff;
+  color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
@@ -685,15 +687,34 @@ export default {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-glass::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(189, 253, 0, 0.05), rgba(9, 5, 13, 0.1));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 0;
+}
+
+.card-glass:hover::before {
+  opacity: 1;
 }
 
 .card-glass:hover {
-  border-color: rgba(189, 240, 0, 0.3);
+  border-color: rgba(189, 253, 0, 0.3);
   transform: translateY(-5px);
 }
 
 .lime-glow {
-  box-shadow: 0 0 25px rgba(189, 240, 0, 0.25);
+  box-shadow: 0 0 25px rgba(189, 253, 0, 0.25);
 }
 
 .hover-lift {
@@ -719,8 +740,8 @@ export default {
 
 .hero-badge {
   display: inline-block;
-  background: rgba(189, 240, 0, 0.15);
-  color: #bdf000;
+  background: rgba(189, 253, 0, 0.15);
+  color: #bdfd00;
   padding: 6px 12px;
   border-radius: 20px;
   font-size: 0.8rem;
@@ -757,7 +778,7 @@ export default {
 .stat-value {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #bdf000;
+  color: #bdfd00;
   line-height: 1;
 }
 
@@ -787,7 +808,7 @@ export default {
   transform: translate(-50%, -50%);
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, rgba(189, 240, 0, 0.2) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(189, 253, 0, 0.2) 0%, transparent 70%);
   border-radius: 50%;
   z-index: 0;
   filter: blur(60px);
@@ -821,7 +842,7 @@ export default {
 .advantage-icon {
   width: 60px;
   height: 60px;
-  background: rgba(189, 240, 0, 0.1);
+  background: rgba(189, 253, 0, 0.1);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -885,7 +906,7 @@ export default {
 }
 
 .review-avatar-img {
-  border: 3px solid rgba(189, 240, 0.3);
+  border: 3px solid rgba(189, 253, 0, 0.3);
   border-radius: 50%;
 }
 
@@ -911,7 +932,7 @@ export default {
 .feature-icon {
   width: 60px;
   height: 60px;
-  background: rgba(189, 240, 0, 0.1);
+  background: rgba(189, 253, 0, 0.1);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -939,7 +960,7 @@ export default {
   transform: translateX(-50%);
   width: 40px;
   height: 40px;
-  background: #bdf000;
+  background: #bdfd00;
   color: #09050d;
   border-radius: 50%;
   display: flex;
@@ -976,7 +997,7 @@ export default {
 .metric-value {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #bdf000;
+  color: #bdfd00;
   line-height: 1;
   margin-bottom: 8px;
 }
@@ -1041,7 +1062,7 @@ export default {
 
 /* Footer */
 .custom-footer {
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(9, 5, 13, 0.8);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -1066,12 +1087,12 @@ export default {
 }
 
 .social-btn:hover {
-  background: rgba(189, 240, 0, 0.2);
-  color: #bdf000;
+  background: rgba(189, 253, 0, 0.2);
+  color: #bdfd00;
 }
 
 .footer-heading {
-  color: #bdf000;
+  color: #bdfd00;
   margin-bottom: 20px;
   font-size: 1.1rem;
 }
@@ -1093,7 +1114,7 @@ export default {
 }
 
 .footer-links a:hover {
-  color: #bdf000;
+  color: #50660d;
 }
 
 .footer-copyright {
@@ -1158,6 +1179,15 @@ export default {
     opacity: 1;
     transform: translateX(0);
   }
+}
+
+/* Enhanced hover effects for cards */
+.advantage-card:hover::before,
+.service-card:hover::before,
+.review-card:hover::before,
+.how-card:hover::before,
+.feature-card:hover::before {
+  background: linear-gradient(135deg, rgba(189, 253, 0, 0.1), rgba(9, 5, 13, 0.2));
 }
 
 /* Responsive Styles */
@@ -1225,5 +1255,18 @@ export default {
   .track img {
     height: 30px;
   }
+}
+
+/* Fix for hero image display */
+.hero-img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Ensure all images have proper display */
+img {
+  max-width: 100%;
+  height: auto;
 }
 </style>

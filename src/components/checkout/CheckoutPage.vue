@@ -19,14 +19,14 @@
           icon="arrow_back"
           color="lime"
           @click="goBack"
-          class="back-btn animate-fade-in floating-animation"
+          class="back-btn"
         />
-        <div class="header-text animate-fade-in" style="animation-delay: 0.1s">
+        <div class="header-text">
           <h1 class="page-title">Secure Checkout</h1>
           <p class="page-subtitle">Complete your payment securely</p>
         </div>
-        <div class="header-security animate-fade-in" style="animation-delay: 0.2s">
-          <q-icon name="lock" color="lime" size="20px" class="pulse-animation" />
+        <div class="header-security">
+          <q-icon name="lock" color="lime" size="20px" />
           <span>Secure Connection</span>
         </div>
       </div>
@@ -35,154 +35,167 @@
       <div class="checkout-main">
         <div class="checkout-left">
           <!-- Merchant branding and amount -->
-          <MerchantBranding
-            :merchant="merchantInfo"
-            :amount="paymentDetails.amount"
-            :order-details="orderDetails"
-            @branding-loaded="onBrandingLoaded"
-            class="animate-fade-in floating-animation"
-            style="animation-delay: 0.3s"
-          />
+          <q-slide-transition>
+            <MerchantBranding
+              v-show="!loading"
+              :merchant="merchantInfo"
+              :amount="paymentDetails.amount"
+              :order-details="orderDetails"
+              @branding-loaded="onBrandingLoaded"
+            />
+          </q-slide-transition>
           
           <!-- Payment method selector -->
-          <PaymentMethodSelector
-            v-model="selectedPaymentMethod"
-            :methods="availablePaymentMethods"
-            @method-selected="onPaymentMethodSelected"
-            class="animate-fade-in floating-animation"
-            style="animation-delay: 0.4s"
-          />
+          <q-slide-transition>
+            <PaymentMethodSelector
+              v-show="!loading"
+              v-model="selectedPaymentMethod"
+              :methods="availablePaymentMethods"
+              @method-selected="onPaymentMethodSelected"
+            />
+          </q-slide-transition>
         </div>
         
         <div class="checkout-right">
           <!-- Payment form based on selected method -->
-          <div v-if="selectedPaymentMethod === 'card'" class="payment-section card-payment animate-fade-in floating-animation" style="animation-delay: 0.5s">
-            <PaymentMethodCard
-              v-model="cardForm"
-              :processing="processing"
-              @submit="processCardPayment"
-              @validation-change="onCardValidationChange"
-            />
-          </div>
-          
-          <div v-else-if="selectedPaymentMethod === 'wallet'" class="payment-section wallet-payment animate-fade-in floating-animation" style="animation-delay: 0.5s">
-            <div class="wallet-payment">
-              <q-card class="wallet-card modern-card glow-animation">
-                <q-card-section class="card-header">
-                  <div class="card-icon pulse-animation">
-                    <q-icon name="account_balance_wallet" size="28px" />
-                  </div>
-                  <div class="card-title">
-                    <div class="text-h6">Digital Wallet</div>
-                    <div class="text-caption">Pay with your favorite wallet</div>
-                  </div>
-                </q-card-section>
-                
-                <q-card-section>
-                  <div class="wallet-options q-gutter-md">
-                    <q-btn
-                      v-for="wallet in walletOptions"
-                      :key="wallet.id"
-                      :label="wallet.name"
-                      :icon="wallet.icon"
-                      class="wallet-btn modern-btn floating-animation"
-                      :class="{ 'wallet-selected': selectedWallet === wallet.id }"
-                      @click="selectWallet(wallet.id)"
-                      :style="`animation-delay: ${0.2 + walletOptions.indexOf(wallet) * 0.1}s`"
-                    />
-                  </div>
-                  
-                  <q-btn
-                    v-if="selectedWallet"
-                    label="Continue with Wallet"
-                    class="btn-primary full-width q-mt-lg pulse-on-hover"
-                    :loading="processing"
-                    @click="processWalletPayment"
-                  />
-                </q-card-section>
-              </q-card>
+          <transition name="fade" mode="out-in">
+            <div v-if="selectedPaymentMethod === 'card'" key="card" class="payment-section card-payment">
+              <q-slide-transition>
+                <PaymentMethodCard
+                  v-show="selectedPaymentMethod === 'card'"
+                  v-model="cardForm"
+                  :processing="processing"
+                  @submit="processCardPayment"
+                  @validation-change="onCardValidationChange"
+                />
+              </q-slide-transition>
             </div>
-          </div>
-          
-          <div v-else-if="selectedPaymentMethod === 'upi'" class="payment-section upi-payment animate-fade-in floating-animation" style="animation-delay: 0.5s">
-            <div class="upi-payment">
-              <q-card class="upi-card modern-card glow-animation">
-                <q-card-section class="card-header">
-                  <div class="card-icon pulse-animation">
-                    <q-icon name="qr_code" size="28px" />
-                  </div>
-                  <div class="card-title">
-                    <div class="text-h6">UPI Payment</div>
-                    <div class="text-caption">Scan QR or enter UPI ID</div>
-                  </div>
-                </q-card-section>
-                
-                <q-card-section>
-                  <q-input
-                    v-model="upiForm.upiId"
-                    label="UPI ID"
-                    placeholder="example@upi"
-                    outlined
-                    dense
-                    class="q-mb-md modern-input floating-animation"
-                    style="animation-delay: 0.6s"
-                  />
-                  
-                  <q-btn
-                    label="Pay with UPI"
-                    class="btn-primary full-width pulse-on-hover"
-                    :loading="processing"
-                    @click="processUpiPayment"
-                  />
-                </q-card-section>
-              </q-card>
+            
+            <div v-else-if="selectedPaymentMethod === 'wallet'" key="wallet" class="payment-section wallet-payment">
+              <q-slide-transition>
+                <div v-show="selectedPaymentMethod === 'wallet'" class="wallet-payment">
+                  <q-card class="wallet-card modern-card">
+                    <q-card-section class="card-header">
+                      <div class="card-icon">
+                        <q-icon name="account_balance_wallet" size="28px" />
+                      </div>
+                      <div class="card-title">
+                        <div class="text-h6">Digital Wallet</div>
+                        <div class="text-caption">Pay with your favorite wallet</div>
+                      </div>
+                    </q-card-section>
+                    
+                    <q-card-section>
+                      <div class="wallet-options q-gutter-md">
+                        <q-btn
+                          v-for="wallet in walletOptions"
+                          :key="wallet.id"
+                          :label="wallet.name"
+                          :icon="wallet.icon"
+                          class="wallet-btn modern-btn"
+                          :class="{ 'wallet-selected': selectedWallet === wallet.id }"
+                          @click="selectWallet(wallet.id)"
+                        />
+                      </div>
+                      
+                      <q-btn
+                        v-if="selectedWallet"
+                        label="Continue with Wallet"
+                        class="btn-primary full-width q-mt-lg"
+                        :loading="processing"
+                        @click="processWalletPayment"
+                      />
+                    </q-card-section>
+                  </q-card>
+                </div>
+              </q-slide-transition>
             </div>
-          </div>
+            
+            <div v-else-if="selectedPaymentMethod === 'upi'" key="upi" class="payment-section upi-payment">
+              <q-slide-transition>
+                <div v-show="selectedPaymentMethod === 'upi'" class="upi-payment">
+                  <q-card class="upi-card modern-card">
+                    <q-card-section class="card-header">
+                      <div class="card-icon">
+                        <q-icon name="qr_code" size="28px" />
+                      </div>
+                      <div class="card-title">
+                        <div class="text-h6">UPI Payment</div>
+                        <div class="text-caption">Scan QR or enter UPI ID</div>
+                      </div>
+                    </q-card-section>
+                    
+                    <q-card-section>
+                      <q-input
+                        v-model="upiForm.upiId"
+                        label="UPI ID"
+                        placeholder="example@upi"
+                        outlined
+                        dense
+                        class="q-mb-md modern-input"
+                      />
+                      
+                      <q-btn
+                        label="Pay with UPI"
+                        class="btn-primary full-width"
+                        :loading="processing"
+                        @click="processUpiPayment"
+                      />
+                    </q-card-section>
+                  </q-card>
+                </div>
+              </q-slide-transition>
+            </div>
+          </transition>
         </div>
       </div>
       
       <!-- Trust indicators -->
-      <div class="trust-indicators animate-fade-in" style="animation-delay: 0.7s">
-        <div class="trust-item floating-animation" style="animation-delay: 0.8s">
-          <div class="trust-icon">
-            <q-icon name="security" size="24px" />
+      <q-fade-transition>
+        <div v-show="!loading" class="trust-indicators">
+          <div class="trust-item">
+            <div class="trust-icon">
+              <q-icon name="security" size="24px" />
+            </div>
+            <span>256-bit SSL Encryption</span>
           </div>
-          <span>256-bit SSL Encryption</span>
-        </div>
-        <div class="trust-item floating-animation" style="animation-delay: 0.9s">
-          <div class="trust-icon">
-            <q-icon name="verified_user" size="24px" />
+          <div class="trust-item">
+            <div class="trust-icon">
+              <q-icon name="verified_user" size="24px" />
+            </div>
+            <span>PCI DSS Compliant</span>
           </div>
-          <span>PCI DSS Compliant</span>
-        </div>
-        <div class="trust-item floating-animation" style="animation-delay: 1.0s">
-          <div class="trust-icon">
-            <q-icon name="privacy_tip" size="24px" />
+          <div class="trust-item">
+            <div class="trust-icon">
+              <q-icon name="privacy_tip" size="24px" />
+            </div>
+            <span>Your data is safe with us</span>
           </div>
-          <span>Your data is safe with us</span>
-        </div>
-        <div class="trust-item floating-animation" style="animation-delay: 1.1s">
-          <div class="trust-icon">
-            <q-icon name="support_agent" size="24px" />
+          <div class="trust-item">
+            <div class="trust-icon">
+              <q-icon name="support_agent" size="24px" />
+            </div>
+            <span>24/7 Support</span>
           </div>
-          <span>24/7 Support</span>
         </div>
-      </div>
+      </q-fade-transition>
       
       <!-- Error display -->
-      <div v-if="error" class="error-message q-mt-md animate-fade-in" style="animation-delay: 1.2s">
-        <q-banner class="text-white bg-negative floating-animation">
-          {{ error }}
-          <q-btn 
-            flat 
-            round 
-            icon="close" 
-            class="q-ml-sm" 
-            @click="error = ''" 
-            size="sm"
-          />
-        </q-banner>
-      </div>
+      <q-slide-transition>
+        <div v-if="error" class="error-message q-mt-md">
+          <q-banner class="text-white bg-negative">
+            {{ error }}
+            <q-btn 
+              flat 
+              round 
+              icon="close" 
+              class="q-ml-sm" 
+              @click="error = ''" 
+              size="sm"
+            />
+          </q-banner>
+        </div>
+      </q-slide-transition>
     </div>
   </q-page>
 </template>
@@ -367,7 +380,7 @@ onMounted(() => {
 
 <style scoped>
 .checkout-page {
-  background: linear-gradient(135deg, #0a0a0a 0%, #121212 50%, #1a1a1a 100%);
+  background: linear-gradient(135deg, #09050d 0%, #121018 50%, #171719 100%);
   min-height: 100vh;
   padding: 20px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -380,16 +393,15 @@ onMounted(() => {
   justify-content: center;
   height: 100vh;
   gap: 20px;
-  background: rgba(10, 10, 10, 0.95);
+  background: rgba(9, 5, 13, 0.95);
 }
 
 .loading-content {
   text-align: center;
-  animation: fadeInUp 0.8s ease-out;
 }
 
 .loading-text {
-  color: #bdf000;
+  color: #bdfd00;
   font-size: 1.2rem;
   font-weight: 600;
   margin-top: 16px;
@@ -412,10 +424,10 @@ onMounted(() => {
   gap: 20px;
   margin-bottom: 40px;
   padding: 20px;
-  background: rgba(18, 18, 18, 0.8);
+  background: rgba(23, 23, 25, 0.8);
   border-radius: 16px;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(189, 240, 0, 0.1);
+  border: 1px solid rgba(189, 253, 0, 0.1);
   position: relative;
   overflow: hidden;
 }
@@ -427,7 +439,7 @@ onMounted(() => {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(189, 240, 0, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(189, 253, 0, 0.1), transparent);
   transition: left 0.7s ease;
 }
 
@@ -436,16 +448,16 @@ onMounted(() => {
 }
 
 .back-btn {
-  background: rgba(189, 240, 0, 0.1);
-  border: 1px solid rgba(189, 240, 0, 0.3);
+  background: rgba(189, 253, 0, 0.1);
+  border: 1px solid rgba(189, 253, 0, 0.3);
   transition: all 0.3s ease;
   z-index: 1;
 }
 
 .back-btn:hover {
   transform: translateX(-4px);
-  background: rgba(189, 240, 0, 0.2);
-  box-shadow: 0 4px 12px rgba(189, 240, 0, 0.2);
+  background: rgba(189, 253, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(189, 253, 0, 0.2);
 }
 
 .header-text {
@@ -458,7 +470,7 @@ onMounted(() => {
   font-size: 2.2rem;
   font-weight: 700;
   color: #ffffff;
-  background: linear-gradient(135deg, #bdf000 0%, #ffffff 100%);
+  background: linear-gradient(135deg, #bdfd00 0%, #ffffff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -475,7 +487,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #bdf000;
+  color: #bdfd00;
   font-size: 0.9rem;
   font-weight: 500;
   z-index: 1;
@@ -500,19 +512,19 @@ onMounted(() => {
 }
 
 .payment-section {
-  background: rgba(18, 18, 18, 0.8);
+  background: rgba(23, 23, 25, 0.8);
   border-radius: 20px;
-  border: 1px solid rgba(189, 240, 0, 0.15);
+  border: 1px solid rgba(189, 253, 0, 0.15);
   backdrop-filter: blur(10px);
   overflow: hidden;
   transition: all 0.3s ease;
 }
 
 .payment-section:hover {
-  border-color: rgba(189, 240, 0, 0.3);
+  border-color: rgba(189, 253, 0, 0.3);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
-              0 0 0 1px rgba(189, 240, 0, 0.2),
-              0 0 30px rgba(189, 240, 0, 0.1);
+              0 0 0 1px rgba(189, 253, 0, 0.2),
+              0 0 30px rgba(189, 253, 0, 0.1);
 }
 
 .modern-card {
@@ -533,11 +545,11 @@ onMounted(() => {
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(189, 240, 0, 0.2), rgba(189, 240, 0, 0.1));
+  background: linear-gradient(135deg, rgba(189, 253, 0, 0.2), rgba(189, 253, 0, 0.1));
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #bdf000;
+  color: #bdfd00;
 }
 
 .card-title .text-h6 {
@@ -569,17 +581,17 @@ onMounted(() => {
 }
 
 .wallet-btn:hover {
-  border-color: #bdf000;
-  background: rgba(189, 240, 0, 0.1);
+  border-color: #bdfd00;
+  background: rgba(189, 253, 0, 0.1);
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(189, 240, 0, 0.2);
+  box-shadow: 0 4px 16px rgba(189, 253, 0, 0.2);
 }
 
 .wallet-selected {
-  border-color: #bdf000;
-  background: rgba(189, 240, 0, 0.15);
-  color: #bdf000;
-  box-shadow: 0 4px 16px rgba(189, 240, 0, 0.2);
+  border-color: #bdfd00;
+  background: rgba(189, 253, 0, 0.15);
+  color: #bdfd00;
+  box-shadow: 0 4px 16px rgba(189, 253, 0, 0.2);
 }
 
 .modern-input {
@@ -594,16 +606,16 @@ onMounted(() => {
 }
 
 .modern-input :deep(.q-field__control:hover) {
-  border-color: rgba(189, 240, 0, 0.3);
+  border-color: rgba(189, 253, 0, 0.3);
 }
 
 .modern-input :deep(.q-field__control:focus-within) {
-  border-color: #bdf000;
-  box-shadow: 0 0 0 2px rgba(189, 240, 0, 0.2);
+  border-color: #bdfd00;
+  box-shadow: 0 0 0 2px rgba(189, 253, 0, 0.2);
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #bdf000, #a0d000);
+  background: linear-gradient(135deg, #bdfd00, #a0d000);
   color: #09050d;
   font-weight: 600;
   border: none;
@@ -631,7 +643,7 @@ onMounted(() => {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(189, 240, 0, 0.3);
+  box-shadow: 0 8px 24px rgba(189, 253, 0, 0.3);
 }
 
 .btn-primary:active {
@@ -643,9 +655,9 @@ onMounted(() => {
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
   padding: 30px;
-  background: rgba(18, 18, 18, 0.8);
+  background: rgba(23, 23, 25, 0.8);
   border-radius: 20px;
-  border: 1px solid rgba(189, 240, 0, 0.1);
+  border: 1px solid rgba(189, 253, 0, 0.1);
   backdrop-filter: blur(10px);
 }
 
@@ -665,8 +677,8 @@ onMounted(() => {
 }
 
 .trust-item:hover {
-  background: rgba(189, 240, 0, 0.1);
-  color: #bdf000;
+  background: rgba(189, 253, 0, 0.1);
+  color: #bdfd00;
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
@@ -675,7 +687,7 @@ onMounted(() => {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(189, 240, 0, 0.2), rgba(189, 240, 0, 0.1));
+  background: linear-gradient(135deg, rgba(189, 253, 0, 0.2), rgba(189, 253, 0, 0.1));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -687,66 +699,70 @@ onMounted(() => {
 }
 
 /* Animation Classes */
-.animate-fade-in {
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
-  transform: translateY(20px);
-  animation: fadeInUp 0.6s forwards;
 }
 
-@keyframes fadeInUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Custom scrollbar */
+.checkout-page::-webkit-scrollbar {
+  width: 8px;
 }
 
-/* Floating animation */
-.floating-animation {
-  animation: floating 3s ease-in-out infinite;
+.checkout-page::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
 }
 
-@keyframes floating {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
+.checkout-page::-webkit-scrollbar-thumb {
+  background: rgba(189, 253, 0, 0.3);
+  border-radius: 4px;
 }
 
-/* Pulse animation */
-.pulse-animation {
-  animation: pulse 2s ease-in-out infinite;
+.checkout-page::-webkit-scrollbar-thumb:hover {
+  background: rgba(189, 253, 0, 0.5);
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.05);
-  }
+/* Enhanced focus states */
+:deep(.q-focusable):focus {
+  outline: 2px solid rgba(189, 253, 0, 0.5);
+  outline-offset: 2px;
 }
 
-/* Glow animation */
-.glow-animation {
-  animation: glow 4s ease-in-out infinite alternate;
+/* Loading animation enhancements */
+:deep(.q-spinner) {
+  animation: spin 1s linear infinite;
 }
 
-@keyframes glow {
-  from {
-    box-shadow: 0 0 5px rgba(189, 240, 0, 0.2), 0 0 10px rgba(189, 240, 0, 0.1);
-  }
-  to {
-    box-shadow: 0 0 15px rgba(189, 240, 0, 0.3), 0 0 20px rgba(189, 240, 0, 0.2);
-  }
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* Pulse on hover */
-.pulse-on-hover:hover {
-  animation: pulse 0.6s ease;
+/* Glow effect for cards */
+.modern-card {
+  position: relative;
+}
+
+.modern-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(189, 253, 0, 0.5), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.modern-card:hover::before {
+  opacity: 1;
 }
 
 /* Responsive design */
@@ -810,61 +826,5 @@ onMounted(() => {
 /* Smooth scrolling */
 .checkout-page {
   scroll-behavior: smooth;
-}
-
-/* Custom scrollbar */
-.checkout-page::-webkit-scrollbar {
-  width: 8px;
-}
-
-.checkout-page::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
-}
-
-.checkout-page::-webkit-scrollbar-thumb {
-  background: rgba(189, 240, 0, 0.3);
-  border-radius: 4px;
-}
-
-.checkout-page::-webkit-scrollbar-thumb:hover {
-  background: rgba(189, 240, 0, 0.5);
-}
-
-/* Enhanced focus states */
-:deep(.q-focusable):focus {
-  outline: 2px solid rgba(189, 240, 0, 0.5);
-  outline-offset: 2px;
-}
-
-/* Loading animation enhancements */
-:deep(.q-spinner) {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* Glow effect for cards */
-.modern-card {
-  position: relative;
-}
-
-.modern-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(189, 240, 0, 0.5), transparent);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.modern-card:hover::before {
-  opacity: 1;
 }
 </style>
