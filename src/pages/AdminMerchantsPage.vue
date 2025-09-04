@@ -5,7 +5,7 @@
 
     <!-- Page Content -->
     <q-page-container>
-      <q-page class="admin-merchants-page">
+      <q-page class="admin-merchants-page grid-background">
         <!-- Loading Overlay -->
         <div v-if="loading" class="loading-overlay">
           <q-spinner-dots color="lime" size="60px" />
@@ -24,7 +24,7 @@
         <div class="stats-section q-pa-md">
           <div class="row q-col-gutter-lg">
             <div class="col-12 col-sm-6 col-md-3">
-              <q-card class="stat-card lime-glow">
+              <q-card class="stat-card card-3d lime-glow">
                 <q-card-section>
                   <div class="stat-content">
                     <div class="stat-icon">
@@ -40,7 +40,7 @@
             </div>
 
             <div class="col-12 col-sm-6 col-md-3">
-              <q-card class="stat-card lime-glow">
+              <q-card class="stat-card card-3d lime-glow">
                 <q-card-section>
                   <div class="stat-content">
                     <div class="stat-icon">
@@ -56,7 +56,7 @@
             </div>
 
             <div class="col-12 col-sm-6 col-md-3">
-              <q-card class="stat-card lime-glow">
+              <q-card class="stat-card card-3d lime-glow">
                 <q-card-section>
                   <div class="stat-content">
                     <div class="stat-icon">
@@ -72,7 +72,7 @@
             </div>
 
             <div class="col-12 col-sm-6 col-md-3">
-              <q-card class="stat-card lime-glow">
+              <q-card class="stat-card card-3d lime-glow">
                 <q-card-section>
                   <div class="stat-content">
                     <div class="stat-icon">
@@ -91,7 +91,7 @@
 
         <!-- Main Merchant Management Content -->
         <div class="merchant-content q-pa-md">
-          <q-card class="lime-glow">
+          <q-card class="card-3d lime-glow">
             <q-card-section>
               <div class="row items-center q-mb-md">
                 <div class="text-h6 text-lime">Merchant Management</div>

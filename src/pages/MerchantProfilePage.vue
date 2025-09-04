@@ -2,7 +2,7 @@
   <q-layout view="lHh Lpr lFf">
     <MerchantHeader />
     <q-page-container>
-      <q-page class="merchant-profile-page">
+      <q-page class="merchant-profile-page grid-background">
         <!-- Loading State -->
         <div v-if="loading" class="loading-overlay">
           <q-spinner-dots color="lime" size="50px" />

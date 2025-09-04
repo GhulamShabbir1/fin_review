@@ -2,7 +2,7 @@
   <q-layout view="lHh Lpr lFf">
     <MerchantHeader />
     <q-page-container>
-      <q-page class="q-pa-lg">
+      <q-page class="q-pa-lg grid-background">
         <MerchantDashboard />
       </q-page>
     </q-page-container>
