@@ -1,276 +1,282 @@
 <template>
   <div class="hosted-checkout">
     <!-- Loading State -->
-    <div v-if="loading" class="loading-container">
-      <div class="loading-content floating-animation">
-        <q-spinner-dots size="50px" color="lime" class="pulse-animation" />
-        <div class="loading-text">Loading secure checkout...</div>
-        <div class="loading-subtext">Preparing your payment environment</div>
+    <q-fade-transition>
+      <div v-if="loading" class="loading-container">
+        <div class="loading-content">
+          <q-spinner-dots size="50px" color="lime" />
+          <div class="loading-text">Loading secure checkout...</div>
+          <div class="loading-subtext">Preparing your payment environment</div>
+        </div>
       </div>
-    </div>
+    </q-fade-transition>
 
     <!-- Checkout Form -->
-    <div v-else-if="!paymentComplete" class="checkout-form-container">
-      <!-- Merchant Header -->
-      <div class="merchant-header glow-animation">
-        <div class="merchant-info">
-          <q-avatar size="48px" square class="merchant-logo floating-animation">
-            <img :src="merchantData.logo_url || placeholderLogo" :alt="merchantData.business_name" />
-          </q-avatar>
-          <div class="merchant-details">
-            <h2 class="merchant-name">{{ merchantData.business_name }}</h2>
-            <p class="merchant-description">{{ merchantData.description || 'Secure Payment Portal' }}</p>
+    <q-slide-transition>
+      <div v-if="!loading && !processing && !paymentComplete && !error" class="checkout-form-container">
+        <!-- Merchant Header -->
+        <div class="merchant-header">
+          <div class="merchant-info">
+            <q-avatar size="48px" square class="merchant-logo">
+              <img :src="merchantData.logo_url || placeholderLogo" :alt="merchantData.business_name" />
+            </q-avatar>
+            <div class="merchant-details">
+              <h2 class="merchant-name">{{ merchantData.business_name }}</h2>
+              <p class="merchant-description">{{ merchantData.description || 'Secure Payment Portal' }}</p>
+            </div>
+          </div>
+          <div class="security-badge">
+            <q-icon name="security" color="green" />
+            <span>SSL Secured</span>
           </div>
         </div>
-        <div class="security-badge pulse-animation">
-          <q-icon name="security" color="green" />
-          <span>SSL Secured</span>
-        </div>
-      </div>
 
-      <!-- Payment Summary -->
-      <div class="payment-summary floating-animation" style="animation-delay: 0.1s">
-        <div class="summary-header">
-          <h3>Payment Summary</h3>
-        </div>
-        <div class="summary-content">
-          <div class="summary-row">
-            <span class="label">Amount:</span>
-            <span class="value">{{ formatCurrency(amount) }}</span>
+        <!-- Payment Summary -->
+        <div class="payment-summary">
+          <div class="summary-header">
+            <h3>Payment Summary</h3>
           </div>
-          <div class="summary-row" v-if="description">
-            <span class="label">Description:</span>
-            <span class="value">{{ description }}</span>
-          </div>
-          <div class="summary-row" v-if="merchantData.currency">
-            <span class="label">Currency:</span>
-            <span class="value">{{ merchantData.currency.toUpperCase() }}</span>
+          <div class="summary-content">
+            <div class="summary-row">
+              <span class="label">Amount:</span>
+              <span class="value">{{ formatCurrency(amount) }}</span>
+            </div>
+            <div class="summary-row" v-if="description">
+              <span class="label">Description:</span>
+              <span class="value">{{ description }}</span>
+            </div>
+            <div class="summary-row" v-if="merchantData.currency">
+              <span class="label">Currency:</span>
+              <span class="value">{{ merchantData.currency.toUpperCase() }}</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Payment Form -->
-      <div class="payment-form floating-animation" style="animation-delay: 0.2s">
-        <h3>Payment Details</h3>
-        
-        <!-- Payment Method Selection -->
-        <div class="payment-methods">
-          <div class="method-tabs">
-            <q-btn
-              v-for="method in availableMethods"
-              :key="method.id"
-              :class="['method-tab', { active: selectedMethod === method.id }]"
-              @click="selectedMethod = method.id"
-              flat
-              no-caps
-              class="pulse-on-hover"
-            >
-              <q-icon :name="method.icon" class="q-mr-sm" />
-              {{ method.label }}
-            </q-btn>
-          </div>
+        <!-- Payment Form -->
+        <div class="payment-form">
+          <h3>Payment Details</h3>
+          
+          <!-- Payment Method Selection -->
+          <div class="payment-methods">
+            <div class="method-tabs">
+              <q-btn
+                v-for="method in availableMethods"
+                :key="method.id"
+                :class="['method-tab', { active: selectedMethod === method.id }]"
+                @click="selectedMethod = method.id"
+                flat
+                no-caps
+              >
+                <q-icon :name="method.icon" class="q-mr-sm" />
+                {{ method.label }}
+              </q-btn>
+            </div>
 
-          <!-- Card Payment Form -->
-          <div v-if="selectedMethod === 'card'" class="method-form">
-            <q-form @submit.prevent="processPayment" class="card-form">
-              <div class="form-row">
-                <div class="form-group full-width floating-animation" style="animation-delay: 0.3s">
-                  <label>Card Number</label>
-                  <q-input
-                    v-model="cardForm.number"
-                    mask="#### #### #### ####"
-                    placeholder="1234 5678 9012 3456"
-                    outlined
-                    dense
-                    :error="!!errors.number"
-                    :error-message="errors.number"
-                    @input="validateCardNumber"
-                    class="modern-input"
-                  >
-                    <template v-slot:append>
-                      <q-icon :name="cardBrandIcon" :color="cardBrandColor" size="sm" />
-                    </template>
-                  </q-input>
+            <!-- Card Payment Form -->
+            <div v-if="selectedMethod === 'card'" class="method-form">
+              <q-form @submit.prevent="processPayment" class="card-form">
+                <div class="form-row">
+                  <div class="form-group full-width">
+                    <label>Card Number</label>
+                    <q-input
+                      v-model="cardForm.number"
+                      mask="#### #### #### ####"
+                      placeholder="1234 5678 9012 3456"
+                      outlined
+                      dense
+                      :error="!!errors.number"
+                      :error-message="errors.number"
+                      @input="validateCardNumber"
+                      class="modern-input"
+                    >
+                      <template v-slot:append>
+                        <q-icon :name="cardBrandIcon" :color="cardBrandColor" size="sm" />
+                      </template>
+                    </q-input>
+                  </div>
                 </div>
-              </div>
 
-              <div class="form-row">
-                <div class="form-group floating-animation" style="animation-delay: 0.4s">
-                  <label>Cardholder Name</label>
-                  <q-input
-                    v-model="cardForm.name"
-                    placeholder="John Doe"
-                    outlined
-                    dense
-                    :error="!!errors.name"
-                    :error-message="errors.name"
-                    @input="validateCardName"
-                    class="modern-input"
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Cardholder Name</label>
+                    <q-input
+                      v-model="cardForm.name"
+                      placeholder="John Doe"
+                      outlined
+                      dense
+                      :error="!!errors.name"
+                      :error-message="errors.name"
+                      @input="validateCardName"
+                      class="modern-input"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label>Expiry Date</label>
+                    <q-input
+                      v-model="cardForm.expiry"
+                      mask="##/##"
+                      placeholder="MM/YY"
+                      outlined
+                      dense
+                      :error="!!errors.expiry"
+                      :error-message="errors.expiry"
+                      @input="validateExpiry"
+                      class="modern-input"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label>CVC</label>
+                    <q-input
+                      v-model="cardForm.cvc"
+                      mask="###"
+                      placeholder="123"
+                      outlined
+                      dense
+                      :error="!!errors.cvc"
+                      :error-message="errors.cvc"
+                      @input="validateCvc"
+                      class="modern-input"
+                    />
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group full-width">
+                    <label>Billing Address</label>
+                    <q-input
+                      v-model="cardForm.address"
+                      placeholder="123 Main St, City, State 12345"
+                      outlined
+                      dense
+                      :error="!!errors.address"
+                      :error-message="errors.address"
+                      class="modern-input"
+                    />
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <q-btn
+                    type="submit"
+                    class="pay-button"
+                    :loading="processing"
+                    :disable="!isFormValid"
+                    label="Pay Now"
+                    size="lg"
+                    no-caps
                   />
                 </div>
-                <div class="form-group floating-animation" style="animation-delay: 0.5s">
-                  <label>Expiry Date</label>
-                  <q-input
-                    v-model="cardForm.expiry"
-                    mask="##/##"
-                    placeholder="MM/YY"
-                    outlined
-                    dense
-                    :error="!!errors.expiry"
-                    :error-message="errors.expiry"
-                    @input="validateExpiry"
-                    class="modern-input"
-                  />
-                </div>
-                <div class="form-group floating-animation" style="animation-delay: 0.6s">
-                  <label>CVC</label>
-                  <q-input
-                    v-model="cardForm.cvc"
-                    mask="###"
-                    placeholder="123"
-                    outlined
-                    dense
-                    :error="!!errors.cvc"
-                    :error-message="errors.cvc"
-                    @input="validateCvc"
-                    class="modern-input"
-                  />
-                </div>
-              </div>
+              </q-form>
+            </div>
 
-              <div class="form-row">
-                <div class="form-group full-width floating-animation" style="animation-delay: 0.7s">
-                  <label>Billing Address</label>
-                  <q-input
-                    v-model="cardForm.address"
-                    placeholder="123 Main St, City, State 12345"
-                    outlined
-                    dense
-                    :error="!!errors.address"
-                    :error-message="errors.address"
-                    class="modern-input"
-                  />
-                </div>
-              </div>
-
-              <div class="form-actions floating-animation" style="animation-delay: 0.8s">
+            <!-- Bank Transfer Form -->
+            <div v-else-if="selectedMethod === 'bank'" class="method-form">
+              <div class="bank-transfer-info">
+                <q-icon name="account_balance" size="64px" color="lime" />
+                <h4>Bank Transfer</h4>
+                <p>Complete your payment using bank transfer</p>
                 <q-btn
-                  type="submit"
-                  class="pay-button pulse-on-hover"
-                  :loading="processing"
-                  :disable="!isFormValid"
-                  label="Pay Now"
-                  size="lg"
-                  no-caps
+                  color="lime"
+                  label="Get Bank Details"
+                  @click="getBankDetails"
+                  class="q-mt-md"
                 />
               </div>
-            </q-form>
-          </div>
-
-          <!-- Bank Transfer Form -->
-          <div v-else-if="selectedMethod === 'bank'" class="method-form">
-            <div class="bank-transfer-info floating-animation">
-              <q-icon name="account_balance" size="64px" color="lime" class="pulse-animation" />
-              <h4>Bank Transfer</h4>
-              <p>Complete your payment using bank transfer</p>
-              <q-btn
-                color="lime"
-                label="Get Bank Details"
-                @click="getBankDetails"
-                class="q-mt-md pulse-on-hover"
-              />
             </div>
-          </div>
 
-          <!-- Wallet Payment -->
-          <div v-else-if="selectedMethod === 'wallet'" class="method-form">
-            <div class="wallet-options">
-              <div 
-                v-for="wallet in walletOptions" 
-                :key="wallet.id"
-                class="wallet-option floating-animation pulse-on-hover"
-                :style="`animation-delay: ${0.3 + walletOptions.indexOf(wallet) * 0.1}s`"
-                @click="selectWallet(wallet.id)"
-              >
-                <q-icon :name="wallet.icon" size="32px" :color="wallet.color" />
-                <span>{{ wallet.name }}</span>
+            <!-- Wallet Payment -->
+            <div v-else-if="selectedMethod === 'wallet'" class="method-form">
+              <div class="wallet-options">
+                <div 
+                  v-for="wallet in walletOptions" 
+                  :key="wallet.id"
+                  class="wallet-option"
+                  @click="selectWallet(wallet.id)"
+                >
+                  <q-icon :name="wallet.icon" size="32px" :color="wallet.color" />
+                  <span>{{ wallet.name }}</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Security Notice -->
-      <div class="security-notice floating-animation" style="animation-delay: 0.9s">
-        <div class="security-content">
-          <q-icon name="security" color="green" class="pulse-animation" />
-          <span>Your payment information is encrypted and secure</span>
+        <!-- Security Notice -->
+        <div class="security-notice">
+          <div class="security-content">
+            <q-icon name="security" color="green" />
+            <span>Your payment information is encrypted and secure</span>
+          </div>
         </div>
       </div>
-    </div>
+    </q-slide-transition>
 
     <!-- Payment Processing -->
-    <div v-else-if="processing" class="processing-container">
-      <div class="processing-content floating-animation">
-        <q-spinner-dots size="50px" color="lime" class="pulse-animation" />
-        <div class="processing-text">Processing your payment...</div>
-        <div class="processing-subtext">Please wait while we secure your transaction</div>
-        <div class="processing-progress">
-          <q-linear-progress 
-            :value="processingProgress" 
-            color="lime" 
-            size="md"
-            class="q-mt-md floating-animation"
+    <q-fade-transition>
+      <div v-if="processing" class="processing-container">
+        <div class="processing-content">
+          <q-spinner-dots size="50px" color="lime" />
+          <div class="processing-text">Processing your payment...</div>
+          <div class="processing-subtext">Please wait while we secure your transaction</div>
+          <div class="processing-progress">
+            <q-linear-progress 
+              :value="processingProgress" 
+              color="lime" 
+              size="md"
+              class="q-mt-md"
+            />
+          </div>
+        </div>
+      </div>
+    </q-fade-transition>
+
+    <!-- Payment Complete -->
+    <q-slide-transition>
+      <div v-if="paymentComplete" class="payment-complete">
+        <div class="complete-content">
+          <q-icon name="check_circle" size="64px" color="green" />
+          <h2>Payment Successful!</h2>
+          <p>Your transaction has been processed successfully</p>
+          <div class="transaction-details">
+            <div class="detail-row">
+              <span class="label">Transaction ID:</span>
+              <span class="value">{{ transactionId }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Amount:</span>
+              <span class="value">{{ formatCurrency(amount) }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Date:</span>
+              <span class="value">{{ formatDate(new Date()) }}</span>
+            </div>
+          </div>
+          <q-btn
+            color="lime"
+            label="Return to Merchant"
+            @click="returnToMerchant"
+            class="q-mt-lg"
           />
         </div>
       </div>
-    </div>
-
-    <!-- Payment Complete -->
-    <div v-else class="payment-complete">
-      <div class="complete-content floating-animation">
-        <q-icon name="check_circle" size="64px" color="green" class="pulse-animation" />
-        <h2 class="floating-animation" style="animation-delay: 0.1s">Payment Successful!</h2>
-        <p class="floating-animation" style="animation-delay: 0.2s">Your transaction has been processed successfully</p>
-        <div class="transaction-details floating-animation" style="animation-delay: 0.3s">
-          <div class="detail-row">
-            <span class="label">Transaction ID:</span>
-            <span class="value">{{ transactionId }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Amount:</span>
-            <span class="value">{{ formatCurrency(amount) }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Date:</span>
-            <span class="value">{{ formatDate(new Date()) }}</span>
-          </div>
-        </div>
-        <q-btn
-          color="lime"
-          label="Return to Merchant"
-          @click="returnToMerchant"
-          class="q-mt-lg pulse-on-hover floating-animation"
-          style="animation-delay: 0.4s"
-        />
-      </div>
-    </div>
+    </q-slide-transition>
 
     <!-- Error State -->
-    <div v-if="error" class="error-container">
-      <div class="error-content floating-animation">
-        <q-icon name="error" size="64px" color="red" class="pulse-animation" />
-        <h2 class="floating-animation" style="animation-delay: 0.1s">Payment Failed</h2>
-        <p class="floating-animation" style="animation-delay: 0.2s">{{ error }}</p>
-        <q-btn
-          color="lime"
-          label="Try Again"
-          @click="retryPayment"
-          class="q-mt-lg pulse-on-hover floating-animation"
-          style="animation-delay: 0.3s"
-        />
+    <q-slide-transition>
+      <div v-if="error" class="error-container">
+        <div class="error-content">
+          <q-icon name="error" size="64px" color="red" />
+          <h2>Payment Failed</h2>
+          <p>{{ error }}</p>
+          <q-btn
+            color="lime"
+            label="Try Again"
+            @click="retryPayment"
+            class="q-mt-lg"
+          />
+        </div>
       </div>
-    </div>
+    </q-slide-transition>
   </div>
 </template>
 
@@ -556,7 +562,7 @@ watch(() => route.query, (newQuery) => {
 <style scoped>
 .hosted-checkout {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0a0a0a 0%, #0f0e12 50%, #121018 100%);
+  background: linear-gradient(135deg, #09050d 0%, #121018 50%, #171719 100%);
   color: #ffffff;
   padding: 24px;
 }
@@ -611,7 +617,7 @@ watch(() => route.query, (newQuery) => {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(189, 240, 0, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(189, 253, 0, 0.1), transparent);
   transition: left 0.7s ease;
 }
 
@@ -626,14 +632,14 @@ watch(() => route.query, (newQuery) => {
 }
 
 .merchant-logo {
-  border: 2px solid rgba(189, 240, 0.3);
+  border: 2px solid rgba(189, 253, 0, 0.3);
 }
 
 .merchant-name {
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0 0 4px 0;
-  color: #bdf000;
+  color: #bdfd00;
 }
 
 .merchant-description {
@@ -661,7 +667,7 @@ watch(() => route.query, (newQuery) => {
 
 .summary-header h3 {
   margin: 0 0 16px 0;
-  color: #bdf000;
+  color: #bdfd00;
 }
 
 .summary-content {
@@ -696,7 +702,7 @@ watch(() => route.query, (newQuery) => {
 
 .payment-form h3 {
   margin: 0 0 20px 0;
-  color: #bdf000;
+  color: #bdfd00;
 }
 
 /* Payment Methods */
@@ -716,13 +722,13 @@ watch(() => route.query, (newQuery) => {
 }
 
 .method-tab:hover {
-  background: rgba(189, 240, 0.1);
+  background: rgba(189, 253, 0, 0.1);
 }
 
 .method-tab.active {
-  background: rgba(189, 240, 0.2);
-  border-color: #bdf000;
-  color: #bdf000;
+  background: rgba(189, 253, 0, 0.2);
+  border-color: #bdfd00;
+  color: #bdfd00;
 }
 
 /* Method Forms */
@@ -773,12 +779,12 @@ watch(() => route.query, (newQuery) => {
 }
 
 .modern-input :deep(.q-field__control:hover) {
-  border-color: rgba(189, 240, 0, 0.3);
+  border-color: rgba(189, 253, 0, 0.3);
 }
 
 .modern-input :deep(.q-field__control:focus-within) {
-  border-color: #bdf000;
-  box-shadow: 0 0 0 2px rgba(189, 240, 0, 0.2);
+  border-color: #bdfd00;
+  box-shadow: 0 0 0 2px rgba(189, 253, 0, 0.2);
 }
 
 /* Form Actions */
@@ -788,7 +794,7 @@ watch(() => route.query, (newQuery) => {
 }
 
 .pay-button {
-  background: linear-gradient(135deg, #bdf000, #a0d000);
+  background: linear-gradient(135deg, #bdfd00, #a0d000);
   color: #09050d;
   font-weight: 700;
   border-radius: 12px;
@@ -816,7 +822,7 @@ watch(() => route.query, (newQuery) => {
 
 .pay-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(189, 240, 0.3);
+  box-shadow: 0 8px 25px rgba(189, 253, 0, 0.3);
 }
 
 .pay-button:disabled {
@@ -832,7 +838,7 @@ watch(() => route.query, (newQuery) => {
 
 .bank-transfer-info h4 {
   margin: 16px 0 8px 0;
-  color: #bdf000;
+  color: #bdfd00;
 }
 
 .bank-transfer-info p {
@@ -861,8 +867,8 @@ watch(() => route.query, (newQuery) => {
 }
 
 .wallet-option:hover {
-  background: rgba(189, 240, 0.1);
-  border-color: rgba(189, 240, 0.3);
+  background: rgba(189, 253, 0, 0.1);
+  border-color: rgba(189, 253, 0, 0.3);
   transform: translateY(-2px);
 }
 
@@ -1027,56 +1033,6 @@ watch(() => route.query, (newQuery) => {
   margin-bottom: 24px;
 }
 
-/* Animation Classes */
-/* Floating animation */
-.floating-animation {
-  animation: floating 3s ease-in-out infinite;
-}
-
-@keyframes floating {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-/* Pulse animation */
-.pulse-animation {
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.05);
-  }
-}
-
-/* Glow animation */
-.glow-animation {
-  animation: glow 4s ease-in-out infinite alternate;
-}
-
-@keyframes glow {
-  from {
-    box-shadow: 0 0 5px rgba(189, 240, 0, 0.2), 0 0 10px rgba(189, 240, 0, 0.1);
-  }
-  to {
-    box-shadow: 0 0 15px rgba(189, 240, 0, 0.3), 0 0 20px rgba(189, 240, 0, 0.2);
-  }
-}
-
-/* Pulse on hover */
-.pulse-on-hover:hover {
-  animation: pulse 0.6s ease;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
   .hosted-checkout {
@@ -1114,19 +1070,18 @@ watch(() => route.query, (newQuery) => {
 }
 
 .hosted-checkout::-webkit-scrollbar-thumb {
-  background: rgba(189, 240, 0, 0.3);
+  background: rgba(189, 253, 0, 0.3);
   border-radius: 4px;
 }
 
 .hosted-checkout::-webkit-scrollbar-thumb:hover {
-  background: rgba(189, 240, 0, 0.5);
+  background: rgba(189, 253, 0, 0.5);
 }
 
 /* Enhanced focus states */
 .pay-button:focus {
-  outline: 2px solid rgba(189, 240, 0, 0.5);
+  outline: 2px solid rgba(189, 253, 0, 0.5);
   outline-offset: 2px;
-  animation: pulse 0.6s ease;
 }
 
 /* Loading animation enhancements */
@@ -1151,7 +1106,7 @@ watch(() => route.query, (newQuery) => {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(189, 240, 0, 0.5), transparent);
+  background: linear-gradient(90deg, transparent, rgba(189, 253, 0, 0.5), transparent);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
