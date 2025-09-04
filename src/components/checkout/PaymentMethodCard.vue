@@ -18,7 +18,7 @@
                   <div class="chip-line"></div>
                   <div class="chip-line"></div>
                 </div>
-              </div>
+                </div>
             </div>
             
             <div class="card-number">
@@ -283,7 +283,7 @@ const cardBrandColor = computed(() => {
   if (number.startsWith('5')) return '#eb001b' // Mastercard red
   if (number.startsWith('3')) return '#016fd0' // Amex blue
   if (number.startsWith('6')) return '#ff6000' // Discover orange
-  return '#bdf000' // Default lime
+  return '#bdfd00' // Default lime
 })
 
 const cardBrandName = computed(() => {
@@ -449,10 +449,10 @@ watch(focusedField, (newField) => {
 
 <style scoped>
 .payment-method-card {
-  background: rgba(18, 18, 18, 0.95);
+  background: rgba(23, 23, 25, 0.95);
   border-radius: 20px;
   padding: 28px;
-  border: 1px solid rgba(189, 240, 0, 0.2);
+  border: 1px solid rgba(189, 253, 0, 0.2);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(10px);
 }
@@ -483,7 +483,7 @@ watch(focusedField, (newField) => {
   border-radius: 16px;
   padding: 24px;
   background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
-  border: 1px solid rgba(189, 240, 0, 0.3);
+  border: 1px solid rgba(189, 253, 0, 0.3);
   transition: all 0.3s ease;
   overflow: hidden;
 }
@@ -718,7 +718,7 @@ watch(focusedField, (newField) => {
 .card-hologram {
   width: 60px;
   height: 40px;
-  background: linear-gradient(45deg, #00d4ff, #bdf000, #00d4ff);
+  background: linear-gradient(45deg, #00d4ff, #bdfd00, #00d4ff);
   border-radius: 6px;
   position: absolute;
   bottom: 20px;
@@ -742,8 +742,8 @@ watch(focusedField, (newField) => {
 }
 
 .card-flip-hint:hover {
-  color: #bdf000;
-  background: rgba(189, 240, 0, 0.1);
+  color: #bdfd00;
+  background: rgba(189, 253, 0, 0.1);
 }
 
 .card-form {
@@ -774,7 +774,7 @@ watch(focusedField, (newField) => {
 }
 
 .modern-input :deep(.q-field__control:hover) {
-  border-color: rgba(189, 240, 0, 0.3);
+  border-color: rgba(189, 253, 0, 0.3);
 }
 
 .modern-input :deep(.q-field__control:focus-within) {
@@ -801,9 +801,9 @@ watch(focusedField, (newField) => {
   font-size: 0.9rem;
   margin-top: 16px;
   padding: 12px;
-  background: rgba(189, 240, 0, 0.1);
+  background: rgba(189, 253, 0, 0.1);
   border-radius: 8px;
-  border: 1px solid rgba(189, 240, 0, 0.2);
+  border: 1px solid rgba(189, 253, 0, 0.2);
 }
 
 .btn-primary {
@@ -833,22 +833,6 @@ watch(focusedField, (newField) => {
 
 .full-width {
   width: 100%;
-}
-
-/* Animation Classes */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.card-form {
-  animation: fadeIn 0.6s ease-out;
 }
 
 /* Responsive design */

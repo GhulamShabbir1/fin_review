@@ -1,80 +1,84 @@
 <template>
   <div class="merchant-branding" :style="brandingStyles">
     <!-- Loading state -->
-    <div v-if="loading" class="loading-state">
-      <div class="skeleton-header">
-        <div class="skeleton-logo"></div>
-        <div class="skeleton-info">
-          <div class="skeleton-name"></div>
-          <div class="skeleton-tagline"></div>
+    <q-fade-transition>
+      <div v-if="loading" class="loading-state">
+        <div class="skeleton-header">
+          <div class="skeleton-logo"></div>
+          <div class="skeleton-info">
+            <div class="skeleton-name"></div>
+            <div class="skeleton-tagline"></div>
+          </div>
+        </div>
+        <div class="skeleton-amount">
+          <div class="skeleton-label"></div>
+          <div class="skeleton-value"></div>
+          <div class="skeleton-currency"></div>
         </div>
       </div>
-      <div class="skeleton-amount">
-        <div class="skeleton-label"></div>
-        <div class="skeleton-value"></div>
-        <div class="skeleton-currency"></div>
-      </div>
-    </div>
+    </q-fade-transition>
 
     <!-- Main content -->
-    <div v-else class="branding-content">
-      <!-- Header with merchant logo and name -->
-      <div class="branding-header animate-fade-in">
-        <div class="merchant-logo">
-          <q-img
-            :src="merchantLogo"
-            :alt="merchantName"
-            width="56px"
-            height="56px"
-            fit="contain"
-            class="logo-image"
-            @error="onLogoError"
-            transition="fade"
-            :style="{ 
-              borderColor: props.merchant?.primaryColor || 'rgba(189, 240, 0, 0.3)',
-              boxShadow: `0 0 20px ${props.merchant?.primaryColor || '#bdf000'}40` 
-            }"
-          />
+    <q-slide-transition>
+      <div v-else class="branding-content">
+        <!-- Header with merchant logo and name -->
+        <div class="branding-header">
+          <div class="merchant-logo">
+            <q-img
+              :src="merchantLogo"
+              :alt="merchantName"
+              width="56px"
+              height="56px"
+              fit="contain"
+              class="logo-image"
+              @error="onLogoError"
+              transition="fade"
+              :style="{ 
+                borderColor: props.merchant?.primaryColor || 'rgba(189, 253, 0, 0.3)',
+                boxShadow: `0 0 20px ${props.merchant?.primaryColor || '#bdfd00'}40` 
+              }"
+            />
+          </div>
+          
+          <div class="merchant-info">
+            <h2 class="merchant-name">{{ merchantName }}</h2>
+            <p class="merchant-tagline">{{ merchantTagline }}</p>
+          </div>
         </div>
         
-        <div class="merchant-info">
-          <h2 class="merchant-name">{{ merchantName }}</h2>
-          <p class="merchant-tagline">{{ merchantTagline }}</p>
+        <!-- Payment amount display -->
+        <div class="payment-amount">
+          <div class="amount-label">Payment Amount</div>
+          <div class="amount-value">{{ formatAmount(amount) }}</div>
+          <div class="amount-currency">{{ currency }}</div>
         </div>
-      </div>
-      
-      <!-- Payment amount display -->
-      <div class="payment-amount animate-fade-in" style="animation-delay: 0.2s">
-        <div class="amount-label">Payment Amount</div>
-        <div class="amount-value">{{ formatAmount(amount) }}</div>
-        <div class="amount-currency">{{ currency }}</div>
-      </div>
-      
-      <!-- Order details if available -->
-      <div v-if="orderDetails" class="order-details animate-fade-in" style="animation-delay: 0.4s">
-        <q-separator color="rgba(189, 240, 0, 0.3)" class="separator-animate" />
-        <div class="order-info">
-          <div class="order-item">
-            <span class="label">Order ID:</span>
-            <span class="value">{{ orderDetails.orderId }}</span>
-          </div>
-          <div class="order-item">
-            <span class="label">Description:</span>
-            <span class="value">{{ orderDetails.description }}</span>
-          </div>
-          <div v-if="orderDetails.items" class="order-item">
-            <span class="label">Items:</span>
-            <span class="value">{{ orderDetails.items.length }}</span>
+        
+        <!-- Order details if available -->
+        <div v-if="orderDetails" class="order-details">
+          <q-separator color="rgba(189, 253, 0, 0.3)" />
+          <div class="order-info">
+            <div class="order-item">
+              <span class="label">Order ID:</span>
+              <span class="value">{{ orderDetails.orderId }}</span>
+            </div>
+            <div class="order-item">
+              <span class="label">Description:</span>
+              <span class="value">{{ orderDetails.description }}</span>
+            </div>
+            <div v-if="orderDetails.items" class="order-item">
+              <span class="label">Items:</span>
+              <span class="value">{{ orderDetails.items.length }}</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Security badge -->
-      <div class="security-badge animate-fade-in" style="animation-delay: 0.6s">
-        <q-icon name="lock" size="16px" color="lime" />
-        <span>Secure Payment</span>
+        <!-- Security badge -->
+        <div class="security-badge">
+          <q-icon name="lock" size="16px" color="lime" />
+          <span>Secure Payment</span>
+        </div>
       </div>
-    </div>
+    </q-slide-transition>
   </div>
 </template>
 
@@ -108,21 +112,21 @@ const loading = ref(true)
 // Computed properties
 const brandingStyles = computed(() => {
   const merchant = props.merchant || {}
-  const primaryColor = merchant.primaryColor || '#bdf000'
+  const primaryColor = merchant.primaryColor || '#bdfd00'
   
   return {
     '--primary-color': primaryColor,
     '--secondary-color': merchant.secondaryColor || '#ffffff',
     '--accent-color': merchant.accentColor || '#00d4ff',
-    '--background-color': merchant.backgroundColor || 'rgba(10, 10, 10, 0.95)',
+    '--background-color': merchant.backgroundColor || 'rgba(9, 5, 13, 0.95)',
     '--text-color': merchant.textColor || '#ffffff',
-    '--primary-rgb': hexToRgb(primaryColor) || '189, 240, 0'
+    '--primary-rgb': hexToRgb(primaryColor) || '189, 253, 0'
   }
 })
 
 // Methods
 const onLogoError = () => {
-  merchantLogo.value = 'https://placehold.co/56x56/121018/bdf000?text=M'
+  merchantLogo.value = 'https://placehold.co/56x56/121018/bdfd00?text=M'
 }
 
 const formatAmount = (amount) => {
@@ -135,11 +139,11 @@ const formatAmount = (amount) => {
 }
 
 const hexToRgb = (hex) => {
-  if (!hex) return '189, 240, 0'
+  if (!hex) return '189, 253, 0'
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
   return result ? 
     `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : 
-    '189, 240, 0'
+    '189, 253, 0'
 }
 
 const loadMerchantBranding = async () => {
@@ -153,7 +157,7 @@ const loadMerchantBranding = async () => {
   if (merchant) {
     merchantName.value = merchant.name || 'Merchant'
     merchantTagline.value = merchant.tagline || 'Secure Payment Gateway'
-    merchantLogo.value = merchant.logo || 'https://placehold.co/56x56/121018/bdf000?text=M'
+    merchantLogo.value = merchant.logo || 'https://placehold.co/56x56/121018/bdfd00?text=M'
     currency.value = merchant.currency || 'USD'
     
     // Emit branding loaded event
@@ -440,43 +444,11 @@ onMounted(() => {
 .skeleton-currency {
   height: 20px;
   width: 60px;
-  background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+  background: linear-gradient(90deg, '1a1a1a' 25%, '2a2a2a' 50%, '1a1a1a' 75%);
   background-size: 200% 100%;
   animation: skeletonLoading 1.5s infinite;
   border-radius: 4px;
   margin: 0 auto;
-}
-
-/* Animation Classes */
-.animate-fade-in {
-  opacity: 0;
-  transform: translateY(20px);
-  animation: fadeInUp 0.6s forwards;
-}
-
-.separator-animate {
-  opacity: 0;
-  animation: fadeIn 0.6s forwards 0.3s;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }
 
 @keyframes skeletonLoading {
