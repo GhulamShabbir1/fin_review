@@ -1,10 +1,12 @@
 <template>
   <div class="merchant-dashboard">
     <!-- Loading Overlay -->
-    <div v-if="loading" class="loading-overlay">
-      <q-spinner-dots size="50px" color="lime" />
-      <div class="loading-text">Loading your dashboard...</div>
-    </div>
+    <q-fade-transition>
+      <div v-if="loading" class="loading-overlay">
+        <q-spinner-dots size="50px" color="lime" />
+        <div class="loading-text">Loading your dashboard...</div>
+      </div>
+    </q-fade-transition>
 
     <!-- Welcome Section -->
     <div class="welcome-section q-mb-xl">
@@ -533,7 +535,7 @@ onMounted(async () => {
 <style scoped>
 .merchant-dashboard {
   padding: 24px;
-  background: linear-gradient(135deg, #0a0a0a 0%, #0f0e12 50%, #121018 100%);
+  background: linear-gradient(135deg, #09050d 0%, #121018 50%, #171719 100%);
   min-height: 100vh;
 }
 
@@ -543,7 +545,7 @@ onMounted(async () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(10, 10, 10, 0.9);
+  background: rgba(9, 5, 13, 0.9);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -552,16 +554,16 @@ onMounted(async () => {
 }
 
 .loading-text {
-  color: #bdf000;
+  color: #bdfd00;
   margin-top: 16px;
   font-size: 1.1rem;
 }
 
 .welcome-section {
-  background: linear-gradient(135deg, rgba(189, 240, 0, 0.1) 0%, rgba(189, 240, 0, 0.05) 100%);
+  background: linear-gradient(135deg, rgba(189, 253, 0, 0.1) 0%, rgba(189, 253, 0, 0.05) 100%);
   border-radius: 20px;
   padding: 32px;
-  border: 1px solid rgba(189, 240, 0, 0.2);
+  border: 1px solid rgba(189, 253, 0, 0.2);
   backdrop-filter: blur(10px);
 }
 
@@ -581,8 +583,8 @@ onMounted(async () => {
 }
 
 .highlight {
-  color: #bdf000;
-  text-shadow: 0 0 20px rgba(189, 240, 0, 0.5);
+  color: #bdfd00;
+  text-shadow: 0 0 20px rgba(189, 253, 0, 0.5);
 }
 
 .welcome-subtitle {
@@ -605,17 +607,16 @@ onMounted(async () => {
 }
 
 .action-btn:hover {
-  transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
 }
 
 .btn-outline {
-  border: 2px solid #bdf000;
-  color: #bdf000;
+  border: 2px solid #bdfd00;
+  color: #bdfd00;
 }
 
 .btn-outline:hover {
-  background: #bdf000;
+  background: #bdfd00;
   color: #09050d;
 }
 
@@ -642,8 +643,7 @@ onMounted(async () => {
 }
 
 .stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(189, 240, 0, 0.3);
+  box-shadow: 0 8px 25px rgba(189, 253, 0, 0.3);
 }
 
 .stat-header {
@@ -656,7 +656,7 @@ onMounted(async () => {
 .stat-value {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #bdf000;
+  color: #bdfd00;
 }
 
 .stat-title {
@@ -677,8 +677,7 @@ onMounted(async () => {
 }
 
 .chart-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(189, 240, 0, 0.3);
+  box-shadow: 0 8px 25px rgba(189, 253, 0, 0.3);
 }
 
 .chart-title {
@@ -704,8 +703,7 @@ onMounted(async () => {
 }
 
 .business-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(189, 240, 0, 0.3);
+  box-shadow: 0 8px 25px rgba(189, 253, 0, 0.3);
 }
 
 .business-header {
@@ -756,8 +754,7 @@ onMounted(async () => {
 }
 
 .transactions-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(189, 240, 0, 0.3);
+  box-shadow: 0 8px 25px rgba(189, 253, 0, 0.3);
 }
 
 .no-transactions {
@@ -788,7 +785,6 @@ onMounted(async () => {
 
 .transaction-item:hover {
   background: rgba(255, 255, 255, 0.08);
-  transform: translateX(4px);
 }
 
 .transaction-info {
@@ -799,7 +795,7 @@ onMounted(async () => {
 }
 
 .transaction-id {
-  color: #bdf000;
+  color: #bdfd00;
   font-weight: 500;
   min-width: 80px;
 }
@@ -830,12 +826,7 @@ onMounted(async () => {
 }
 
 .floating-action .q-btn {
-  box-shadow: 0 4px 20px rgba(189, 240, 0.3);
-}
-
-.floating-action .q-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 25px rgba(189, 240, 0.5);
+  box-shadow: 0 4px 20px rgba(189, 253, 0, 0.3);
 }
 
 .status-chip {

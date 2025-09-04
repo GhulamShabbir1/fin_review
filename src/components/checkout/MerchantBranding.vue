@@ -20,7 +20,7 @@
 
     <!-- Main content -->
     <q-slide-transition>
-      <div v-else class="branding-content">
+      <div v-if="!loading" class="branding-content">
         <!-- Header with merchant logo and name -->
         <div class="branding-header">
           <div class="merchant-logo">
@@ -516,4 +516,5 @@ onMounted(() => {
   outline: 2px solid rgba(var(--primary-rgb), 0.5);
   outline-offset: 2px;
 }
+
 </style>

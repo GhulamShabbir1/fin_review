@@ -1,6 +1,6 @@
 <template>
-    <q-dialog v-model="modelValue" persistent transition-show="scale" transition-hide="fade">
-        <q-card class="dialog-card lime-glow dialog-animate">
+    <q-dialog v-model="modelValue" persistent>
+        <q-card class="dialog-card lime-glow">
             <q-card-section class="row items-center dialog-header">
                 <div class="text-h6 text-lime">Add New Business</div>
                 <q-space />
@@ -201,7 +201,7 @@ watch(modelValue, v => emit('update:modelValue', v))
 const store = useAuthStore()
 const submitting = ref(false)
 const uploadProgress = ref(0)
-const placeholderLogo = 'https://placehold.co/80x80/121018/bdf000?text=LOGO'
+const placeholderLogo = 'https://placehold.co/80x80/121018/bdfd00?text=LOGO'
 
 const payoutOptions = [
     { label: 'Daily', value: 'daily' },
@@ -334,32 +334,17 @@ const submit = async () => {
     min-width: 560px;
     max-width: 90vw;
     border-radius: 20px;
-    background: rgba(18, 18, 18, 0.95);
+    background: rgba(23, 23, 25, 0.95);
     backdrop-filter: blur(20px);
     color: #ffffff;
 }
 
 .lime-glow {
-    border: 1px solid rgba(189, 240, 0, 0.3);
+    border: 1px solid rgba(189, 253, 0, 0.3);
     box-shadow:
         0 20px 40px rgba(0, 0, 0, 0.5),
-        0 0 0 1px rgba(189, 240, 0, 0.2),
-        0 0 40px rgba(189, 240, 0, 0.25);
-}
-
-.dialog-animate {
-    animation: dialogScale 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes dialogScale {
-    from {
-        opacity: 0;
-        transform: scale(0.9) translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
+        0 0 0 1px rgba(189, 253, 0, 0.2),
+        0 0 40px rgba(189, 253, 0, 0.25);
 }
 
 .dialog-header {
@@ -372,12 +357,11 @@ const submit = async () => {
 }
 
 .close-btn:hover {
-    color: #bdf000;
-    transform: rotate(90deg);
+    color: #bdfd00;
 }
 
 .separator-dark {
-    background: rgba(189, 240, 0, 0.2);
+    background: rgba(189, 253, 0, 0.2);
 }
 
 .dialog-content {
@@ -391,12 +375,12 @@ const submit = async () => {
 }
 
 .section-title {
-    color: #bdf000;
+    color: #bdfd00;
     font-weight: 600;
     font-size: 1.1rem;
     margin-bottom: 16px;
     padding-bottom: 8px;
-    border-bottom: 1px solid rgba(189, 240, 0, 0.2);
+    border-bottom: 1px solid rgba(189, 253, 0, 0.2);
 }
 
 .modern-input :deep(.q-field__control) {
@@ -407,13 +391,13 @@ const submit = async () => {
 }
 
 .modern-input :deep(.q-field__control:hover) {
-    border-color: rgba(189, 240, 0, 0.3);
+    border-color: rgba(189, 253, 0, 0.3);
     background: rgba(255, 255, 255, 0.08);
 }
 
 .modern-input :deep(.q-field__control:focus-within) {
-    border-color: #bdf000;
-    box-shadow: 0 0 0 2px rgba(189, 240, 0, 0.2);
+    border-color: #bdfd00;
+    box-shadow: 0 0 0 2px rgba(189, 253, 0, 0.2);
     background: rgba(255, 255, 255, 0.1);
 }
 
@@ -423,15 +407,14 @@ const submit = async () => {
 }
 
 .logo-preview {
-    border: 2px solid rgba(189, 240, 0, 0.3);
+    border: 2px solid rgba(189, 253, 0, 0.3);
     border-radius: 12px;
     overflow: hidden;
     transition: all 0.3s ease;
 }
 
 .logo-preview:hover {
-    border-color: rgba(189, 240, 0, 0.6);
-    transform: scale(1.05);
+    border-color: rgba(189, 253, 0, 0.6);
 }
 
 .logo-image {
@@ -446,8 +429,8 @@ const submit = async () => {
     justify-content: center;
     width: 100%;
     height: 100%;
-    background: rgba(189, 240, 0, 0.1);
-    color: rgba(189, 240, 0, 0.5);
+    background: rgba(189, 253, 0, 0.1);
+    color: rgba(189, 253, 0, 0.5);
 }
 
 .logo-overlay {
@@ -492,7 +475,7 @@ const submit = async () => {
 
 .form-actions {
     padding-top: 24px;
-    border-top: 1px solid rgba(189, 240, 0, 0.2);
+    border-top: 1px solid rgba(189, 253, 0, 0.2);
 }
 
 .btn-outline {
@@ -504,13 +487,12 @@ const submit = async () => {
 }
 
 .btn-outline:hover {
-    border-color: #bdf000;
-    color: #bdf000;
-    transform: translateY(-1px);
+    border-color: #bdfd00;
+    color: #bdfd00;
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #bdf000, #a0d000);
+    background: linear-gradient(135deg, #bdfd00, #a0d000);
     color: #09050d;
     font-weight: 700;
     border: none;
@@ -520,22 +502,16 @@ const submit = async () => {
 }
 
 .btn-primary:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(189, 240, 0, 0.4);
-}
-
-.btn-primary:active:not(:disabled) {
-    transform: translateY(0);
+    box-shadow: 0 8px 24px rgba(189, 253, 0, 0.4);
 }
 
 .btn-primary:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    transform: none;
 }
 
 .text-lime {
-    color: #bdf000;
+    color: #bdfd00;
 }
 
 /* Responsive design */
@@ -565,7 +541,6 @@ const submit = async () => {
 
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
-    .dialog-animate,
     .close-btn,
     .modern-input :deep(.q-field__control),
     .logo-preview,
@@ -573,11 +548,6 @@ const submit = async () => {
     .btn-outline,
     .btn-primary {
         transition: none;
-        animation: none;
-    }
-    
-    .dialog-animate {
-        animation: none;
     }
 }
 
@@ -592,11 +562,11 @@ const submit = async () => {
 }
 
 .dialog-content::-webkit-scrollbar-thumb {
-    background: rgba(189, 240, 0, 0.3);
+    background: rgba(189, 253, 0, 0.3);
     border-radius: 3px;
 }
 
 .dialog-content::-webkit-scrollbar-thumb:hover {
-    background: rgba(189, 240, 0, 0.5);
+    background: rgba(189, 253, 0, 0.5);
 }
 </style>
