@@ -56,7 +56,6 @@
           <div v-else class="chart-empty">
             <q-icon name="analytics" size="48px" color="grey-5" />
             <p>No revenue data available</p>
-            <q-btn flat color="lime" label="Load Sample Data" @click="loadSampleRevenue" />
           </div>
         </div>
       </div>
@@ -116,7 +115,6 @@
           <div v-else class="chart-empty">
             <q-icon name="payment" size="48px" color="grey-5" />
             <p>No payment method data available</p>
-            <q-btn flat color="lime" label="Load Sample Data" @click="loadSampleMethods" />
           </div>
         </div>
       </div>
@@ -177,7 +175,6 @@
           <div v-else class="chart-empty">
             <q-icon name="receipt_long" size="48px" color="grey-5" />
             <p>No transaction trend data available</p>
-            <q-btn flat color="lime" label="Load Sample Data" @click="loadSampleTrends" />
           </div>
         </div>
       </div>
@@ -493,11 +490,11 @@ const loadRevenueData = async () => {
       console.log('✅ Revenue data loaded from API:', revenueData.value.length)
     } catch (error) {
       console.warn('⚠️ Revenue API not available:', error.message)
-      loadSampleRevenue()
+      revenueData.value = []
     }
   } catch (error) {
     console.error('❌ Revenue data load error:', error)
-    loadSampleRevenue()
+    revenueData.value = []
   } finally {
     loadingRevenue.value = false
   }
@@ -515,12 +512,12 @@ const loadMethodsData = async () => {
       methodsData.value = response.data?.data || response.data || []
       console.log('✅ Methods data loaded from API:', methodsData.value.length)
     } catch {
-      console.warn('⚠️ Payment methods API not available, using sample data')
-      loadSampleMethods()
+      console.warn('⚠️ Payment methods API not available')
+      methodsData.value = []
     }
   } catch (error) {
     console.error('❌ Methods data load error:', error)
-    loadSampleMethods()
+    methodsData.value = []
   } finally {
     loadingMethods.value = false
   }
@@ -538,12 +535,12 @@ const loadTrendsData = async () => {
       trendsData.value = response.data?.data || response.data || []
       console.log('✅ Trends data loaded from API:', trendsData.value.length)
     } catch {
-      console.warn('⚠️ Trends API not available, using sample data')
-      loadSampleTrends()
+      console.warn('⚠️ Trends API not available')
+      trendsData.value = []
     }
   } catch (error) {
     console.error('❌ Trends data load error:', error)
-    loadSampleTrends()
+    trendsData.value = []
   } finally {
     loadingTrends.value = false
   }
@@ -563,12 +560,14 @@ const loadCheckoutData = async () => {
       checkoutTimeLabels.value = data?.labels || []
       console.log('✅ Checkout data loaded from API:', checkoutTimeData.value.length)
     } catch {
-      console.warn('⚠️ Checkout API not available, using sample data')
-      loadSampleCheckout()
+      console.warn('⚠️ Checkout API not available')
+      checkoutTimeData.value = []
+      checkoutTimeLabels.value = []
     }
   } catch (error) {
     console.error('❌ Checkout data load error:', error)
-    loadSampleCheckout()
+    checkoutTimeData.value = []
+    checkoutTimeLabels.value = []
   } finally {
     loadingCheckout.value = false
   }
@@ -588,65 +587,20 @@ const loadGeographyData = async () => {
       geographyLabels.value = data?.labels || []
       console.log('✅ Geography data loaded from API:', geographyData.value.length)
     } catch {
-      console.warn('⚠️ Geography API not available, using sample data')
-      loadSampleGeography()
+      console.warn('⚠️ Geography API not available')
+      geographyData.value = []
+      geographyLabels.value = []
     }
   } catch (error) {
     console.error('❌ Geography data load error:', error)
-    loadSampleGeography()
+    geographyData.value = []
+    geographyLabels.value = []
   } finally {
     loadingGeography.value = false
   }
 }
 
-// Sample data loaders
-const loadSampleRevenue = () => {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
-  revenueData.value = months.map((month, index) => ({
-    date: month,
-    revenue: 125000 + (index * 15000) + Math.random() * 20000,
-    transactions: 1200 + (index * 150) + Math.random() * 200
-  }))
-}
-
-const loadSampleMethods = () => {
-  methodsData.value = [
-    { label: 'Credit Card', value: 45, color: '#bdf000', count: 1250 },
-    { label: 'Debit Card', value: 30, color: '#2196f3', count: 830 },
-    { label: 'Digital Wallet', value: 15, color: '#ff9800', count: 415 },
-    { label: 'Bank Transfer', value: 8, color: '#9c27b0', count: 220 },
-    { label: 'UPI', value: 2, color: '#4caf50', count: 55 }
-  ]
-}
-
-const loadSampleTrends = () => {
-  const days = Array.from({ length: 14 }, (_, i) => {
-    const date = new Date()
-    date.setDate(date.getDate() - (13 - i))
-    return {
-      date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      transactions: 150 + Math.random() * 100,
-      success_rate: 85 + Math.random() * 10,
-      revenue: 12000 + Math.random() * 5000
-    }
-  })
-  trendsData.value = days
-}
-
-const loadSampleCheckout = () => {
-  checkoutTimeData.value = [2.1, 1.8, 3.2, 2.5, 1.9, 4.1, 2.8, 3.5]
-  checkoutTimeLabels.value = ['Load', 'Info', 'Payment', 'Review', 'Process', 'Confirm', 'Receipt', 'Complete']
-}
-
-const loadSampleGeography = () => {
-  geographyData.value = [
-    { country: 'United States', value: 1250, percentage: 45 },
-    { country: 'Canada', value: 680, percentage: 25 },
-    { country: 'United Kingdom', value: 420, percentage: 15 },
-    { country: 'Germany', value: 280, percentage: 10 },
-    { country: 'France', value: 140, percentage: 5 }
-  ]
-}
+// Removed all sample data loaders to ensure only backend data is used
 
 // Chart interaction methods
 const showRevenueDetails = (item) => {

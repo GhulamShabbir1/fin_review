@@ -644,51 +644,13 @@ const loadTransactions = async () => {
 
   } catch (error) {
     console.error('❌ Failed to load transactions:', error)
-    
-    // ✅ Fallback to mock data when API fails
-    transactions.value = generateMockTransactions()
-    
-    $q.notify({
-      type: 'warning',
-      message: 'Using demo data - API not available',
-      position: 'top'
-    })
+    transactions.value = []
   } finally {
     loading.value = false
   }
 }
 
-const generateMockTransactions = () => {
-  const mockTransactions = []
-  const statuses = ['completed', 'pending', 'failed']
-  const methods = ['card', 'bank_transfer', 'wallet']
-  const customers = [
-    { name: 'John Doe', email: 'john@example.com' },
-    { name: 'Jane Smith', email: 'jane@example.com' },
-    { name: 'Bob Johnson', email: 'bob@example.com' },
-    { name: 'Alice Brown', email: 'alice@example.com' }
-  ]
-
-  for (let i = 1; i <= 20; i++) {
-    const customer = customers[Math.floor(Math.random() * customers.length)]
-    const status = statuses[Math.floor(Math.random() * statuses.length)]
-    const method = methods[Math.floor(Math.random() * methods.length)]
-    
-    mockTransactions.push({
-      id: i,
-      customer_name: customer.name,
-      customer_email: customer.email,
-      amount: Math.floor(Math.random() * 50000) + 1000, // $10 - $500
-      status: status,
-      payment_method: method,
-      currency: 'USD',
-      created_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-      updated_at: new Date().toISOString()
-    })
-  }
-
-  return mockTransactions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-}
+// Removed mock transaction generator to enforce real backend data only
 
 const refreshTransactions = async () => {
   await loadTransactions()
