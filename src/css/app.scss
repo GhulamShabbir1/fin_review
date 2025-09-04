@@ -66,6 +66,8 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform: perspective(1000px) rotateX(0deg) rotateY(0deg);
+  position: relative;
+  overflow: hidden;
 }
 
 .card-3d:hover {
@@ -74,6 +76,26 @@
     0 20px 40px rgba(0, 0, 0, 0.15),
     0 8px 24px rgba(189, 240, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Hover color spots effect inside components */
+.card-3d::before {
+  content: '';
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(189,240,0,0.25) 0%, rgba(189,240,0,0) 70%);
+  top: -60px;
+  left: -60px;
+  filter: blur(12px);
+  transition: transform 0.35s ease, opacity 0.35s ease;
+  opacity: 0.25;
+}
+
+.card-3d:hover::before {
+  transform: translate(40px, 40px) scale(1.1);
+  opacity: 0.45;
 }
 
 .btn-3d {
@@ -430,7 +452,7 @@
 // Global Typography
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: 14px; // Reduced from default
+  font-size: 16px;
   line-height: 1.6;
   color: #ffffff;
   background: var(--gradient-dark);
@@ -438,7 +460,7 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
-  color: var(--lime-primary);
+  color: #ffffff;
   margin-bottom: 1rem;
 }
 
@@ -450,7 +472,6 @@ h5 { font-size: 1.25rem; }
 h6 { font-size: 1.1rem; }
 
 p, span, div, label {
-  font-size: 14px; // Reduced font size
   color: #e0e0e0;
 }
 
