@@ -23,6 +23,7 @@
 
         <q-space />
         <div class="header-actions">
+          <DarkModeToggle class="q-mr-sm" />
           <q-btn rounded class="btn-primary q-mr-sm" icon="rocket_launch" label="Get Started"
             @click="navigateToRegister" />
           <q-btn rounded dense class="btn-secondary" icon="login" label="Access" @click="navigateToLogin" />
@@ -605,86 +606,136 @@ export default {
 <style scoped>
 /* Global Styles */
 .fintech-layout {
-  background: linear-gradient(135deg, #09050d 0%, #0f0e12 50%, #171719 100%);
-  color: #ffffff;
+  background: #000000;
+  color: #FFFFFF;
+}
+
+/* Hero Background */
+.hero-bg {
+  background: linear-gradient(135deg, #000000 0%, #0D0D0D 100%);
 }
 
 /* Header Styles */
 .header-glass {
-  background: rgba(9, 5, 13, 0.85) !important;
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(189, 253, 0, 0.15);
-}
-
-.header-toolbar {
-  padding: 8px 16px;
-}
-
-.logo-container {
-  display: flex;
-  align-items: center;
-}
-
-.app-logo {
-  border-radius: 10px;
+  background: linear-gradient(135deg, #000000 0%, #0D0D0D 100%) !important;
+  border-bottom: 1px solid rgba(0, 243, 255, 0.3);
 }
 
 .brand-text {
-  font-size: 1.4rem;
-  margin-left: 10px;
-  color: #bdfd00 !important;
+  background: linear-gradient(90deg, #00F3FF, #FF00FF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 12px rgba(0, 243, 255, 0.6);
 }
 
 .nav-btn {
-  color: #cfcfcf !important;
+  color: #AAAAAA !important;
   font-weight: 500;
 }
 
 .nav-btn:hover {
-  color: #bdfd00 !important;
+  color: #00F3FF !important;
+  text-shadow: 0 0 8px rgba(0, 243, 255, 0.8);
+  transform: translateY(-2px) !important;
 }
 
 /* Button Styles */
 .btn-primary {
-  background: linear-gradient(135deg, #bdfd00, #a0d000);
-  color: #09050d;
-  font-weight: 700;
-  border: none;
-  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #00F3FF 0%, #4C66FF 100%) !important;
+  color: #FFFFFF !important;
+  border-radius: 12px !important;
+  padding: 12px 28px !important;
+  font-weight: 600 !important;
+  letter-spacing: 1px !important;
+  transition: all 0.4s ease !important;
+  box-shadow: 0 0 15px rgba(0, 243, 255, 0.6) !important;
+  border: none !important;
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(189, 253, 0, 0.4);
-}
-
-.btn-secondary {
-  background: rgba(189, 253, 0, 0.1);
-  color: #bdfd00;
-  border: 1px solid rgba(189, 253, 0, 0.4);
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.btn-secondary:hover {
-  background: rgba(189, 253, 0, 0.2);
-  transform: translateY(-2px);
-}
-
-.btn-outline {
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.btn-outline:hover {
-  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-3px) scale(1.05) !important;
+  box-shadow: 0 0 30px rgba(0, 243, 255, 0.8) !important;
 }
 
 /* Card Styles */
 .card-glass {
-  background: rgba(255, 255, 255, 0.05) !important;
+  background: linear-gradient(145deg, #0D0D0D, #1A1A1A) !important;
+  border-radius: 16px !important;
+  padding: 20px !important;
+  box-shadow: 0 0 12px rgba(0, 243, 255, 0.3) !important;
+  transition: all 0.4s ease !important;
+  border: 1px solid rgba(0, 243, 255, 0.1) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.card-glass:hover {
+  border: 1px solid #00F3FF !important;
+  box-shadow: 0 0 25px rgba(0, 243, 255, 0.6) !important;
+  transform: scale(1.02) !important;
+}
+
+
+
+/* Button Styles */
+.btn-secondary {
+  background: linear-gradient(135deg, #FF00FF 0%, #A020F0 100%) !important;
+  color: #FFFFFF !important;
+  border-radius: 12px !important;
+  padding: 12px 28px !important;
+  font-weight: 600 !important;
+  letter-spacing: 1px !important;
+  transition: all 0.4s ease !important;
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.6) !important;
+  border: none !important;
+}
+
+.btn-secondary:hover {
+  transform: translateY(-3px) scale(1.05) !important;
+  box-shadow: 0 0 30px rgba(255, 0, 255, 0.8) !important;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #39FF14 0%, #00F3FF 100%) !important;
+  color: #FFFFFF !important;
+  border-radius: 12px !important;
+  padding: 12px 28px !important;
+  font-weight: 600 !important;
+  letter-spacing: 1px !important;
+  transition: all 0.4s ease !important;
+  box-shadow: 0 0 15px rgba(57, 255, 20, 0.6) !important;
+  border: none !important;
+}
+
+.btn-success:hover {
+  transform: translateY(-3px) scale(1.05) !important;
+  box-shadow: 0 0 30px rgba(57, 255, 20, 0.8) !important;
+}
+
+.btn-outline {
+  color: #00F3FF !important;
+  border: 1px solid #00F3FF !important;
+  background: transparent !important;
+  border-radius: 12px !important;
+  padding: 12px 28px !important;
+  font-weight: 600 !important;
+  letter-spacing: 1px !important;
+  transition: all 0.4s ease !important;
+}
+
+.btn-outline:hover {
+  background: rgba(0, 243, 255, 0.1) !important;
+  border-color: #FF00FF !important;
+  color: #FF00FF !important;
+  box-shadow: 0 0 15px rgba(0, 243, 255, 0.5) !important;
+  transform: translateY(-3px) scale(1.05) !important;
+}
+
+/* Card Styles */
+.card-glass {
+  background: var(--gradient-card-dark) !important;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(65, 105, 225, 0.1);
   border-radius: 16px;
   transition: all 0.3s ease;
   position: relative;
@@ -698,23 +749,23 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(189, 253, 0, 0.05), rgba(9, 5, 13, 0.1));
+  background: var(--gradient-primary);
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 0;
 }
 
 .card-glass:hover::before {
-  opacity: 1;
+  opacity: 0.1;
 }
 
 .card-glass:hover {
-  border-color: rgba(189, 253, 0, 0.3);
+  border-color: rgba(255, 183, 3, 0.3);
   transform: translateY(-5px);
 }
 
 .lime-glow {
-  box-shadow: 0 0 25px rgba(189, 253, 0, 0.25);
+  box-shadow: 0 0 25px rgba(255, 183, 3, 0.25);
 }
 
 .hover-lift {
@@ -740,8 +791,8 @@ export default {
 
 .hero-badge {
   display: inline-block;
-  background: rgba(189, 253, 0, 0.15);
-  color: #bdfd00;
+  background: rgba(255, 183, 3, 0.15);
+  color: #FFB703;
   padding: 6px 12px;
   border-radius: 20px;
   font-size: 0.8rem;
@@ -749,14 +800,15 @@ export default {
 }
 
 .hero-title {
-  font-size: 3.5rem;
-  line-height: 1.1;
-  margin-bottom: 24px;
+  background: linear-gradient(90deg, #00F3FF, #FF00FF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 12px rgba(0, 243, 255, 0.6);
 }
 
 .hero-description {
   font-size: 1.2rem;
-  color: #cfcfcf;
+  color: #AAAAAA;
   max-width: 90%;
 }
 
@@ -820,7 +872,7 @@ export default {
 }
 
 .section-subtitle {
-  color: #cfcfcf;
+  color: #B0B0B0;
   font-size: 1.1rem;
   margin-top: 12px;
 }
@@ -1062,8 +1114,8 @@ export default {
 
 /* Footer */
 .custom-footer {
-  background: rgba(9, 5, 13, 0.8);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: #000000;
+  border-top: 1px solid rgba(0, 243, 255, 0.3);
 }
 
 .footer-brand {
@@ -1077,22 +1129,23 @@ export default {
 }
 
 .footer-description {
-  color: #cfcfcf;
+  color: #B0B0B0;
   line-height: 1.6;
 }
 
 .social-btn {
-  background: rgba(255, 255, 255, 0.1);
-  color: #cfcfcf;
+  background: rgba(0, 243, 255, 0.1);
+  color: #AAAAAA;
 }
 
 .social-btn:hover {
-  background: rgba(189, 253, 0, 0.2);
-  color: #bdfd00;
+  background: rgba(0, 243, 255, 0.2);
+  color: #00F3FF;
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
 }
 
 .footer-heading {
-  color: #bdfd00;
+  color: #030506;
   margin-bottom: 20px;
   font-size: 1.1rem;
 }

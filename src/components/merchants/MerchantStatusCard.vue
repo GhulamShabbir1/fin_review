@@ -13,19 +13,22 @@
           </div>
         </div>
         <div class="status-badge-container">
-          <q-chip 
-            :color="getStatusColor(status)" 
-            :label="getStatusLabel(status)" 
-            :icon="getStatusIcon(status)"
-            size="md" 
-            class="status-chip"
-          />
+          <q-chip :color="getStatusColor(status)" :label="getStatusLabel(status)" :icon="getStatusIcon(status)"
+            size="md" class="status-chip" />
           <div class="last-updated">
             Last updated: {{ formatTimeAgo(lastUpdated) }}
           </div>
         </div>
       </div>
     </q-card-section>
+
+    <!-- Dark Mode Toggle Button -->
+    <div class="dark-mode-toggle">
+      <q-btn :icon="isDarkMode ? 'light_mode' : 'dark_mode'" round flat @click="toggleDarkMode"
+        :color="isDarkMode ? 'amber' : 'blue'">
+        <q-tooltip>Toggle Dark Mode</q-tooltip>
+      </q-btn>
+    </div>
 
     <!-- Enhanced Status Content -->
     <q-card-section class="status-content">
@@ -46,43 +49,25 @@
           </div>
           <div class="progress-percentage">{{ progress }}%</div>
         </div>
-        
-        <q-linear-progress 
-          :value="progress / 100" 
-          :color="getProgressColor(progress)" 
-          size="8px" 
-          class="progress-bar"
-          rounded
-        />
-        
+
+        <q-linear-progress :value="progress / 100" :color="getProgressColor(progress)" size="8px" class="progress-bar"
+          rounded />
+
         <div class="progress-steps">
-          <div 
-            v-for="(step, index) in enhancedOnboardingSteps" 
-            :key="index" 
-            class="progress-step"
-            :class="{ 
-              completed: index < completedSteps, 
-              current: index === completedSteps,
-              failed: step.status === 'failed'
-            }"
-            @click="showStepDetails(step, index)"
-          >
+          <div v-for="(step, index) in enhancedOnboardingSteps" :key="index" class="progress-step" :class="{
+            completed: index < completedSteps,
+            current: index === completedSteps,
+            failed: step.status === 'failed'
+          }" @click="showStepDetails(step, index)">
             <div class="step-icon">
-              <q-icon 
-                :name="getStepIcon(index, completedSteps, step.status)" 
-                :color="getStepColor(index, completedSteps, step.status)" 
-                size="20px" 
-              />
+              <q-icon :name="getStepIcon(index, completedSteps, step.status)"
+                :color="getStepColor(index, completedSteps, step.status)" size="20px" />
             </div>
             <div class="step-content">
               <div class="step-name">{{ step.name }}</div>
               <div class="step-description">{{ step.description }}</div>
               <div class="step-status" v-if="step.status">
-                <q-chip 
-                  :color="getStepStatusColor(step.status)" 
-                  :label="step.status" 
-                  size="xs"
-                />
+                <q-chip :color="getStepStatusColor(step.status)" :label="step.status" size="xs" />
               </div>
             </div>
           </div>
@@ -98,12 +83,8 @@
           </h5>
         </div>
         <div class="requirements-list">
-          <div 
-            v-for="(requirement, index) in pendingRequirements" 
-            :key="index" 
-            class="requirement-item"
-            :class="requirement.priority"
-          >
+          <div v-for="(requirement, index) in pendingRequirements" :key="index" class="requirement-item"
+            :class="requirement.priority">
             <div class="requirement-icon">
               <q-icon :name="requirement.icon" :color="requirement.color" size="16px" />
             </div>
@@ -112,13 +93,8 @@
               <div class="requirement-description">{{ requirement.description }}</div>
             </div>
             <div class="requirement-action">
-              <q-btn 
-                :color="requirement.actionColor" 
-                :label="requirement.actionLabel"
-                @click="handleRequirement(requirement)"
-                size="sm"
-                flat
-              />
+              <q-btn :color="requirement.actionColor" :label="requirement.actionLabel"
+                @click="handleRequirement(requirement)" size="sm" flat />
             </div>
           </div>
         </div>
@@ -127,51 +103,20 @@
       <!-- Enhanced Status Actions -->
       <div v-if="showActions" class="status-actions">
         <div class="actions-grid">
-          <q-btn 
-            v-if="status === 'pending' || status === 'under_review'" 
-            color="lime" 
-            icon="refresh" 
-            label="Refresh Status" 
-            @click="refreshStatus"
-            :loading="checkingStatus"
-            class="action-btn primary-action"
-          />
-          
-          <q-btn 
-            v-if="status === 'rejected'" 
-            color="orange" 
-            icon="edit" 
-            label="Update Information" 
-            @click="updateInfo"
-            class="action-btn secondary-action"
-          />
-          
-          <q-btn 
-            v-if="status === 'suspended'" 
-            color="red" 
-            icon="support_agent" 
-            label="Contact Support"
-            @click="contactSupport"
-            class="action-btn secondary-action"
-          />
-          
-          <q-btn 
-            v-if="status === 'approved' || status === 'verified'" 
-            color="blue" 
-            icon="dashboard" 
-            label="Start Payments" 
-            @click="goToPayments"
-            class="action-btn primary-action"
-          />
-          
-          <q-btn 
-            color="grey" 
-            icon="history" 
-            label="View History" 
-            @click="toggleTimeline"
-            flat
-            class="action-btn tertiary-action"
-          />
+          <q-btn v-if="status === 'pending' || status === 'under_review'" color="lime" icon="refresh"
+            label="Refresh Status" @click="refreshStatus" :loading="checkingStatus" class="action-btn primary-action" />
+
+          <q-btn v-if="status === 'rejected'" color="orange" icon="edit" label="Update Information" @click="updateInfo"
+            class="action-btn secondary-action" />
+
+          <q-btn v-if="status === 'suspended'" color="red" icon="support_agent" label="Contact Support"
+            @click="contactSupport" class="action-btn secondary-action" />
+
+          <q-btn v-if="status === 'approved' || status === 'verified'" color="blue" icon="dashboard"
+            label="Start Payments" @click="goToPayments" class="action-btn primary-action" />
+
+          <q-btn color="grey" icon="history" label="View History" @click="toggleTimeline" flat
+            class="action-btn tertiary-action" />
         </div>
       </div>
     </q-card-section>
@@ -183,23 +128,11 @@
           <q-icon name="timeline" size="20px" color="lime" class="q-mr-sm" />
           Status History
         </h4>
-        <q-btn 
-          flat 
-          round 
-          dense 
-          icon="close" 
-          @click="timelineVisible = false"
-          color="grey"
-        />
+        <q-btn flat round dense icon="close" @click="timelineVisible = false" color="grey" />
       </div>
-      
+
       <div class="timeline">
-        <div 
-          v-for="(event, index) in enhancedStatusTimeline" 
-          :key="index" 
-          class="timeline-item"
-          :class="event.type"
-        >
+        <div v-for="(event, index) in enhancedStatusTimeline" :key="index" class="timeline-item" :class="event.type">
           <div class="timeline-icon">
             <q-icon :name="event.icon" :color="event.color" size="18px" />
           </div>
@@ -225,21 +158,18 @@
           <div class="text-h6">{{ selectedStep?.name }}</div>
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>
-        
+
         <q-card-section v-if="selectedStep">
           <div class="step-detail-content">
             <div class="step-status-display">
-              <q-icon 
-                :name="getStepIcon(selectedStepIndex, completedSteps, selectedStep.status)" 
-                :color="getStepColor(selectedStepIndex, completedSteps, selectedStep.status)" 
-                size="32px" 
-              />
+              <q-icon :name="getStepIcon(selectedStepIndex, completedSteps, selectedStep.status)"
+                :color="getStepColor(selectedStepIndex, completedSteps, selectedStep.status)" size="32px" />
               <div class="status-info">
                 <div class="status-name">{{ selectedStep.status || 'pending' }}</div>
                 <div class="status-desc">{{ selectedStep.description }}</div>
               </div>
             </div>
-            
+
             <div class="step-requirements" v-if="selectedStep.requirements">
               <h6>Requirements:</h6>
               <ul>
@@ -248,15 +178,11 @@
             </div>
           </div>
         </q-card-section>
-        
+
         <q-card-actions align="right">
           <q-btn flat label="Close" v-close-popup />
-          <q-btn 
-            v-if="selectedStep?.actionRequired" 
-            color="lime" 
-            :label="selectedStep.actionLabel || 'Take Action'" 
-            @click="handleStepAction(selectedStep)" 
-          />
+          <q-btn v-if="selectedStep?.actionRequired" color="lime" :label="selectedStep.actionLabel || 'Take Action'"
+            @click="handleStepAction(selectedStep)" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -359,7 +285,7 @@ const enhancedOnboardingSteps = computed(() => [
 
 const pendingRequirements = computed(() => {
   const requirements = []
-  
+
   if (props.status === 'pending' && props.progress < 40) {
     requirements.push({
       name: 'Complete Business Information',
@@ -372,7 +298,7 @@ const pendingRequirements = computed(() => {
       action: 'complete-business-info'
     })
   }
-  
+
   if (props.status === 'pending' && props.progress < 60) {
     requirements.push({
       name: 'Upload Required Documents',
@@ -385,7 +311,7 @@ const pendingRequirements = computed(() => {
       action: 'upload-documents'
     })
   }
-  
+
   if (props.status === 'rejected') {
     requirements.push({
       name: 'Address Rejection Issues',
@@ -398,7 +324,7 @@ const pendingRequirements = computed(() => {
       action: 'fix-rejection'
     })
   }
-  
+
   return requirements
 })
 
@@ -418,7 +344,7 @@ const enhancedStatusTimeline = computed(() => {
       user: 'System'
     }
   ]
-  
+
   if (props.progress >= 40) {
     timeline.push({
       title: 'Business Information Submitted',
@@ -430,7 +356,7 @@ const enhancedStatusTimeline = computed(() => {
       user: props.merchantId ? `Merchant ${props.merchantId}` : 'You'
     })
   }
-  
+
   if (props.status === 'under_review') {
     timeline.push({
       title: 'Under Review',
@@ -442,7 +368,7 @@ const enhancedStatusTimeline = computed(() => {
       user: 'Verification Team'
     })
   }
-  
+
   if (props.status === 'approved' || props.status === 'verified') {
     timeline.push({
       title: 'Account Approved',
@@ -454,7 +380,7 @@ const enhancedStatusTimeline = computed(() => {
       user: 'Admin Team'
     })
   }
-  
+
   if (props.status === 'rejected') {
     timeline.push({
       title: 'Application Rejected',
@@ -466,7 +392,7 @@ const enhancedStatusTimeline = computed(() => {
       user: 'Review Team'
     })
   }
-  
+
   return timeline.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
 })
 
@@ -475,7 +401,7 @@ watch(() => props.status, (newStatus, oldStatus) => {
   if (newStatus !== oldStatus) {
     console.log('📬 Status prop changed in MerchantStatusCard:', oldStatus, '→', newStatus)
     lastUpdated.value = new Date()
-    
+
     // Show notification for status changes
     if (newStatus === 'approved' || newStatus === 'verified') {
       $q.notify({
@@ -502,7 +428,7 @@ const refreshStatus = async () => {
   try {
     checkingStatus.value = true
     console.log('🔄 Refreshing status from MerchantStatusCard...')
-    
+
     // ✅ Simply emit to parent to trigger status refresh
     // Parent component will handle the actual API calls
     emit('check-status', {
@@ -510,16 +436,16 @@ const refreshStatus = async () => {
       currentStatus: props.status,
       timestamp: new Date()
     })
-    
+
     $q.notify({
       type: 'info',
       message: 'Status refresh requested. Please wait for updates...',
       position: 'top',
       timeout: 3000
     })
-    
+
     lastUpdated.value = new Date()
-    
+
   } catch (error) {
     console.error('❌ Status refresh error:', error)
     $q.notify({
@@ -558,7 +484,7 @@ const showStepDetails = (step, index) => {
 
 const handleStepAction = (step) => {
   showStepDialog.value = false
-  
+
   switch (step.action || 'default') {
     case 'complete-business-info':
       router.push('/dashboard?tab=business')
@@ -704,7 +630,7 @@ const getStepStatusColor = (status) => {
 const formatTimeAgo = (date) => {
   const now = new Date()
   const diff = now - new Date(date)
-  
+
   if (diff < 60000) return 'Just now'
   if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`
   if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`
@@ -721,12 +647,20 @@ const formatDateTime = (date) => {
   })
 }
 
+// Add dark mode state
+const isDarkMode = ref(false)
+
+// Toggle dark mode function
+const toggleDarkMode = () => {
+  isDarkMode.value = !isDarkMode.value
+  document.body.classList.toggle('dark-mode')
+}
 
 
 // Lifecycle
 onMounted(() => {
   console.log('✅ MerchantStatusCard mounted with status:', props.status)
-  
+
   // ✅ REMOVED: No more auto API calls that don't exist
   // Status updates will come from parent component via props
 })
@@ -803,6 +737,21 @@ onMounted(() => {
 .last-updated {
   font-size: 0.75rem;
   color: #999;
+}
+
+/* Dark Mode Toggle */
+.dark-mode-toggle {
+  padding: 16px;
+  text-align: right;
+}
+
+.dark-mode-toggle .q-btn {
+  background: rgba(189, 240, 0, 0.1);
+  color: #121212;
+}
+
+.dark-mode-toggle .q-btn:hover {
+  background: rgba(189, 240, 0, 0.2);
 }
 
 /* Enhanced Content */
@@ -1224,28 +1173,28 @@ onMounted(() => {
     gap: 16px;
     text-align: center;
   }
-  
+
   .actions-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .progress-steps {
     gap: 8px;
   }
-  
+
   .progress-step {
     padding: 12px;
   }
-  
+
   .step-dialog {
     min-width: 90vw;
     margin: 16px;
   }
-  
+
   .requirements-list {
     gap: 8px;
   }
-  
+
   .requirement-item {
     flex-direction: column;
     text-align: center;
@@ -1270,9 +1219,63 @@ onMounted(() => {
     transform: scale(0.9);
     opacity: 0.7;
   }
+
   100% {
     transform: scale(1);
     opacity: 1;
   }
+}
+
+/* Dark mode styles */
+.dark-mode {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+.dark-mode .status-card {
+  background: rgba(18, 18, 18, 0.95);
+  border: 1px solid rgba(189, 240, 0, 0.3);
+}
+
+.dark-mode .title-main {
+  color: #e0e0e0;
+}
+
+.dark-mode .title-subtitle,
+.dark-mode .last-updated,
+.dark-mode .description-text,
+.dark-mode .status-details,
+.dark-mode .progress-percentage,
+.dark-mode .step-name,
+.dark-mode .step-description,
+.dark-mode .requirement-name,
+.dark-mode .requirement-description,
+.dark-mode .timeline-title,
+.dark-mode .timeline-time,
+.dark-mode .timeline-description,
+.dark-mode .timeline-user {
+  color: #e0e0e0;
+}
+
+.dark-mode .status-chip {
+  background: rgba(189, 240, 0, 0.1);
+  color: #e0e0e0;
+}
+
+.dark-mode .q-btn {
+  background: rgba(189, 240, 0, 0.1);
+  color: #121212;
+}
+
+.dark-mode .q-btn.secondary-action {
+  border: 1px solid rgba(189, 240, 0, 0.3);
+}
+
+.dark-mode .q-btn.tertiary-action {
+  color: #bdf000;
+}
+
+.dark-mode .lime-glow {
+  box-shadow: 0 8px 32px rgba(255, 255, 255, 0.1), 0 0 0 1px rgba(189, 240, 0, 0.3), 0 0 20px rgba(189, 240, 0, 0.2);
 }
 </style>

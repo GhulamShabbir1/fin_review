@@ -1,19 +1,45 @@
 // Import Quasar variables
 @import 'quasar/src/css/variables.sass';
 
-// Global 3D Animations and Lime Color Scheme
+// Global Fintech Navy + Royal Blue + Amber Color Scheme
 :root {
-  --lime-primary: #bdf000;
-  --lime-secondary: #9acd32;
-  --lime-accent: #32cd32;
-  --lime-light: #e8f5e8;
-  --lime-dark: #556b2f;
-  --gradient-primary: linear-gradient(135deg, #bdf000 0%, #9acd32 50%, #32cd32 100%);
-  --gradient-secondary: linear-gradient(135deg, rgba(189, 240, 0, 0.1) 0%, rgba(154, 205, 50, 0.05) 100%);
-  --gradient-dark: linear-gradient(135deg, #0a0a0a 0%, #0f0e12 50%, #121018 100%);
-  --gradient-card: linear-gradient(135deg, rgba(189, 240, 0, 0.05) 0%, rgba(154, 205, 50, 0.02) 100%);
-  --shadow-lime: 0 8px 32px rgba(189, 240, 0, 0.3);
-  --shadow-hover: 0 12px 48px rgba(189, 240, 0.4);
+  // Light Mode Colors
+  --primary: #0A1931;
+  --secondary: #4169E1;
+  --accent: #FFB703;
+  --neutral: #FFFFFF;
+  --neutral-gray: #E0E0E0;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-muted: #999999;
+
+  // Dark Mode Colors
+  --dark-primary: #0A1931;
+  --dark-secondary: #1A2238;
+  --dark-accent: #FFB703;
+  --dark-neutral: #0A1931;
+  --dark-neutral-gray: #333333;
+  --dark-text-primary: #FFFFFF;
+  --dark-text-secondary: #CCCCCC;
+  --dark-text-muted: #888888;
+
+  // Gradients
+  --gradient-primary: linear-gradient(135deg, #0A1931, #4169E1);
+  --gradient-secondary: linear-gradient(145deg, #0A1931, #274C77);
+  --gradient-accent: linear-gradient(90deg, #FFB703, #FFA500);
+  --gradient-card-light: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
+  --gradient-card-dark: linear-gradient(145deg, #0A1931, #1E3A8A);
+  --gradient-app: linear-gradient(135deg, #0A1931, #4169E1);
+  --gradient-sidebar: linear-gradient(180deg, #0A1931, #1E3A8A);
+  --gradient-navbar: linear-gradient(90deg, #0A1931, #274C77);
+  --gradient-button-primary: linear-gradient(90deg, #FFB703, #FFA500);
+  --gradient-button-secondary: linear-gradient(135deg, #0A1931, #4169E1);
+
+  // Shadows
+  --shadow-primary: 0 8px 32px rgba(65, 105, 225, 0.3);
+  --shadow-hover: 0 12px 48px rgba(65, 105, 225, 0.4);
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --shadow-accent: 0 6px 20px rgba(255, 183, 3, 0.4);
 }
 
 // Global 3D Animations
@@ -138,6 +164,106 @@
   background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
 }
 
+/* Gradient Button Styles */
+.button-primary {
+  background: var(--gradient-button-primary);
+  color: #0A1931;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 16px;
+  border: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+.button-primary:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(255, 183, 3, 0.4);
+}
+
+.button-secondary {
+  background: var(--gradient-button-secondary);
+  color: #FFFFFF;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 15px;
+  border: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+.button-secondary:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(65, 105, 225, 0.4);
+}
+
+/* Gradient Sidebar Styles */
+.sidebar {
+  background: var(--gradient-sidebar);
+  color: white;
+  width: 250px;
+  padding: 20px;
+}
+.sidebar a {
+  color: #FFFFFF;
+  display: block;
+  padding: 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+.sidebar a:hover {
+  background: var(--gradient-primary);
+  transform: translateX(5px);
+}
+
+/* Gradient Navbar Styles */
+.navbar {
+  background: var(--gradient-navbar);
+  padding: 15px 30px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Gradient Input Styles */
+.input-field {
+  background: var(--gradient-primary);
+  border: none;
+  padding: 12px;
+  border-radius: 6px;
+  color: #FFFFFF;
+  transition: all 0.3s ease;
+}
+.input-field:focus {
+  outline: none;
+  box-shadow: 0 0 8px #4169E1;
+}
+
+/* Hover and Micro-interaction Styles */
+.card-hover {
+  transition: all 0.3s ease;
+}
+.card-hover:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 20px rgba(65, 105, 225, 0.3);
+  border: 1px solid #4169E1;
+}
+
+.menu-item-hover {
+  transition: all 0.3s ease;
+}
+.menu-item-hover:hover {
+  background: var(--gradient-primary);
+  transform: translateX(5px);
+}
+
+.progress-gradient {
+  background: var(--gradient-accent);
+  height: 4px;
+  transition: width 0.5s ease;
+}
+
 .icon-3d {
   display: flex;
   align-items: center;
@@ -252,7 +378,7 @@
 
 .bar-fill {
   width: 100%;
-  background: linear-gradient(135deg, #bdf000 0%, #32cd32 100%);
+  background: var(--gradient-primary);
   border-radius: 4px 4px 0 0;
   min-height: 20px;
   transition: all 0.3s ease;
@@ -276,6 +402,7 @@
 }
 
 .line-path {
+  stroke: #4169E1;
   stroke-linecap: round;
   stroke-linejoin: round;
   transition: all 0.3s ease;
@@ -301,7 +428,7 @@
 .segment-fill {
   width: 100%;
   height: 100%;
-  background: conic-gradient(from 0deg, #bdf000 0deg, #32cd32 var(--percentage), transparent var(--percentage));
+  background: conic-gradient(from 0deg, #0A1931 0deg, #4169E1 var(--percentage), transparent var(--percentage));
   border-radius: 50%;
   transition: all 0.3s ease;
 }

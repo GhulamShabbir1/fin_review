@@ -12,14 +12,40 @@
 // to match your app's branding.
 // Tip: Use the "Theme Builder" on Quasar's documentation website.
 
-$primary: #1976d2;
-$secondary: #26a69a;
-$accent: #9c27b0;
+// Fintech Navy + Royal Blue + Amber Color Palette
+$primary: #0A1931;      // Navy Blue (trust, premium)
+$secondary: #4169E1;    // Royal Blue (modern fintech)
+$accent: #FFB703;       // Amber Gold (wealth, energy)
 
-$dark: #1d1d1d;
-$dark-page: #121212;
+$dark: #0A1931;         // Navy background for dark mode
+$dark-page: #1A2238;    // Midnight navy for dark mode panels
 
-$positive: #21ba45;
-$negative: #c10015;
-$info: #31ccec;
-$warning: #f2c037;
+$positive: #4CAF50;     // Green for success
+$negative: #E63946;     // Red for errors
+$info: #00B4D8;         // Sky blue for info
+$warning: #FFB703;      // Amber for warnings
+
+// Light Mode Colors
+$light-primary: #0A1931;
+$light-secondary: #4169E1;
+$light-accent: #FFB703;
+$light-neutral: #FFFFFF;
+$light-neutral-gray: #E0E0E0;
+$light-text: #333333;
+$light-text-secondary: #666666;
+
+// Dark Mode Colors
+$dark-primary: #0A1931;
+$dark-secondary: #1A2238;
+$dark-accent: #FFB703;
+$dark-neutral: #0A1931;
+$dark-neutral-gray: #333333;
+$dark-text: #FFFFFF;
+$dark-text-secondary: #CCCCCC;
+
+// Gradient Variables
+$gradient-primary: linear-gradient(135deg, #0A1931, #4169E1);
+$gradient-secondary: linear-gradient(145deg, #0A1931, #274C77);
+$gradient-accent: linear-gradient(90deg, #FFB703, #FFA500);
+$gradient-card-light: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
+$gradient-card-dark: linear-gradient(145deg, #0A1931, #1E3A8A);
