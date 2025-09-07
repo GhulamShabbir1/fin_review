@@ -11,6 +11,9 @@ import '@quasar/extras/material-icons/material-icons.css'
 import 'quasar/dist/quasar.css'
 import 'animate.css'
 
+// Import Neon Styles
+import './styles/neon.css'
+
 // ✅ Create Pinia instance directly
 const pinia = createPinia()
 const app = createApp(App)
@@ -24,11 +27,11 @@ app.use(Quasar, {
   iconSet: quasarIconSet
 })
 
-// Set brand colors (align with fintech theme)
-setCssVar('primary', '#2563eb')
-setCssVar('secondary', '#06b6d4')
-setCssVar('accent', '#f59e0b')
-setCssVar('dark', '#0b1220')
+// Set neon brand colors
+setCssVar('primary', '#00ffff')
+setCssVar('secondary', '#ff00ff')
+setCssVar('accent', '#8b5cf6')
+setCssVar('dark', '#0a0a0a')
 
 // ✅ Mount the app
 app.mount('#app')

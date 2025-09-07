@@ -1,4 +1,3 @@
-// PATH: src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 import { api } from '../boot/axios'
 
@@ -32,7 +31,6 @@ const routes = [
 
   { path: '/dashboard', name: 'dashboard', component: MerchantDashboard, meta: { title: 'Merchant Dashboard - FinteckX', requiresAuth: true, role: 'merchant' } },
   { path: '/admin-dashboard', name: 'admin-dashboard', component: AdminDashboardPage, meta: { title: 'Admin Dashboard - FinteckX', requiresAuth: true, role: 'admin' } },
-  { path: '/profile', name: 'merchant-profile', component: () => import('../pages/MerchantProfilePage.vue'), meta: { title: 'Merchant Profile - FinteckX', requiresAuth: true, role: 'merchant' } },
 
   { path: '/transactions', name: 'transactions', component: TransactionsPage, meta: { title: 'Transactions - FinteckX', requiresAuth: true } },
   { path: '/stats', name: 'stats', component: StatsPage, meta: { title: 'Analytics - FinteckX', requiresAuth: true } },
@@ -45,7 +43,6 @@ const routes = [
   { path: '/admin/profile', name: 'admin-profile', component: AdminProfilePage, meta: { title: 'Admin Profile - FinteckX', requiresAuth: true, role: 'admin' } },
   { path: '/admin/settings', name: 'admin-settings', component: AdminSettingsPage, meta: { title: 'Admin Settings - FinteckX', requiresAuth: true, role: 'admin' } },
   { path: '/admin/support', name: 'admin-support', component: AdminSupportPage, meta: { title: 'Admin Support - FinteckX', requiresAuth: true, role: 'admin' } },
-  
 ]
 
 const router = createRouter({
@@ -58,45 +55,64 @@ router.beforeEach(async (to, from, next) => {
 
   const token = localStorage.getItem('token')
   
-  if (to.meta.requiresAuth && !token) {
-    next('/login')
-    return
-  }
-  
-  if (token && to.path === '/login') {
-    // User is already logged in, redirect based on role
+  // If already authenticated, prevent going back to login/register
+  if (token && (to.name === 'login' || to.name === 'register')) {
+    let role = ''
     try {
-      const response = await api.get('/auth/profile')
-      const userRole = response.data.user?.role
-      
-      if (userRole === 'admin') {
-        next('/admin-dashboard')
-      } else {
-        next('/dashboard')
-      }
-    } catch (error) {
-      console.error('Failed to get user profile:', error)
-      next('/dashboard')
+      const storedUser = JSON.parse(localStorage.getItem('user') || 'null')
+      role = String(storedUser?.role || '').toLowerCase()
+    } catch { 
+      console.log("error parsing user")
     }
-    return
+
+    if (role === 'admin') return next({ name: 'admin-dashboard' })
+    if (role === 'merchant') return next({ name: 'dashboard' })
+    return next({ name: 'dashboard' })
   }
-  
-  if (to.meta.requiresAdmin) {
+
+  // Public routes
+  if (!to.meta.requiresAuth) {
+    return next()
+  }
+
+  // Require auth
+  if (!token) {
+    return next({ name: 'login', query: { redirect: to.fullPath } })
+  }
+
+  // Role-based protection
+  if (to.meta.role) {
+    let storedRole = ''
     try {
-      const response = await api.get('/auth/profile')
-      const userRole = response.data.user?.role
-      
-      if (userRole !== 'admin') {
-        next('/dashboard')
-        return
+      const storedUser = JSON.parse(localStorage.getItem('user') || 'null')
+      storedRole = String(storedUser?.role || '').toLowerCase()
+    } catch {
+      console.log("error parsing stored user")
+    }
+
+    // If we don't have a role, fetch profile
+    if (!storedRole) {
+      try {
+        const resp = await api.get('/api/auth/profile')
+        const profileUser = resp?.data?.user || resp?.data
+        if (profileUser) {
+          localStorage.setItem('user', JSON.stringify(profileUser))
+          storedRole = String(profileUser.role || '').toLowerCase()
+        }
+      } catch (profileError) {
+        console.error('Profile fetch error:', profileError)
+        return next({ name: 'login', query: { redirect: to.fullPath } })
       }
-    } catch (error) {
-      console.error('Failed to verify admin role:', error)
-      next('/dashboard')
-      return
+    }
+
+    // If role mismatches, redirect to appropriate dashboard
+    if (storedRole !== to.meta.role) {
+      if (storedRole === 'admin') return next({ name: 'admin-dashboard' })
+      if (storedRole === 'merchant') return next({ name: 'dashboard' })
+      return next({ name: 'login', query: { redirect: to.fullPath } })
     }
   }
-  
+
   next()
 })
 
