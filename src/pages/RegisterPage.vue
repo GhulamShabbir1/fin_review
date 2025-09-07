@@ -86,7 +86,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
-import { useAuthStore } from 'src/stores/auth'
+import { useAuthStore } from 'src/store/auth'
 
 export default {
   name: 'RegisterPage',

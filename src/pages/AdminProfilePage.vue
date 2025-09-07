@@ -361,7 +361,7 @@
 import { ref, onMounted } from 'vue'
 import { Notify } from 'quasar'
 import AdminHeader from '../components/navigation/AdminHeader.vue'
-import api from '../boot/axios'
+import {api} from '../boot/axios'
 
 // Reactive data
 const editMode = ref(false)

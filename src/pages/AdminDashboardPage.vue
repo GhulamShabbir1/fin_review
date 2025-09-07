@@ -169,8 +169,8 @@
 <script>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
-import { useAuthStore } from 'src/stores/auth'
-import { useMerchantsStore } from 'src/stores/merchants'
+import { useAuthStore } from 'src/store/auth'
+import { useMerchantsStore } from 'src/store/merchants'
 import Chart from 'chart.js/auto'
 
 export default {
@@ -249,7 +249,7 @@ export default {
         // Initialize charts
         await initializeCharts()
         
-      } catch (error) {
+      } catch{
         $q.notify({
           type: 'negative',
           message: 'Failed to load dashboard data',

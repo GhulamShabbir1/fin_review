@@ -139,7 +139,7 @@
 
 <script setup>
 import { ref, watch, onMounted, computed } from 'vue'
-import api from '../../boot/axios'
+import { api } from '../../boot/axios'
 
 const props = defineProps({
   modelValue: {

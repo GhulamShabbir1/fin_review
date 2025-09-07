@@ -310,9 +310,14 @@
 <script>
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import DarkModeToggle from '../components/common/DarkModeToggle.vue'
 
 export default {
   name: 'MainLayout',
+
+  components: {
+    DarkModeToggle
+  },
 
   setup() {
     const route = useRoute()

@@ -260,7 +260,7 @@
 <script>
 import { ref, onMounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
-import { useMerchantsStore } from 'src/stores/merchants'
+import { useMerchantsStore } from 'src/store/merchants'
 
 export default {
   name: 'TransactionsPage',
@@ -361,7 +361,7 @@ export default {
       try {
         await merchantsStore.fetchTransactions()
         pagination.value.rowsNumber = transactions.value.length
-      } catch (error) {
+      } catch{
         $q.notify({
           type: 'negative',
           message: 'Failed to load transactions',

@@ -183,7 +183,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  loadStoredData()
+  // loadStoredData() - Called from main.js after Pinia is ready
 
   return {
     // State
